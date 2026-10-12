@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgis/postgis:17-3.5-alpine
+    container_name: patrol_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-patrol_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-patrol_secret_2026}
+      POSTGRES_DB: ${DB_NAME:-patrol_management}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-patrol_admin} -d ${DB_NAME:-patrol_management}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - patrol_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: patrol_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-redis_patrol_secret}"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_patrol_secret}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - patrol_network
+
+  # Local storage is served via Fastify Static. Uncomment if self-hosted MinIO is desired.
+  # minio:
+  #   image: minio/minio
+  #   container_name: patrol_minio
+  #   restart: unless-stopped
+  #   command: server /data --console-address ":9001"
+  #   environment:
+  #     MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minio_patrol_admin}
+  #     MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minio_patrol_secret_2026}
+  #   ports:
+  #     - "${S3_PORT:-9000}:9000"
+  #     - "${S3_CONSOLE_PORT:-9001}:9001"
+  #   volumes:
+  #     - minio_data:/data
+  #   networks:
+  #     - patrol_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  # minio_data:
+  #   driver: local
+
+networks:
+  patrol_network:
+    driver: bridge

@@ -1,0 +1,31 @@
+{
+  "name": "patrol-management-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise Patrol & Facility Management System (Single-Tenant In-House)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=@patrol/backend",
+    "dev:admin": "npm run dev --workspace=@patrol/web-admin",
+    "dev:pwa": "npm run dev --workspace=@patrol/pwa-field",
+    "dev": "npm run dev:backend",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "keywords": [
+    "patrol",
+    "security",
+    "facility-management",
+    "postgis",
+    "nestjs",
+    "pwa"
+  ],
+  "author": "Engineering Team",
+  "license": "UNLICENSED"
+}
