@@ -36,6 +36,11 @@ export const attendanceApi = {
     return res.data;
   },
 
+  getHistory: async (limit = 30) => {
+    const res = await apiClient.get('/attendance/history', { params: { limit } });
+    return res.data;
+  },
+
   clockIn: async (payload: { siteId: string; latitude: number; longitude: number; photoBase64?: string; notes?: string }) => {
     const res = await apiClient.post('/attendance/clock-in', payload);
     return res.data;
@@ -48,6 +53,28 @@ export const attendanceApi = {
 
   leaveRequest: async (payload: { siteId: string; status: string; date: string; leaveReason: string; attachmentBase64?: string }) => {
     const res = await apiClient.post('/attendance/leave', payload);
+    return res.data;
+  },
+};
+
+export const authApi = {
+  getProfile: async () => {
+    const res = await apiClient.get('/auth/me');
+    return res.data;
+  },
+  updatePassword: async (userId: string, password: string) => {
+    const res = await apiClient.patch(`/auth/users/${userId}/password`, { password });
+    return res.data;
+  },
+  updatePhoto: async (userId: string, photoKey: string) => {
+    const res = await apiClient.patch(`/auth/users/${userId}/photo`, { photoKey });
+    return res.data;
+  },
+};
+
+export const broadcastApi = {
+  getActive: async (siteId?: string) => {
+    const res = await apiClient.get('/broadcast/active', { params: { siteId } });
     return res.data;
   },
 };
