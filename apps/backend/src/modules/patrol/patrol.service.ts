@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { EventsGateway } from '../gateway/events.gateway';
+import { HourlyPatrolMatrixResponse, HourlyPatrolMatrixRow, Division } from '@patrol/types';
 
 export interface RecordScanDto {
   siteId: string;
@@ -227,5 +228,87 @@ export class PatrolService {
     }
 
     return row;
+  }
+
+  /**
+   * 100% Parity with patroli.site: Monitoring Patroli Personil 24 Jam
+   * Shows 24 hourly columns (00:00 to 23:00) vs Assets to check if scanned in each hour
+   */
+  async getHourlyMonitoringMatrix(dateStr?: string, siteId?: string): Promise<HourlyPatrolMatrixResponse> {
+    const targetDate = dateStr || new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+    const startIso = `${targetDate} 00:00:00`;
+    const endIso = `${targetDate} 23:59:59`;
+
+    let targetSiteId = siteId;
+    let siteName = 'Semua Area';
+    if (siteId) {
+      const site = await this.db.queryOne<any>(`SELECT name FROM sites WHERE id = $1`, [siteId]);
+      if (site) siteName = site.name;
+    } else {
+      const firstSite = await this.db.queryOne<any>(`SELECT id, name FROM sites WHERE is_active = true LIMIT 1`);
+      if (firstSite) {
+        targetSiteId = firstSite.id;
+        siteName = firstSite.name;
+      }
+    }
+
+    if (!targetSiteId) {
+      return { date: targetDate, siteId: '', siteName: 'No Site Found', rows: [] };
+    }
+
+    // 1. Fetch all checkpoints for this site
+    const cpSql = `
+      SELECT id, name, location_detail as "locationDetail", category
+      FROM checkpoints
+      WHERE site_id = $1 AND is_active = true
+      ORDER BY name ASC
+    `;
+    const checkpoints = await this.db.query<any>(cpSql, [targetSiteId]);
+
+    // 2. Fetch all patrol logs for this site on this date
+    const logsSql = `
+      SELECT checkpoint_id as "checkpointId", EXTRACT(HOUR FROM scanned_at)::int as "hour"
+      FROM patrol_logs
+      WHERE site_id = $1 AND scanned_at >= $2::timestamp AND scanned_at <= $3::timestamp
+    `;
+    const logs = await this.db.query<any>(logsSql, [targetSiteId, startIso, endIso]);
+
+    // Map checkpointId -> Set of hours scanned
+    const scannedMap = new Map<string, Set<number>>();
+    for (const log of logs) {
+      if (!scannedMap.has(log.checkpointId)) {
+        scannedMap.set(log.checkpointId, new Set());
+      }
+      scannedMap.get(log.checkpointId)!.add(log.hour);
+    }
+
+    // 3. Build rows
+    const rows: HourlyPatrolMatrixRow[] = checkpoints.map((cp) => {
+      const hoursSet = scannedMap.get(cp.id) || new Set();
+      const hours: Record<number, boolean> = {};
+      let totalScanned = 0;
+
+      for (let h = 0; h < 24; h++) {
+        const isScanned = hoursSet.has(h);
+        hours[h] = isScanned;
+        if (isScanned) totalScanned++;
+      }
+
+      return {
+        checkpointId: cp.id,
+        assetName: cp.name,
+        locationDescription: cp.locationDetail || '-',
+        category: cp.category as Division,
+        hours,
+        totalScanned,
+      };
+    });
+
+    return {
+      date: targetDate,
+      siteId: targetSiteId,
+      siteName,
+      rows,
+    };
   }
 }

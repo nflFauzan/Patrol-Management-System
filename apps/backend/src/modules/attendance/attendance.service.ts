@@ -1,7 +1,19 @@
 import { Injectable, BadRequestException, NotFoundException, Optional, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { EventsGateway } from '../gateway/events.gateway';
-import { ClockInRequestDto, ClockOutRequestDto, LeaveRequestDto, Attendance, AttendanceStatus } from '@patrol/types';
+import { 
+  ClockInRequestDto, 
+  ClockOutRequestDto, 
+  LeaveRequestDto, 
+  Attendance, 
+  AttendanceStatus,
+  AttendanceMatrixResponse,
+  AttendanceMatrixRow,
+  AttendanceMatrixDay,
+  AttendanceMatrixStatusCode,
+  UserRole,
+  Division
+} from '@patrol/types';
 
 @Injectable()
 export class AttendanceService {
@@ -346,4 +358,161 @@ export class AttendanceService {
       geofenceRadiusMeters: 100,
     });
   }
+
+  /**
+   * 100% Parity with patroli.site: Monitoring Absensi Matriks 1-31 Hari
+   */
+  async getAttendanceMatrix(query: { month?: string; siteId?: string; division?: string }): Promise<AttendanceMatrixResponse> {
+    const targetMonth = query.month || new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+    const [yearStr, monthStr] = targetMonth.split('-');
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    const totalDays = new Date(year, month, 0).getDate();
+    const startDate = `${targetMonth}-01`;
+    const endDate = `${targetMonth}-${String(totalDays).padStart(2, '0')}`;
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    // 1. Fetch Users matching site/division filter
+    let usersSql = `
+      SELECT DISTINCT 
+        u.id, u.full_name as "fullName", u.division, u.role,
+        COALESCE(s.name, 'All Sites') as "siteName"
+      FROM users u
+      LEFT JOIN user_site_assignments usa ON u.id = usa.user_id
+      LEFT JOIN sites s ON usa.site_id = s.id
+      WHERE u.is_active = true
+    `;
+    const userParams: any[] = [];
+    let pIdx = 1;
+
+    if (query.siteId) {
+      usersSql += ` AND (usa.site_id = $${pIdx} OR u.site_id = $${pIdx})`;
+      userParams.push(query.siteId);
+      pIdx++;
+    }
+    if (query.division) {
+      usersSql += ` AND u.division ILIKE $${pIdx}`;
+      userParams.push(query.division);
+      pIdx++;
+    }
+    usersSql += ` ORDER BY u.full_name ASC`;
+
+    const userRows = await this.db.query<any>(usersSql, userParams);
+
+    // 2. Fetch all attendances in this date range
+    const attSql = `
+      SELECT 
+        a.user_id as "userId",
+        to_char(a.attendance_date, 'YYYY-MM-DD') as "date",
+        EXTRACT(DAY FROM a.attendance_date)::int as "dayNumber",
+        a.status_type as "statusType",
+        to_char(a.clock_in_at, 'HH24:MI') as "clockInTime",
+        to_char(a.clock_out_at, 'HH24:MI') as "clockOutTime"
+      FROM attendances a
+      WHERE a.attendance_date >= $1 AND a.attendance_date <= $2
+    `;
+    const attRows = await this.db.query<any>(attSql, [startDate, endDate]);
+
+    // Map attendances: userId -> dayNumber -> record
+    const attMap = new Map<string, Map<number, any>>();
+    for (const row of attRows) {
+      if (!attMap.has(row.userId)) {
+        attMap.set(row.userId, new Map());
+      }
+      attMap.get(row.userId)!.set(row.dayNumber, row);
+    }
+
+    // 3. Build Matrix Rows
+    const rows: AttendanceMatrixRow[] = userRows.map((u) => {
+      const userAtt = attMap.get(u.id);
+      const days: Record<number, AttendanceMatrixDay> = {};
+      let totalHadir = 0;
+      let totalLupaAbsen = 0;
+      let totalIzin = 0;
+
+      for (let d = 1; d <= totalDays; d++) {
+        const rec = userAtt ? userAtt.get(d) : undefined;
+        const currentDayStr = `${targetMonth}-${String(d).padStart(2, '0')}`;
+
+        if (!rec) {
+          days[d] = { day: d, status: AttendanceMatrixStatusCode.OFF };
+        } else if (rec.statusType === 2) {
+          const isCrossMidnight = rec.clockOutTime && rec.clockInTime && rec.clockOutTime < rec.clockInTime;
+          days[d] = {
+            day: d,
+            status: isCrossMidnight ? AttendanceMatrixStatusCode.PULANG_CROSS_MIDNIGHT : AttendanceMatrixStatusCode.PULANG,
+            clockInTime: rec.clockInTime,
+            clockOutTime: rec.clockOutTime,
+          };
+          totalHadir++;
+        } else if (rec.statusType === 1) {
+          if (currentDayStr < todayStr) {
+            days[d] = { day: d, status: AttendanceMatrixStatusCode.LUPA_ABSEN, clockInTime: rec.clockInTime };
+            totalLupaAbsen++;
+          } else {
+            days[d] = { day: d, status: AttendanceMatrixStatusCode.MASUK, clockInTime: rec.clockInTime };
+            totalHadir++;
+          }
+        } else if (rec.statusType === 3) {
+          days[d] = { day: d, status: AttendanceMatrixStatusCode.OFF };
+          totalIzin++;
+        } else {
+          days[d] = { day: d, status: AttendanceMatrixStatusCode.OFF };
+        }
+      }
+
+      return {
+        userId: u.id,
+        fullName: u.fullName,
+        siteName: u.siteName,
+        division: u.division as Division,
+        role: u.role as UserRole,
+        days,
+        totalHadir,
+        totalLupaAbsen,
+        totalIzin,
+      };
+    });
+
+    return {
+      month: targetMonth,
+      siteId: query.siteId,
+      division: query.division as Division,
+      totalDays,
+      rows,
+    };
+  }
+
+  async getUserHistory(userId: string, limit = 30): Promise<Attendance[]> {
+    const sql = `
+      SELECT 
+        a.id, a.user_id AS "userId", a.site_id AS "siteId", a.attendance_date AS "date",
+        a.status_type AS "statusType", a.shift_name AS "shiftName",
+        a.clock_in_at AS "clockInTime",
+        ST_Y(a.clock_in_coordinates::geometry) AS "clockInLatitude",
+        ST_X(a.clock_in_coordinates::geometry) AS "clockInLongitude",
+        a.clock_in_photo_key AS "clockInPhotoUrl",
+        a.clock_in_distance_meters AS "clockInDistanceMeters",
+        a.is_late AS "isLate", a.late_minutes AS "lateMinutes",
+        a.clock_out_at AS "clockOutTime",
+        ST_Y(a.clock_out_coordinates::geometry) AS "clockOutLatitude",
+        ST_X(a.clock_out_coordinates::geometry) AS "clockOutLongitude",
+        a.clock_out_photo_key AS "clockOutPhotoUrl",
+        a.clock_out_distance_meters AS "clockOutDistanceMeters",
+        a.work_duration_minutes AS "workDurationMinutes",
+        a.overtime_minutes AS "overtimeMinutes",
+        a.reason AS "leaveReason", a.notes, a.created_at AS "createdAt",
+        u.division, s.geofence_radius_meters AS "geofenceRadiusMeters"
+      FROM attendances a
+      JOIN users u ON a.user_id = u.id
+      JOIN sites s ON a.site_id = s.id
+      WHERE a.user_id = $1
+      ORDER BY a.attendance_date DESC, a.created_at DESC
+      LIMIT $2
+    `;
+
+    const rows = await this.db.query<any>(sql, [userId, limit]);
+    return rows.map((r) => this.mapRowToAttendance(r));
+  }
 }
+

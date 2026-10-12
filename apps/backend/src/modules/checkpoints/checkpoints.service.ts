@@ -161,4 +161,61 @@ export class CheckpointsService {
 
     return this.findById(row.id);
   }
+
+  async bulkImport(items: any[]): Promise<{ importedCount: number; errors: string[] }> {
+    let importedCount = 0;
+    const errors: string[] = [];
+
+    const sites = await this.db.query<any>(`SELECT id, name FROM sites WHERE is_active = true`);
+    const siteMap = new Map<string, string>();
+    for (const s of sites) {
+      siteMap.set(s.name.trim().toLowerCase(), s.id);
+      siteMap.set(s.id, s.id);
+    }
+
+    const defaultSiteId = sites.length > 0 ? sites[0].id : null;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      try {
+        const siteId = (item.siteCodeOrName && siteMap.get(item.siteCodeOrName.trim().toLowerCase())) 
+          || (item.siteId && siteMap.get(item.siteId)) 
+          || defaultSiteId;
+
+        if (!siteId) {
+          errors.push(`Row ${i + 1}: Site "${item.siteCodeOrName || item.siteId}" not found`);
+          continue;
+        }
+
+        const qrToken = item.qrPayload || item.qrCodeToken || `CP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+        await this.db.query(
+          `INSERT INTO checkpoints (site_id, qr_code_token, category, name, location_detail, task_description, asset_type, is_active)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+           ON CONFLICT (qr_code_token) DO UPDATE 
+           SET name = EXCLUDED.name, location_detail = EXCLUDED.location_detail, task_description = EXCLUDED.task_description, asset_type = EXCLUDED.asset_type`,
+          [
+            siteId,
+            qrToken,
+            item.kategori || item.category || 'Security',
+            item.namaAset || item.name,
+            item.lokasi || item.locationDetail || '',
+            item.deskripsiTugas || item.taskDescription || '',
+            item.jenisAset || item.assetType || 'General Asset',
+          ],
+        );
+        importedCount++;
+      } catch (err: any) {
+        errors.push(`Row ${i + 1}: ${err.message}`);
+      }
+    }
+
+    return { importedCount, errors };
+  }
+
+  getImportTemplate(): string {
+    return 'namaAset,kategori,lokasi,deskripsiTugas,jenisAset,siteCodeOrName\n' +
+      'Pos Gerbang Utama,Security,Gerbang Depan,Pemeriksaan Akses Masuk Tamu,Pos Jaga,Site Proyek Demo\n' +
+      'Toilet Lantai 1,Cleaning Service,Lobby Utama,Pembersihan Sanitasi Berkala,Sanitasi,Site Proyek Demo';
+  }
 }

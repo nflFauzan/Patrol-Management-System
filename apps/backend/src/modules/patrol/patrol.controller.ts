@@ -17,6 +17,14 @@ export class PatrolController {
     return this.patrolService.getLogs(siteId, limit);
   }
 
+  @Get('hourly-monitoring')
+  async getHourlyMonitoring(
+    @Query('date') date?: string,
+    @Query('siteId') siteId?: string,
+  ) {
+    return this.patrolService.getHourlyMonitoringMatrix(date, siteId);
+  }
+
   @Post('scan')
   async recordScan(
     @CurrentUser() user: User,

@@ -71,4 +71,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(`site_${siteId}`).emit('patrol:checkpoint_scanned', scan);
     this.server.emit('patrol:activity', scan);
   }
+
+  // Method to broadcast announcement message (Pesan Siaran)
+  broadcastAnnouncement(siteId: string | null, message: any) {
+    if (siteId) {
+      this.server.to(`site_${siteId}`).emit('broadcast:new', message);
+    }
+    this.server.emit('broadcast:new', message);
+  }
 }
+

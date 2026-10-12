@@ -11,6 +11,7 @@ import { CleaningModule } from './modules/cleaning/cleaning.module';
 import { DriverModule } from './modules/driver/driver.module';
 import { SosModule } from './modules/sos/sos.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { BroadcastModule } from './modules/broadcast/broadcast.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     DriverModule,
     SosModule,
     ReportsModule,
+    BroadcastModule,
   ],
 })
 export class AppModule {}

@@ -33,4 +33,16 @@ export class CheckpointsController {
   async create(@Body() body: any): Promise<CheckpointItem> {
     return this.checkpointsService.create(body);
   }
+
+  @Post('bulk-import')
+  @Roles(UserRole.ADMIN_SUPER, UserRole.OPS_MANAGER, UserRole.SITE_SUPERVISOR)
+  async bulkImport(@Body() body: { items: any[] }) {
+    return this.checkpointsService.bulkImport(body.items || []);
+  }
+
+  @Get('template/csv')
+  async getTemplate() {
+    return { templateCsv: this.checkpointsService.getImportTemplate() };
+  }
 }
+

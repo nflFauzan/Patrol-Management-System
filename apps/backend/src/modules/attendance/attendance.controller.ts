@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { User, ClockInRequestDto, ClockOutRequestDto, LeaveRequestDto, Attendance } from '@patrol/types';
+import { User, ClockInRequestDto, ClockOutRequestDto, LeaveRequestDto, Attendance, AttendanceMatrixResponse } from '@patrol/types';
 
 @Controller('attendance')
 @UseGuards(JwtAuthGuard)
@@ -12,6 +12,23 @@ export class AttendanceController {
   @Get('today')
   async getToday(@CurrentUser() user: User): Promise<Attendance | null> {
     return this.attendanceService.getTodayStatus(user.id);
+  }
+
+  @Get('history')
+  async getHistory(
+    @CurrentUser() user: User,
+    @Query('limit') limit?: string,
+  ): Promise<Attendance[]> {
+    return this.attendanceService.getUserHistory(user.id, limit ? parseInt(limit, 10) : 30);
+  }
+
+  @Get('monitoring-matrix')
+  async getMonitoringMatrix(
+    @Query('month') month?: string,
+    @Query('siteId') siteId?: string,
+    @Query('division') division?: string,
+  ): Promise<AttendanceMatrixResponse> {
+    return this.attendanceService.getAttendanceMatrix({ month, siteId, division });
   }
 
   @Post('clock-in')
