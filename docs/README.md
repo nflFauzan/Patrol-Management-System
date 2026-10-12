@@ -12,6 +12,7 @@ docs/
 ├── 03_SYSTEM_ARCHITECTURE.md          # Arsitektur monorepo (NestJS Fastify + Postgres PostGIS + Next.js + Vite PWA)
 ├── 04_DATABASE_SCHEMA_POSTGIS.md      # Skema DDL PostgreSQL 18 + PostGIS lengkap (14 tabel) & fungsi spasial
 ├── 05_API_AND_WEBSOCKET_SPEC.md       # Kontrak REST API & WebSocket event matrix terintegrasi WhatsApp Gateway
+├── 06_TESTING_AND_QA_WORKFLOW.md      # Standar Automated Test-Driven Workflow, Test Matrix & QA
 └── README.md                          # Indeks direktori dokumentasi
 ```
 

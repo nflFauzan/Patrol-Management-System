@@ -13,6 +13,7 @@
     "dev:pwa": "npm run dev --workspace=@patrol/pwa-field",
     "dev": "npm run dev:backend",
     "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
