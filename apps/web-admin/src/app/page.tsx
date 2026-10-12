@@ -17,9 +17,27 @@ import {
   X,
   Volume2,
   VolumeX,
-  Radio
+  Radio,
+  Calendar,
+  FileText,
+  DollarSign,
+  Bell,
+  LayoutDashboard,
+  Upload,
+  Printer
 } from 'lucide-react';
 import io, { Socket } from 'socket.io-client';
+
+import { AttendanceMatrixTab } from '../components/AttendanceMatrixTab';
+import { HourlyPatrolMatrixTab } from '../components/HourlyPatrolMatrixTab';
+import { PayrollTab } from '../components/PayrollTab';
+import { MasterDataTab } from '../components/MasterDataTab';
+import { ReportsTab } from '../components/ReportsTab';
+import { BroadcastTab } from '../components/BroadcastTab';
+import { ExportCenterTab } from '../components/ExportCenterTab';
+import { BulkImportModal } from '../components/BulkImportModal';
+import { PrintQrModal } from '../components/PrintQrModal';
+import { PrintIdCardModal } from '../components/PrintIdCardModal';
 
 interface SosAlert {
   id: string;
@@ -47,10 +65,22 @@ interface ActivityItem {
 }
 
 export default function DashboardPage() {
+  const [activeMainTab, setActiveMainTab] = useState<
+    'DASHBOARD' | 'DATA_INDUK' | 'ABSENSI_MATRIX' | 'PATROLI_24H' | 'LAPORAN' | 'GAJI' | 'BROADCAST' | 'EXPORT_CENTER'
+  >('DASHBOARD');
+
+  const [selectedSiteId, setSelectedSiteId] = useState<string>('11111111-1111-1111-1111-111111111111');
   const [selectedDivision, setSelectedDivision] = useState<'ALL' | 'SECURITY' | 'CLEANING' | 'DRIVER'>('ALL');
   const [activeSosAlert, setActiveSosAlert] = useState<SosAlert | null>(null);
   const [isSirenMuted, setIsSirenMuted] = useState<boolean>(false);
   const [isConnected, setIsConnected] = useState<boolean>(false);
+
+  // Modals state
+  const [isHrisModalOpen, setIsHrisModalOpen] = useState<boolean>(false);
+  const [bulkImportType, setBulkImportType] = useState<'CHECKPOINT' | 'PERSONIL' | null>(null);
+  const [printQrTarget, setPrintQrTarget] = useState<any | null>(null);
+  const [printIdCardTarget, setPrintIdCardTarget] = useState<any | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Live Activity Feed
   const [activities, setActivities] = useState<ActivityItem[]>([
@@ -92,7 +122,7 @@ export default function DashboardPage() {
 
     socket.on('connect', () => {
       setIsConnected(true);
-      socket.emit('join:site_room', '11111111-1111-1111-1111-111111111111');
+      socket.emit('join:site_room', selectedSiteId);
     });
 
     socket.on('disconnect', () => {
@@ -117,7 +147,6 @@ export default function DashboardPage() {
       });
     });
 
-    // Status Change Listener
     socket.on('sos:status_changed', (changeData: any) => {
       if (changeData.alertStatus === 'RESOLVED') {
         setActiveSosAlert(null);
@@ -142,197 +171,11 @@ export default function DashboardPage() {
       ]);
     });
 
-    // Cleaning Activity Listener
-    socket.on('cleaning:submitted', (cln: any) => {
-      setActivities((prev) => [
-        {
-          id: `cln-${Date.now()}`,
-          badge: 'CLN',
-          badgeColor: 'bg-emerald-100 text-emerald-600',
-          officerName: cln.officerName || 'Siti Rahma',
-          timeStr: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
-          title: `Sanitasi: ${cln.checkpointName || 'Restroom'}`,
-          detail: 'Checklist kebersihan terverifikasi lengkap',
-        },
-        ...prev.slice(0, 9),
-      ]);
-    });
-
-    // Driver Trip Started Listener
-    socket.on('driver:trip_started', (trip: any) => {
-      setActivities((prev) => [
-        {
-          id: `drv-start-${Date.now()}`,
-          badge: 'DRV',
-          badgeColor: 'bg-purple-100 text-purple-600',
-          officerName: trip.driverName || 'Driver Operasional',
-          timeStr: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
-          title: `Perjalanan Armada Berangkat (${trip.vehiclePlateNumber || 'Armada'})`,
-          detail: `${trip.originLocation || 'HQ'} ➔ ${trip.destinationLocation || 'Destinasi'} • Odo: ${trip.odometerStart?.toLocaleString()} km`,
-        },
-        ...prev.slice(0, 9),
-      ]);
-    });
-
-    // Driver Trip Completed Listener
-    socket.on('driver:trip_completed', (trip: any) => {
-      setActivities((prev) => [
-        {
-          id: `drv-end-${Date.now()}`,
-          badge: 'DRV',
-          badgeColor: 'bg-emerald-100 text-emerald-600',
-          officerName: 'Driver Operasional',
-          timeStr: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
-          title: `Perjalanan Armada Selesai (${trip.vehiclePlateNumber || 'Armada'})`,
-          detail: `Tiba di tujuan • Jarak: ${trip.totalDistanceKm || 0} km • Odo Akhir: ${trip.odometerEnd?.toLocaleString()} km`,
-        },
-        ...prev.slice(0, 9),
-      ]);
-    });
-
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [selectedSiteId]);
 
-  const [isHrisModalOpen, setIsHrisModalOpen] = useState<boolean>(false);
-  const [hrisFilterDivision, setHrisFilterDivision] = useState<string>('ALL');
-  const [hrisRecords, setHrisRecords] = useState<any[]>([
-    {
-      nik: 'SEC-2024-001',
-      fullName: 'Ahmad Fauzi',
-      division: 'SECURITY',
-      siteName: 'Head Office Sudirman',
-      date: '2026-10-12',
-      shiftName: 'Pagi (07:00 - 15:00)',
-      clockInTime: '06:52:10',
-      clockInDistanceMeters: 18,
-      clockOutTime: '15:08:45',
-      clockOutDistanceMeters: 22,
-      lateMinutes: 0,
-      workDurationMinutes: 496,
-      effectiveWorkingHours: 8.27,
-      overtimeMinutes: 0,
-      overtimeHours: 0,
-      statusLabel: 'SELESAI',
-    },
-    {
-      nik: 'CLN-2024-004',
-      fullName: 'Siti Rahma',
-      division: 'CLEANING',
-      siteName: 'Head Office Sudirman',
-      date: '2026-10-12',
-      shiftName: 'Pagi (06:00 - 14:00)',
-      clockInTime: '06:14:00',
-      clockInDistanceMeters: 12,
-      clockOutTime: '14:05:00',
-      clockOutDistanceMeters: 15,
-      lateMinutes: 14,
-      workDurationMinutes: 471,
-      effectiveWorkingHours: 7.85,
-      overtimeMinutes: 0,
-      overtimeHours: 0,
-      statusLabel: 'SELESAI',
-    },
-    {
-      nik: 'DRV-2024-002',
-      fullName: 'Budi Santoso',
-      division: 'DRIVER',
-      siteName: 'Warehouse Cikarang',
-      date: '2026-10-12',
-      shiftName: 'Normal (08:00 - 17:00)',
-      clockInTime: '07:55:00',
-      clockInDistanceMeters: 45,
-      clockOutTime: '18:45:00',
-      clockOutDistanceMeters: 52,
-      lateMinutes: 0,
-      workDurationMinutes: 650,
-      effectiveWorkingHours: 10.83,
-      overtimeMinutes: 105,
-      overtimeHours: 1.75,
-      statusLabel: 'SELESAI',
-    },
-    {
-      nik: 'SEC-2024-003',
-      fullName: 'Doni Pratama',
-      division: 'SECURITY',
-      siteName: 'Warehouse Cikarang',
-      date: '2026-10-12',
-      shiftName: 'Malam (23:00 - 07:00)',
-      clockInTime: '22:50:00',
-      clockInDistanceMeters: 28,
-      clockOutTime: '07:10:00',
-      clockOutDistanceMeters: 31,
-      lateMinutes: 0,
-      workDurationMinutes: 500,
-      effectiveWorkingHours: 8.33,
-      overtimeMinutes: 0,
-      overtimeHours: 0,
-      statusLabel: 'SELESAI',
-    },
-  ]);
-
-  const handleDownloadHrisCsv = () => {
-    const filtered = hrisFilterDivision === 'ALL'
-      ? hrisRecords
-      : hrisRecords.filter(r => r.division === hrisFilterDivision);
-
-    const headers = [
-      'NIK',
-      'Nama Karyawan',
-      'Divisi',
-      'Fasilitas / Site',
-      'Tanggal',
-      'Shift',
-      'Jam Masuk',
-      'Jarak Masuk (m)',
-      'Jam Pulang',
-      'Jarak Pulang (m)',
-      'Terlambat (menit)',
-      'Durasi Kerja (jam)',
-      'Lembur (jam)',
-      'Status Kehadiran',
-    ];
-
-    const rows = filtered.map((d) => [
-      `"${d.nik || '-'}"`,
-      `"${d.fullName}"`,
-      `"${d.division}"`,
-      `"${d.siteName}"`,
-      `"${d.date}"`,
-      `"${d.shiftName || '-'}"`,
-      `"${d.clockInTime || '-'}"`,
-      d.clockInDistanceMeters ?? '-',
-      `"${d.clockOutTime || '-'}"`,
-      d.clockOutDistanceMeters ?? '-',
-      d.lateMinutes || 0,
-      d.effectiveWorkingHours || 0,
-      d.overtimeHours || 0,
-      `"${d.statusLabel}"`,
-    ]);
-
-    const csvString = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `rekap_hris_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleAcknowledge = () => {
-    if (activeSosAlert) {
-      setActiveSosAlert({ ...activeSosAlert, alertStatus: 'ACKNOWLEDGED' });
-    }
-  };
-
-  const handleResolve = () => {
-    setActiveSosAlert(null);
-  };
-
-  // Trigger demo SOS for simulation test
   const handleSimulateSos = () => {
     setActiveSosAlert({
       id: `sos-sim-${Date.now()}`,
@@ -350,6 +193,16 @@ export default function DashboardPage() {
     });
   };
 
+  const handleAcknowledge = () => {
+    if (activeSosAlert) {
+      setActiveSosAlert({ ...activeSosAlert, alertStatus: 'ACKNOWLEDGED' });
+    }
+  };
+
+  const handleResolve = () => {
+    setActiveSosAlert(null);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-100 text-slate-800">
       {/* Top Navbar */}
@@ -360,7 +213,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight">Enterprise Facility & Patrol Command Center</h1>
-            <p className="text-xs text-slate-400">Single-Tenant Corporate In-House Management System</p>
+            <p className="text-xs text-slate-400">Single-Tenant Corporate In-House Management System (SCBD & Cikarang)</p>
           </div>
         </div>
 
@@ -384,6 +237,91 @@ export default function DashboardPage() {
           </div>
         </div>
       </header>
+
+      {/* Main Navigation Tabs Ribbon matching patroli.site */}
+      <nav className="bg-white border-b border-slate-200 px-6 py-2 shadow-sm sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-1.5 text-xs font-bold">
+          <button
+            onClick={() => setActiveMainTab('DASHBOARD')}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl transition ${
+              activeMainTab === 'DASHBOARD' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            <span>DASHBOARD</span>
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab('DATA_INDUK')}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl transition ${
+              activeMainTab === 'DATA_INDUK' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <Building2 className="w-4 h-4 text-blue-500" />
+            <span>DATA INDUK</span>
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab('ABSENSI_MATRIX')}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl transition ${
+              activeMainTab === 'ABSENSI_MATRIX' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <Calendar className="w-4 h-4 text-emerald-500" />
+            <span>ABSENSI (31-HARI)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab('PATROLI_24H')}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl transition ${
+              activeMainTab === 'PATROLI_24H' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <Clock className="w-4 h-4 text-indigo-500" />
+            <span>PATROLI (24-JAM)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab('LAPORAN')}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl transition ${
+              activeMainTab === 'LAPORAN' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <FileText className="w-4 h-4 text-purple-500" />
+            <span>LAPORAN DIVISI</span>
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab('GAJI')}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl transition ${
+              activeMainTab === 'GAJI' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <DollarSign className="w-4 h-4 text-emerald-600" />
+            <span>GAJI (H/L/I)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab('BROADCAST')}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl transition ${
+              activeMainTab === 'BROADCAST' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <Bell className="w-4 h-4 text-amber-500" />
+            <span>PESAN SIARAN</span>
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab('EXPORT_CENTER')}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl transition ${
+              activeMainTab === 'EXPORT_CENTER' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <Download className="w-4 h-4 text-blue-600" />
+            <span>EXPORT CENTER</span>
+          </button>
+        </div>
+      </nav>
 
       {/* EMERGENCY SOS BANNER / MODAL OVERLAY */}
       {activeSosAlert && (
@@ -451,367 +389,271 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Dynamic Toast Feedback */}
+      {toastMessage && (
+        <div className="max-w-7xl mx-auto w-full px-6 pt-4">
+          <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 p-3 rounded-xl text-xs flex justify-between items-center shadow-sm">
+            <span className="font-semibold">✅ {toastMessage}</span>
+            <button onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-slate-700">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Container */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
-        {/* KPI Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-              <Users className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Personil On-Duty</p>
-              <h3 className="text-2xl font-bold text-slate-900">42 / 45</h3>
-              <p className="text-xs text-emerald-600 font-medium">93% Kehadiran Shift</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Patroli Selesai</p>
-              <h3 className="text-2xl font-bold text-slate-900">19 / 24</h3>
-              <p className="text-xs text-slate-500">79% Target Shift Tercapai</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-lg">
-              <MapPin className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Titik Checkpoint</p>
-              <h3 className="text-2xl font-bold text-slate-900">128 Titik</h3>
-              <p className="text-xs text-slate-500">Tersebar di 2 Fasilitas</p>
-            </div>
-          </div>
-
-          <div className={`p-5 rounded-xl border shadow-sm flex items-center space-x-4 transition ${
-            activeSosAlert ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-500' : 'bg-white border-slate-200'
-          }`}>
-            <div className={`p-3 rounded-lg ${activeSosAlert ? 'bg-rose-600 text-white animate-bounce' : 'bg-rose-50 text-rose-600'}`}>
-              <ShieldAlert className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Panic SOS Aktif</p>
-              <h3 className={`text-2xl font-bold ${activeSosAlert ? 'text-rose-600' : 'text-slate-900'}`}>
-                {activeSosAlert ? '1 Kasus' : '0 Kasus'}
-              </h3>
-              <p className={`text-xs font-medium ${activeSosAlert ? 'text-rose-600 font-bold' : 'text-emerald-600'}`}>
-                {activeSosAlert ? 'Membutuhkan Penanganan Segera!' : 'Kondisi Aman Terkendali'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Division Filter & HRIS Export Bar */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center space-x-2">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Divisi:</span>
-            <button 
-              onClick={() => setSelectedDivision('ALL')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${selectedDivision === 'ALL' ? 'bg-slate-900 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-            >
-              Semua Divisi
-            </button>
-            <button 
-              onClick={() => setSelectedDivision('SECURITY')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition ${selectedDivision === 'SECURITY' ? 'bg-blue-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>Satpam (Security)</span>
-            </button>
-            <button 
-              onClick={() => setSelectedDivision('CLEANING')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition ${selectedDivision === 'CLEANING' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Cleaning Service</span>
-            </button>
-            <button 
-              onClick={() => setSelectedDivision('DRIVER')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition ${selectedDivision === 'DRIVER' ? 'bg-purple-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-            >
-              <Truck className="w-3.5 h-3.5" />
-              <span>Driver Armada</span>
-            </button>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={() => setIsHrisModalOpen(true)}
-              className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow transition"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export Rekap HRIS (Excel / CSV)</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Monitoring Section Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Facility Status Card */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                <Building2 className="w-4 h-4 text-slate-500" />
-                <span>Status Fasilitas & Lokasi</span>
-              </h2>
-              <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">PostGIS Geofence</span>
-            </div>
-
-            <div className="space-y-3">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold text-sm text-slate-900">Head Office Sudirman</h4>
-                    <p className="text-xs text-slate-500">Kav. 52-53, Jakarta Selatan</p>
-                  </div>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Radius 100m</span>
-                </div>
-                <div className="mt-2 text-xs text-slate-600 flex justify-between">
-                  <span>Petugas Aktif: 18 Orang</span>
-                  <span className="text-blue-600 font-medium">6 Checkpoint Security</span>
-                </div>
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold text-sm text-slate-900">Warehouse & Factory Cikarang</h4>
-                    <p className="text-xs text-slate-500">Kawasan Industri GIIC, Bekasi</p>
-                  </div>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Radius 250m</span>
-                </div>
-                <div className="mt-2 text-xs text-slate-600 flex justify-between">
-                  <span>Petugas Aktif: 24 Orang</span>
-                  <span className="text-blue-600 font-medium">14 Checkpoint Area</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Live Activity Feed */}
-          <div className="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                <Clock className="w-4 h-4 text-slate-500" />
-                <span>Live Feed Aktivitas Lapangan (Real-time Socket.io)</span>
-              </h2>
-              <span className="text-xs text-emerald-600 flex items-center space-x-1">
-                <Radio className="w-3 h-3 animate-ping" />
-                <span>Stream Aktif</span>
-              </span>
-            </div>
-
-            <div className="divide-y divide-slate-100">
-              {activities.map((act) => (
-                <div key={act.id} className="py-3 flex items-start space-x-3">
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs mt-0.5 ${act.badgeColor}`}>
-                    {act.badge}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-slate-900">{act.officerName}</p>
-                      <span className="text-xs text-slate-400">{act.timeStr}</span>
-                    </div>
-                    <p className="text-xs text-slate-600">{act.title}</p>
-                    <span className="inline-block mt-1 text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
-                      {act.detail}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* HRIS ATTENDANCE RECAP MODAL */}
-      {isHrisModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            {/* Modal Header */}
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
-              <div className="flex items-center space-x-3">
-                <div className="p-2.5 bg-blue-600 rounded-xl shadow">
-                  <Download className="w-5 h-5 text-white" />
+        {/* Render Tab 1: DASHBOARD */}
+        {activeMainTab === 'DASHBOARD' && (
+          <div className="space-y-6">
+            {/* KPI Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+                <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                  <Users className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold">Rekapitulasi Absensi HRIS & Log Operasional</h3>
-                  <p className="text-xs text-slate-400">
-                    Perhitungan Otomatis: Jam Efektif, Menit Terlambat, Lembur (Overtime), & Validasi Geofence PostGIS
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Personil On-Duty</p>
+                  <h3 className="text-2xl font-bold text-slate-900">42 / 45</h3>
+                  <p className="text-xs text-emerald-600 font-medium">93% Kehadiran Shift</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Patroli Selesai</p>
+                  <h3 className="text-2xl font-bold text-slate-900">19 / 24</h3>
+                  <p className="text-xs text-slate-500">79% Target Shift Tercapai</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+                <div className="p-3 bg-amber-50 text-amber-600 rounded-lg">
+                  <MapPin className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Titik Checkpoint</p>
+                  <h3 className="text-2xl font-bold text-slate-900">128 Titik</h3>
+                  <p className="text-xs text-slate-500">Tersebar di 2 Fasilitas</p>
+                </div>
+              </div>
+
+              <div className={`p-5 rounded-xl border shadow-sm flex items-center space-x-4 transition ${
+                activeSosAlert ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-500' : 'bg-white border-slate-200'
+              }`}>
+                <div className={`p-3 rounded-lg ${activeSosAlert ? 'bg-rose-600 text-white animate-bounce' : 'bg-rose-50 text-rose-600'}`}>
+                  <ShieldAlert className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Panic SOS Aktif</p>
+                  <h3 className={`text-2xl font-bold ${activeSosAlert ? 'text-rose-600' : 'text-slate-900'}`}>
+                    {activeSosAlert ? '1 Kasus' : '0 Kasus'}
+                  </h3>
+                  <p className={`text-xs font-medium ${activeSosAlert ? 'text-rose-600 font-bold' : 'text-emerald-600'}`}>
+                    {activeSosAlert ? 'Membutuhkan Penanganan Segera!' : 'Kondisi Aman Terkendali'}
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => setIsHrisModalOpen(false)}
-                className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
 
-            {/* Modal KPI Highlights */}
-            <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Total Personil Hadir</span>
-                <span className="text-xl font-extrabold text-slate-900">{hrisRecords.length} Personil</span>
-              </div>
-              <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Jam Kerja Efektif Total</span>
-                <span className="text-xl font-extrabold text-blue-600">
-                  {hrisRecords.reduce((acc, r) => acc + (r.effectiveWorkingHours || 0), 0).toFixed(1)} Jam
-                </span>
-              </div>
-              <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Total Lembur Disetujui</span>
-                <span className="text-xl font-extrabold text-purple-600">
-                  {hrisRecords.reduce((acc, r) => acc + (r.overtimeHours || 0), 0).toFixed(2)} Jam
-                </span>
-              </div>
-              <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Kepatuhan Geofence</span>
-                <span className="text-xl font-extrabold text-emerald-600">100% In-Radius</span>
-              </div>
-            </div>
-
-            {/* Modal Toolbar & Division Filter */}
-            <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-white">
+            {/* Division Filter & Quick Actions */}
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Filter Divisi:</span>
-                <button
-                  onClick={() => setHrisFilterDivision('ALL')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    hrisFilterDivision === 'ALL' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Divisi:</span>
+                <button 
+                  onClick={() => setSelectedDivision('ALL')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${selectedDivision === 'ALL' ? 'bg-slate-900 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                 >
-                  Semua Divisi ({hrisRecords.length})
+                  Semua Divisi
                 </button>
-                <button
-                  onClick={() => setHrisFilterDivision('SECURITY')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    hrisFilterDivision === 'SECURITY' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                <button 
+                  onClick={() => setSelectedDivision('SECURITY')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition ${selectedDivision === 'SECURITY' ? 'bg-blue-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                 >
-                  Satpam ({hrisRecords.filter(r => r.division === 'SECURITY').length})
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>Satpam (Security)</span>
                 </button>
-                <button
-                  onClick={() => setHrisFilterDivision('CLEANING')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    hrisFilterDivision === 'CLEANING' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                <button 
+                  onClick={() => setSelectedDivision('CLEANING')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition ${selectedDivision === 'CLEANING' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                 >
-                  Cleaning ({hrisRecords.filter(r => r.division === 'CLEANING').length})
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Cleaning Service</span>
                 </button>
-                <button
-                  onClick={() => setHrisFilterDivision('DRIVER')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    hrisFilterDivision === 'DRIVER' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                <button 
+                  onClick={() => setSelectedDivision('DRIVER')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition ${selectedDivision === 'DRIVER' ? 'bg-purple-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                 >
-                  Driver ({hrisRecords.filter(r => r.division === 'DRIVER').length})
+                  <Truck className="w-3.5 h-3.5" />
+                  <span>Driver Armada</span>
                 </button>
               </div>
 
-              <button
-                onClick={handleDownloadHrisCsv}
-                className="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-md transition active:scale-95"
-              >
-                <Download className="w-4 h-4" />
-                <span>Unduh File CSV HRIS (Excel-Ready)</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={() => setActiveMainTab('ABSENSI_MATRIX')}
+                  className="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow transition"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Lihat Matriks 31-Hari</span>
+                </button>
+                <button 
+                  onClick={() => setActiveMainTab('PATROLI_24H')}
+                  className="flex items-center space-x-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow transition"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Monitoring Patroli 24H</span>
+                </button>
+              </div>
             </div>
 
-            {/* Modal Table Content */}
-            <div className="flex-1 overflow-auto p-4">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
-                    <th className="py-2.5 px-3">NIK</th>
-                    <th className="py-2.5 px-3">Nama Lengkap</th>
-                    <th className="py-2.5 px-3">Divisi</th>
-                    <th className="py-2.5 px-3">Fasilitas / Site</th>
-                    <th className="py-2.5 px-3">Shift</th>
-                    <th className="py-2.5 px-3">Masuk / Jarak</th>
-                    <th className="py-2.5 px-3">Pulang / Jarak</th>
-                    <th className="py-2.5 px-3 text-center">Terlambat</th>
-                    <th className="py-2.5 px-3 text-center">Jam Kerja</th>
-                    <th className="py-2.5 px-3 text-center">Lembur (OT)</th>
-                    <th className="py-2.5 px-3 text-center">Geofence</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {hrisRecords
-                    .filter(r => hrisFilterDivision === 'ALL' || r.division === hrisFilterDivision)
-                    .map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50 transition">
-                        <td className="py-2.5 px-3 font-mono font-medium text-slate-500">{item.nik}</td>
-                        <td className="py-2.5 px-3 font-semibold text-slate-900">{item.fullName}</td>
-                        <td className="py-2.5 px-3">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            item.division === 'SECURITY' ? 'bg-blue-100 text-blue-700' :
-                            item.division === 'CLEANING' ? 'bg-emerald-100 text-emerald-700' :
-                            'bg-purple-100 text-purple-700'
-                          }`}>
-                            {item.division}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3 text-slate-600">{item.siteName}</td>
-                        <td className="py-2.5 px-3 text-slate-500">{item.shiftName}</td>
-                        <td className="py-2.5 px-3">
-                          <span className="font-semibold text-slate-900">{item.clockInTime}</span>
-                          <span className="block text-[10px] text-slate-400">({item.clockInDistanceMeters}m dari pusat)</span>
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <span className="font-semibold text-slate-900">{item.clockOutTime}</span>
-                          <span className="block text-[10px] text-slate-400">({item.clockOutDistanceMeters}m dari pusat)</span>
-                        </td>
-                        <td className="py-2.5 px-3 text-center">
-                          {item.lateMinutes > 0 ? (
-                            <span className="text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded">{item.lateMinutes} m</span>
-                          ) : (
-                            <span className="text-emerald-600 font-medium">Tepat Waktu</span>
-                          )}
-                        </td>
-                        <td className="py-2.5 px-3 text-center font-bold text-slate-800">
-                          {item.effectiveWorkingHours} jam
-                        </td>
-                        <td className="py-2.5 px-3 text-center">
-                          {item.overtimeHours > 0 ? (
-                            <span className="font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded">
-                              +{item.overtimeHours} jam
-                            </span>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </td>
-                        <td className="py-2.5 px-3 text-center">
-                          <span className="inline-flex items-center space-x-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold text-[10px]">
-                            <Check className="w-3 h-3" />
-                            <span>Valid (In-Radius)</span>
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
+            {/* Monitoring Section Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Facility Status Card */}
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                    <Building2 className="w-4 h-4 text-slate-500" />
+                    <span>Status Fasilitas & Lokasi</span>
+                  </h2>
+                  <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">PostGIS Geofence</span>
+                </div>
 
-            {/* Modal Footer */}
-            <div className="bg-slate-50 border-t border-slate-200 p-4 flex justify-between items-center text-xs text-slate-500">
-              <p>Format export CSV kompatibel langsung dengan sistem payroll/HRIS korporat (SAP, Talenta, SunFish, dsb).</p>
-              <button
-                onClick={() => setIsHrisModalOpen(false)}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition"
-              >
-                Tutup
-              </button>
+                <div className="space-y-3">
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold text-sm text-slate-900">Head Office Sudirman</h4>
+                        <p className="text-xs text-slate-500">Kav. 52-53 SCBD, Jakarta Selatan</p>
+                      </div>
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Radius 100m</span>
+                    </div>
+                    <div className="mt-2 text-xs text-slate-600 flex justify-between">
+                      <span>Petugas Aktif: 18 Orang</span>
+                      <span className="text-blue-600 font-medium">6 Checkpoint Security</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold text-sm text-slate-900">Warehouse & Factory Cikarang</h4>
+                        <p className="text-xs text-slate-500">Kawasan Industri GIIC, Bekasi</p>
+                      </div>
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Radius 250m</span>
+                    </div>
+                    <div className="mt-2 text-xs text-slate-600 flex justify-between">
+                      <span>Petugas Aktif: 24 Orang</span>
+                      <span className="text-blue-600 font-medium">14 Checkpoint Area</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Activity Feed */}
+              <div className="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-slate-500" />
+                    <span>Live Feed Aktivitas Lapangan (Real-time Socket.io)</span>
+                  </h2>
+                  <span className="text-xs text-emerald-600 flex items-center space-x-1">
+                    <Radio className="w-3 h-3 animate-ping" />
+                    <span>Stream Aktif</span>
+                  </span>
+                </div>
+
+                <div className="divide-y divide-slate-100">
+                  {activities.map((act) => (
+                    <div key={act.id} className="py-3 flex items-start space-x-3">
+                      <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs mt-0.5 ${act.badgeColor}`}>
+                        {act.badge}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-slate-900">{act.officerName}</p>
+                          <span className="text-xs text-slate-400">{act.timeStr}</span>
+                        </div>
+                        <p className="text-xs text-slate-600">{act.title}</p>
+                        <span className="inline-block mt-1 text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                          {act.detail}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Render Tab 2: DATA INDUK */}
+        {activeMainTab === 'DATA_INDUK' && (
+          <MasterDataTab
+            onOpenBulkImport={(type) => setBulkImportType(type)}
+            onOpenPrintQr={(checkpoint) => setPrintQrTarget(checkpoint)}
+            onOpenPrintIdCard={(user) => setPrintIdCardTarget(user)}
+          />
+        )}
+
+        {/* Render Tab 3: ABSENSI (31-HARI MATRIX) */}
+        {activeMainTab === 'ABSENSI_MATRIX' && (
+          <AttendanceMatrixTab selectedSiteId={selectedSiteId} />
+        )}
+
+        {/* Render Tab 4: PATROLI (24-JAM MATRIX) */}
+        {activeMainTab === 'PATROLI_24H' && (
+          <HourlyPatrolMatrixTab selectedSiteId={selectedSiteId} />
+        )}
+
+        {/* Render Tab 5: LAPORAN DIVISI */}
+        {activeMainTab === 'LAPORAN' && (
+          <ReportsTab selectedSiteId={selectedSiteId} />
+        )}
+
+        {/* Render Tab 6: GAJI (H/L/I) */}
+        {activeMainTab === 'GAJI' && (
+          <PayrollTab selectedSiteId={selectedSiteId} />
+        )}
+
+        {/* Render Tab 7: PESAN SIARAN */}
+        {activeMainTab === 'BROADCAST' && (
+          <BroadcastTab selectedSiteId={selectedSiteId} />
+        )}
+
+        {/* Render Tab 8: EXPORT CENTER */}
+        {activeMainTab === 'EXPORT_CENTER' && (
+          <ExportCenterTab />
+        )}
+      </main>
+
+      {/* ALL MODALS */}
+      {bulkImportType && (
+        <BulkImportModal
+          isOpen={!!bulkImportType}
+          type={bulkImportType}
+          onClose={() => setBulkImportType(null)}
+          onSuccess={(msg) => setToastMessage(msg)}
+        />
+      )}
+
+      {printQrTarget && (
+        <PrintQrModal
+          isOpen={!!printQrTarget}
+          checkpoint={printQrTarget}
+          onClose={() => setPrintQrTarget(null)}
+        />
+      )}
+
+      {printIdCardTarget && (
+        <PrintIdCardModal
+          isOpen={!!printIdCardTarget}
+          user={printIdCardTarget}
+          onClose={() => setPrintIdCardTarget(null)}
+        />
       )}
     </div>
   );
