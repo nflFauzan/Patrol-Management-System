@@ -1,5 +1,5 @@
 // ============================================================================
-// ENTERPRISE PATROL & FACILITY MANAGEMENT SYSTEM - SHARED TYPES
+// ENTERPRISE PATROL & FACILITY MANAGEMENT SYSTEM - SHARED TYPES (SSOT)
 // ============================================================================
 
 // ----------------------------------------------------------------------------
@@ -8,17 +8,26 @@
 
 export enum UserRole {
   ADMIN_SUPER = 'ADMIN_SUPER',
+  ADMIN_AREA = 'ADMIN_AREA',
   OPS_MANAGER = 'OPS_MANAGER',
   SITE_SUPERVISOR = 'SITE_SUPERVISOR',
   SECURITY_OFFICER = 'SECURITY_OFFICER',
   CLEANER = 'CLEANER',
   DRIVER = 'DRIVER',
+  STAFF = 'STAFF',
+}
+
+export enum SecurityRank {
+  ANGGOTA = 'ANGGOTA',
+  KOMANDAN = 'KOMANDAN',
+  CHIEF = 'CHIEF',
 }
 
 export enum Division {
   SECURITY = 'SECURITY',
   CLEANING = 'CLEANING',
   DRIVER = 'DRIVER',
+  STAFF = 'STAFF',
 }
 
 export enum AttendanceStatus {
@@ -27,6 +36,16 @@ export enum AttendanceStatus {
   SICK = 'SICK',
   PERMISSION = 'PERMISSION',
   ALPHA = 'ALPHA',
+}
+
+export enum AttendanceMatrixStatusCode {
+  MASUK = 'M',
+  PULANG = 'P',
+  PULANG_CROSS_MIDNIGHT = 'P+',
+  PULANG_NEXT_DAY = 'P+',
+  LUPA_ABSEN = 'X',
+  IZIN = 'I',
+  OFF = '-',
 }
 
 export enum PatrolStatus {
@@ -40,6 +59,11 @@ export enum CheckpointCondition {
   NORMAL = 'NORMAL',
   ABNORMAL = 'ABNORMAL',
   MAINTENANCE_REQUIRED = 'MAINTENANCE_REQUIRED',
+}
+
+export enum PatrolResultCondition {
+  AMAN_TERKENDALI = 'Situasi Aman Terkendali',
+  PERLU_TINDAK_LANJUT = 'Perlu Tindak Lanjut',
 }
 
 export enum SosStatus {
@@ -74,7 +98,17 @@ export interface User {
   phone: string;
   role: UserRole;
   division: Division;
+  securityRank?: SecurityRank | null;
   siteId?: string | null;
+  multiSiteIds?: string[];
+  workingHoursPerDay?: number;
+  // Payroll & financial attributes
+  gajiPokok?: number;
+  tunjangan?: number;
+  lemburPerJam?: number;
+  potonganBpjs?: number;
+  potonganAlpa?: number;
+  potonganLupaAbsen?: number;
   isActive: boolean;
   avatarUrl?: string | null;
   lastLoginAt?: string | null;
@@ -92,6 +126,17 @@ export interface Site {
   latitude: number;
   longitude: number;
   geofenceRadiusMeters: number;
+  // Shift Schedules per Site (Patroli.site parity)
+  shiftPagiMasuk?: string; // e.g. "07:00"
+  shiftPagiPulang?: string; // e.g. "15:00"
+  shiftSiangMasuk?: string; // e.g. "15:00"
+  shiftSiangPulang?: string; // e.g. "23:00"
+  shiftMalamMasuk?: string; // e.g. "23:00"
+  shiftMalamPulang?: string; // e.g. "07:00"
+  shiftStafMasuk?: string; // e.g. "08:00"
+  shiftStafPulang?: string; // e.g. "17:00"
+  shiftChiefMasuk?: string; // e.g. "08:00"
+  shiftChiefPulang?: string; // e.g. "17:00"
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -104,6 +149,8 @@ export interface Checkpoint {
   code: string;
   name: string;
   locationDescription?: string | null;
+  taskDescription?: string | null;
+  assetType?: string | null;
   latitude: number;
   longitude: number;
   allowedDistanceMeters: number;
@@ -202,6 +249,7 @@ export interface PatrolLogDetail {
   isWithinGeofence: boolean;
   photoUrl?: string | null;
   condition: CheckpointCondition;
+  resultStatus?: PatrolResultCondition | string;
   notes?: string | null;
   qrPayloadScanned: string;
   createdAt: string;
@@ -234,6 +282,7 @@ export interface EmergencyAlert {
   latitude: number;
   longitude: number;
   addressSnapshot?: string | null;
+  photoUrl?: string | null;
   message?: string | null;
   status: SosStatus;
   acknowledgedByUserId?: string | null;
@@ -243,6 +292,66 @@ export interface EmergencyAlert {
   notes?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface BroadcastMessage {
+  id: string;
+  siteId?: string | null;
+  content: string;
+  message?: string;
+  senderId: string;
+  senderName: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KomandanShiftLog {
+  id: string;
+  siteId: string;
+  userId: string;
+  shiftName: string;
+  personnelPresentCount: number;
+  notes: string;
+  createdAt: string;
+}
+
+export interface ChiefEvaluation {
+  id: string;
+  siteId: string;
+  chiefId: string;
+  komandanId: string;
+  komandanName: string;
+  disciplineScore: number;
+  coordinationScore: number;
+  attendanceScore: number;
+  incidentNotes?: string | null;
+  createdAt: string;
+}
+
+export interface StaffActivityLog {
+  id: string;
+  siteId: string;
+  userId: string;
+  activityType: string;
+  description: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface DriverTripLog {
+  id: string;
+  siteId: string;
+  userId: string;
+  vehicleType: string;
+  licensePlate: string;
+  odometerStart?: number | null;
+  odometerEnd?: number | null;
+  destination: string;
+  cargoNotes?: string | null;
+  status: string;
+  createdAt: string;
+  completedAt?: string | null;
 }
 
 export interface AuditLog {
@@ -256,6 +365,117 @@ export interface AuditLog {
   ipAddress?: string | null;
   userAgent?: string | null;
   createdAt: string;
+}
+
+// ----------------------------------------------------------------------------
+// MONITORING & MATRIX DTOs
+// ----------------------------------------------------------------------------
+
+export interface AttendanceMatrixDay {
+  day: number;
+  status: AttendanceMatrixStatusCode;
+  clockInTime?: string | null;
+  clockOutTime?: string | null;
+}
+
+export interface AttendanceMatrixRow {
+  userId: string;
+  fullName: string;
+  siteName: string;
+  division: Division;
+  role: UserRole;
+  days: Record<number, AttendanceMatrixDay>;
+  totalHadir: number;
+  totalLupaAbsen: number;
+  totalIzin: number;
+}
+
+export interface AttendanceMatrixResponse {
+  month: string; // YYYY-MM
+  siteId?: string;
+  division?: Division;
+  totalDays: number;
+  rows: AttendanceMatrixRow[];
+}
+
+export interface HourlyPatrolMatrixRow {
+  checkpointId: string;
+  assetName: string;
+  checkpointName?: string;
+  locationDescription: string;
+  locationDetail?: string;
+  category: Division | string;
+  hours: Record<number, boolean>; // hour 0-23 => boolean
+  hourlyStatus?: boolean[];
+  totalScanned: number;
+  totalScans?: number;
+}
+
+export interface HourlyPatrolMatrixResponse {
+  date: string; // YYYY-MM-DD
+  siteId: string;
+  siteName: string;
+  hours?: string[];
+  rows: HourlyPatrolMatrixRow[];
+}
+
+export interface PayrollReportRow extends PayrollSummaryRow {
+  nik?: string;
+  alpaCount?: number;
+  lemburHours?: number;
+  potonganBpjs?: number;
+  potonganAlpa?: number;
+  potonganLupaAbsen?: number;
+  gajiKotor?: number;
+}
+
+export interface PayrollSummaryRow {
+  userId: string;
+  fullName: string;
+  division: Division | string;
+  role?: UserRole | string;
+  siteName: string;
+  month?: number;
+  year?: number;
+  hadirCount: number;
+  lupaAbsenCount: number;
+  izinCount: number;
+  gajiPokok: number;
+  tunjangan: number;
+  lemburNominal: number;
+  totalPotongan: number;
+  gajiDiterima: number;
+}
+
+// ----------------------------------------------------------------------------
+// BULK IMPORT & TEMPLATE DTOs
+// ----------------------------------------------------------------------------
+
+export interface CheckpointImportRow {
+  namaAset: string;
+  kategori: Division | string;
+  lokasi: string;
+  deskripsiTugas?: string;
+  jenisAset?: string;
+  siteCodeOrName: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface PersonilImportRow {
+  nama: string;
+  username: string;
+  password?: string;
+  posisi: UserRole | string;
+  jabatan?: SecurityRank | string;
+  jamKerja?: number;
+  siteCodeOrName: string;
+  gajiPokok?: number;
+  tunjangan?: number;
+  lemburPerJam?: number;
+  potonganBpjs?: number;
+  potonganAlpa?: number;
+  potonganLupaAbsen?: number;
 }
 
 // ----------------------------------------------------------------------------
@@ -305,7 +525,8 @@ export interface ClockInRequestDto {
 }
 
 export interface ClockOutRequestDto {
-  attendanceId: string;
+  attendanceId?: string;
+  siteId?: string;
   latitude: number;
   longitude: number;
   photoBase64?: string;
@@ -327,13 +548,14 @@ export interface StartPatrolRequestDto {
 }
 
 export interface ScanCheckpointRequestDto {
-  patrolLogId: string;
+  patrolLogId?: string;
   checkpointId: string;
   qrPayload: string;
   latitude: number;
   longitude: number;
   photoBase64?: string;
-  condition: CheckpointCondition;
+  condition?: CheckpointCondition;
+  resultStatus?: PatrolResultCondition | string;
   notes?: string;
 }
 
@@ -347,6 +569,7 @@ export interface TriggerSosRequestDto {
   siteId: string;
   latitude: number;
   longitude: number;
+  photoBase64?: string;
   message?: string;
 }
 
@@ -359,6 +582,17 @@ export interface ResolveSosRequestDto {
   alertId: string;
   notes?: string;
   isFalseAlarm?: boolean;
+}
+
+// Export Center DTOs
+export interface ExportReportRequestDto {
+  type: 'ABSENSI_PERSONIL' | 'ABSENSI_AREA' | 'PATROLI_PERSONIL' | 'PATROLI_AREA';
+  startDate: string;
+  endDate: string;
+  siteId?: string;
+  division?: Division;
+  userId?: string;
+  format: 'PDF' | 'EXCEL' | 'CSV';
 }
 
 // HRIS Export DTO
@@ -407,6 +641,9 @@ export interface ServerToClientEvents {
   // Attendance
   'attendance:clock_in': (attendance: Attendance & { user: User; site: Site }) => void;
   'attendance:clock_out': (attendance: Attendance & { user: User; site: Site }) => void;
+
+  // Broadcast Message Announcement
+  'broadcast:new': (message: BroadcastMessage) => void;
 
   // Real-time GPS Tracking
   'gps:update': (payload: { userId: string; fullName: string; division: Division; siteId: string; latitude: number; longitude: number; updatedAt: string }) => void;

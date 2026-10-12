@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS checkpoints (
     name VARCHAR(100) NOT NULL,
     location_detail VARCHAR(150),
     task_description TEXT,
+    asset_type VARCHAR(100) DEFAULT 'General Asset',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -85,6 +86,14 @@ CREATE TABLE IF NOT EXISTS users (
     phone_number VARCHAR(30),
     role VARCHAR(50) NOT NULL, -- 'SUPERADMIN', 'HR_GA_MANAGER', 'CHIEF_SECURITY', 'CLEANING_SUPERVISOR', 'DRIVER_COORDINATOR', 'DANRU', 'PETUGAS'
     division VARCHAR(50) NOT NULL, -- 'Security', 'Cleaning Service', 'Driver', 'Management'
+    security_rank VARCHAR(50) DEFAULT 'ANGGOTA', -- 'ANGGOTA', 'KOMANDAN', 'CHIEF'
+    working_hours_per_day INT DEFAULT 8,
+    gaji_pokok NUMERIC(15,2) DEFAULT 0,
+    tunjangan NUMERIC(15,2) DEFAULT 0,
+    lembur_per_jam NUMERIC(15,2) DEFAULT 0,
+    potongan_bpjs NUMERIC(15,2) DEFAULT 0,
+    potongan_alpa NUMERIC(15,2) DEFAULT 0,
+    potongan_lupa_absen NUMERIC(15,2) DEFAULT 0,
     photo_key TEXT,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -281,7 +290,39 @@ CREATE TABLE IF NOT EXISTS broadcast_messages (
 );
 
 -- ============================================================================
--- 15. SPATIAL GEOFENCING FUNCTION
+-- 15. CHIEF EVALUATIONS (Supervisi Mutu & Penilaian Komandan oleh Chief)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS chief_evaluations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+    chief_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    komandan_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    discipline_score INT DEFAULT 100,
+    coordination_score INT DEFAULT 100,
+    attendance_score INT DEFAULT 100,
+    incident_notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_chief_eval_site ON chief_evaluations(site_id);
+
+-- ============================================================================
+-- 16. STAFF ACTIVITY LOGS (Laporan Kegiatan Staf Operasional Non-Lapangan)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS staff_activity_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    activity_type VARCHAR(100) NOT NULL,
+    description TEXT,
+    status VARCHAR(50) DEFAULT 'COMPLETED',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_staff_act_site ON staff_activity_logs(site_id);
+
+-- ============================================================================
+-- 17. SPATIAL GEOFENCING FUNCTION
 -- ============================================================================
 CREATE OR REPLACE FUNCTION is_within_site_geofence(
     p_site_id UUID,
