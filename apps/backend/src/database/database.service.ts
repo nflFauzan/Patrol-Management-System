@@ -63,11 +63,11 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         name,
         geofence_radius_meters,
         ST_Distance(
-          geofence_center,
+          coordinates,
           ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography
         ) AS distance_meters,
         ST_DWithin(
-          geofence_center,
+          coordinates,
           ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography,
           geofence_radius_meters
         ) AS is_within

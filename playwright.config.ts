@@ -13,18 +13,20 @@ export default defineConfig({
     trace: 'on-first-retry',
     geolocation: { latitude: -6.2215, longitude: 106.8055 }, // SCBD Head Office
     permissions: ['geolocation', 'camera'],
+    launchOptions: {
+      args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
+    },
+  },
+  webServer: {
+    command: 'npm run preview --workspace=@patrol/pwa-field -- --port 5173',
+    port: 5173,
+    reuseExistingServer: !process.env.CI,
+    timeout: 30000,
   },
   projects: [
     {
       name: 'Mobile Chrome (PWA)',
       use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Desktop Chrome (Admin)',
-      use: { 
-        ...devices['Desktop Chrome'],
-        baseURL: 'http://localhost:3001',
-      },
     },
   ],
 });

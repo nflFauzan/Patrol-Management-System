@@ -17,26 +17,34 @@ describe('AttendanceService (HRIS Attendance & Shift Engine)', () => {
     service = new AttendanceService(dbMock as any);
   });
 
-  describe('TC-ATT-01 & TC-ATT-02: Geofence Validation', () => {
-    it('TC-ATT-01: should successfully clock in when user is within geofence radius', async () => {
-      // Mock existing attendance check (not yet clocked in today)
+  describe('Geofence & Clock-In Business Logic', () => {
+    it('TC-ATT-01: should successfully clock in within geofence radius', async () => {
+      // 1. getTodayStatus returns null
       (dbMock.queryOne as jest.Mock)
-        .mockResolvedValueOnce(null) // getTodayStatus -> null
-        .mockResolvedValueOnce({ division: 'Security' }) // user division
+        .mockResolvedValueOnce(null)
+        // 2. user query
+        .mockResolvedValueOnce({ full_name: 'Ahmad Fauzi', division: 'SECURITY' })
+        // 3. site query
         .mockResolvedValueOnce({
-          id: 'shift-1',
-          start_time: '07:00:00',
-          grace_period_minutes: 15,
-        }) // shift
+          name: 'Head Office Sudirman',
+          shift_pagi_in: '07:00:00',
+          geofence_radius_meters: 100,
+        })
+        // 4. insert into attendances returning row
         .mockResolvedValueOnce({
-          id: 'att-1',
-          userId: 'user-1',
-          siteId: 'site-1',
-          clockInWithinGeofence: true,
+          id: 'att-01',
+          userId: 'user-01',
+          siteId: 'site-01',
+          date: '2026-10-12',
+          statusType: 1,
+          shiftName: 'Shift Pagi (07:00 - 15:00)',
+          clockInTime: '2026-10-12T06:55:00Z',
+          clockInLatitude: -6.2215,
+          clockInLongitude: 106.8055,
           clockInDistanceMeters: 35,
-          status: AttendanceStatus.IN,
+          isLate: false,
           lateMinutes: 0,
-        }); // insert returning
+        });
 
       (dbMock.checkSiteGeofence as jest.Mock).mockResolvedValueOnce({
         isWithin: true,
@@ -45,26 +53,73 @@ describe('AttendanceService (HRIS Attendance & Shift Engine)', () => {
         geofenceRadiusMeters: 100,
       });
 
-      const result = await service.clockIn('user-1', {
-        siteId: 'site-1',
+      const result = await service.clockIn('user-01', {
+        siteId: 'site-01',
         latitude: -6.2215,
         longitude: 106.8055,
       });
 
       expect(result).toBeDefined();
       expect(result.clockInWithinGeofence).toBe(true);
-      expect(dbMock.checkSiteGeofence).toHaveBeenCalledWith('site-1', -6.2215, 106.8055);
+      expect(result.lateMinutes).toBe(0);
+      expect(result.status).toBe(AttendanceStatus.IN);
+      expect(dbMock.checkSiteGeofence).toHaveBeenCalledWith('site-01', -6.2215, 106.8055);
     });
 
-    it('should throw BadRequestException if already clocked in today', async () => {
+    it('TC-ATT-02: should flag clock-in when outside geofence radius', async () => {
+      (dbMock.queryOne as jest.Mock)
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({ full_name: 'Ahmad Fauzi', division: 'SECURITY' })
+        .mockResolvedValueOnce({
+          name: 'Head Office Sudirman',
+          shift_pagi_in: '07:00:00',
+          geofence_radius_meters: 100,
+        })
+        .mockResolvedValueOnce({
+          id: 'att-02',
+          userId: 'user-01',
+          siteId: 'site-01',
+          date: '2026-10-12',
+          statusType: 1,
+          shiftName: 'Shift Pagi (07:00 - 15:00)',
+          clockInTime: '2026-10-12T06:55:00Z',
+          clockInLatitude: -6.2300,
+          clockInLongitude: 106.8100,
+          clockInDistanceMeters: 250, // > 100m
+          isLate: false,
+          lateMinutes: 0,
+        });
+
+      (dbMock.checkSiteGeofence as jest.Mock).mockResolvedValueOnce({
+        isWithin: false,
+        distanceMeters: 250,
+        siteName: 'Head Office Sudirman',
+        geofenceRadiusMeters: 100,
+      });
+
+      const result = await service.clockIn('user-01', {
+        siteId: 'site-01',
+        latitude: -6.2300,
+        longitude: 106.8100,
+      });
+
+      expect(result.clockInWithinGeofence).toBe(false);
+      expect(result.clockInDistanceMeters).toBe(250);
+    });
+
+    it('should reject duplicate clock-in on the same day', async () => {
       (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({
         id: 'att-existing',
-        clockInTime: '2026-10-12T07:00:00Z',
+        userId: 'user-01',
+        siteId: 'site-01',
+        date: '2026-10-12',
+        statusType: 1,
+        clockInTime: '2026-10-12T06:55:00Z',
       });
 
       await expect(
-        service.clockIn('user-1', {
-          siteId: 'site-1',
+        service.clockIn('user-01', {
+          siteId: 'site-01',
           latitude: -6.2215,
           longitude: 106.8055,
         }),
@@ -72,72 +127,44 @@ describe('AttendanceService (HRIS Attendance & Shift Engine)', () => {
     });
   });
 
-  describe('TC-ATT-05 & TC-ATT-06: Effective Working Hours & Overtime Calculation', () => {
-    it('TC-ATT-05: should calculate standard 8 hours without overtime', async () => {
-      const clockInTime = new Date(Date.now() - 480 * 60 * 1000).toISOString(); // 8 hours ago
-
-      (dbMock.queryOne as jest.Mock)
-        .mockResolvedValueOnce({
-          id: 'att-1',
-          site_id: 'site-1',
-          clock_in_time: clockInTime,
-          clock_out_time: null,
-        }) // existing attendance
-        .mockResolvedValueOnce({
-          id: 'att-1',
-          status: AttendanceStatus.OUT,
-          effectiveWorkingMinutes: 480,
-          isOvertime: false,
-          overtimeMinutes: 0,
-        }); // update returning
-
-      (dbMock.checkSiteGeofence as jest.Mock).mockResolvedValueOnce({
-        isWithin: true,
-        distanceMeters: 20,
-      });
-
-      const result = await service.clockOut('user-1', {
-        attendanceId: 'att-1',
-        latitude: -6.2215,
-        longitude: 106.8055,
-      });
-
-      expect(result.status).toBe(AttendanceStatus.OUT);
-      expect(result.isOvertime).toBe(false);
-      expect(result.overtimeMinutes).toBe(0);
+  describe('HRIS Calculation Formulas (Late & Overtime Math)', () => {
+    it('TC-ATT-03: should calculate 0 late minutes when arriving within grace period (15 mins)', () => {
+      const checkInTime = new Date('2026-10-12T07:12:00'); // 12 minutes after 07:00
+      const lateMins = service.calculateLateMinutes(checkInTime, '07:00:00', 15);
+      expect(lateMins).toBe(0);
     });
 
-    it('TC-ATT-06: should calculate overtime when working duration exceeds 480 minutes', async () => {
-      const clockInTime = new Date(Date.now() - 630 * 60 * 1000).toISOString(); // 10.5 hours ago (630 mins)
+    it('TC-ATT-04: should calculate late minutes exceeding grace period (35 mins late - 15 = 20 mins)', () => {
+      const checkInTime = new Date('2026-10-12T07:35:00'); // 35 minutes after 07:00
+      const lateMins = service.calculateLateMinutes(checkInTime, '07:00:00', 15);
+      expect(lateMins).toBe(20);
+    });
 
-      (dbMock.queryOne as jest.Mock)
-        .mockResolvedValueOnce({
-          id: 'att-1',
-          site_id: 'site-1',
-          clock_in_time: clockInTime,
-          clock_out_time: null,
-        })
-        .mockResolvedValueOnce({
-          id: 'att-1',
-          status: AttendanceStatus.OUT,
-          effectiveWorkingMinutes: 630,
-          isOvertime: true,
-          overtimeMinutes: 150, // 630 - 480 = 150 mins (2.5 hours)
-        });
+    it('TC-ATT-05: should calculate standard 8 hours without overtime', () => {
+      const clockIn = new Date('2026-10-12T07:00:00');
+      const clockOut = new Date('2026-10-12T15:00:00'); // Exactly 8 hours (480 mins)
+      const { durationMinutes, overtimeMinutes } = service.calculateWorkingHours(clockIn, clockOut);
 
-      (dbMock.checkSiteGeofence as jest.Mock).mockResolvedValueOnce({
-        isWithin: true,
-        distanceMeters: 15,
-      });
+      expect(durationMinutes).toBe(480);
+      expect(overtimeMinutes).toBe(0);
+    });
 
-      const result = await service.clockOut('user-1', {
-        attendanceId: 'att-1',
-        latitude: -6.2215,
-        longitude: 106.8055,
-      });
+    it('TC-ATT-06: should calculate overtime when shift exceeds 8 hours (10.5 hours -> 2.5 hours OT)', () => {
+      const clockIn = new Date('2026-10-12T07:00:00');
+      const clockOut = new Date('2026-10-12T17:30:00'); // 10.5 hours (630 mins)
+      const { durationMinutes, overtimeMinutes } = service.calculateWorkingHours(clockIn, clockOut);
 
-      expect(result.isOvertime).toBe(true);
-      expect(result.overtimeMinutes).toBe(150);
+      expect(durationMinutes).toBe(630);
+      expect(overtimeMinutes).toBe(150); // 150 minutes = 2.5 hours
+    });
+
+    it('TC-ATT-07: should correctly calculate night shift crossing midnight (23:00 to 07:00)', () => {
+      const clockIn = new Date('2026-10-12T23:00:00');
+      const clockOut = new Date('2026-10-13T07:00:00'); // Next day 07:00 (8 hours)
+      const { durationMinutes, overtimeMinutes } = service.calculateWorkingHours(clockIn, clockOut);
+
+      expect(durationMinutes).toBe(480);
+      expect(overtimeMinutes).toBe(0);
     });
   });
 });

@@ -9,9 +9,9 @@ export class SitesService {
   async findAll(): Promise<Site[]> {
     const rows = await this.db.query<any>(`
       SELECT 
-        id, code, name, description, address, city,
-        ST_Y(geofence_center::geometry) AS latitude,
-        ST_X(geofence_center::geometry) AS longitude,
+        id, name, address,
+        ST_Y(coordinates::geometry) AS latitude,
+        ST_X(coordinates::geometry) AS longitude,
         geofence_radius_meters AS "geofenceRadiusMeters",
         is_active AS "isActive",
         created_at AS "createdAt",
@@ -23,6 +23,8 @@ export class SitesService {
 
     return rows.map((r) => ({
       ...r,
+      code: r.id.substring(0, 8).toUpperCase(),
+      city: 'Indonesia',
       latitude: Number(r.latitude),
       longitude: Number(r.longitude),
     }));
@@ -32,9 +34,9 @@ export class SitesService {
     const row = await this.db.queryOne<any>(
       `
       SELECT 
-        id, code, name, description, address, city,
-        ST_Y(geofence_center::geometry) AS latitude,
-        ST_X(geofence_center::geometry) AS longitude,
+        id, name, address,
+        ST_Y(coordinates::geometry) AS latitude,
+        ST_X(coordinates::geometry) AS longitude,
         geofence_radius_meters AS "geofenceRadiusMeters",
         is_active AS "isActive",
         created_at AS "createdAt",
@@ -51,6 +53,8 @@ export class SitesService {
 
     return {
       ...row,
+      code: row.id.substring(0, 8).toUpperCase(),
+      city: 'Indonesia',
       latitude: Number(row.latitude),
       longitude: Number(row.longitude),
     };
@@ -59,27 +63,24 @@ export class SitesService {
   async create(data: Partial<Site>): Promise<Site> {
     const row = await this.db.queryOne<any>(
       `
-      INSERT INTO sites (code, name, description, address, city, geofence_center, geofence_radius_meters, is_active)
+      INSERT INTO sites (name, address, coordinates, geofence_radius_meters, is_active)
       VALUES (
-        $1, $2, $3, $4, $5,
-        ST_SetSRID(ST_MakePoint($7, $6), 4326)::geography,
-        $8, $9
+        $1, $2,
+        ST_SetSRID(ST_MakePoint($4, $3), 4326)::geography,
+        $5, $6
       )
       RETURNING 
-        id, code, name, description, address, city,
-        ST_Y(geofence_center::geometry) AS latitude,
-        ST_X(geofence_center::geometry) AS longitude,
+        id, name, address,
+        ST_Y(coordinates::geometry) AS latitude,
+        ST_X(coordinates::geometry) AS longitude,
         geofence_radius_meters AS "geofenceRadiusMeters",
         is_active AS "isActive",
         created_at AS "createdAt",
         updated_at AS "updatedAt"
     `,
       [
-        data.code,
         data.name,
-        data.description || null,
         data.address,
-        data.city,
         data.latitude,
         data.longitude,
         data.geofenceRadiusMeters || 100,
@@ -89,6 +90,8 @@ export class SitesService {
 
     return {
       ...row,
+      code: row.id.substring(0, 8).toUpperCase(),
+      city: 'Indonesia',
       latitude: Number(row.latitude),
       longitude: Number(row.longitude),
     };
