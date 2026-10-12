@@ -123,3 +123,63 @@ export const cleaningApi = {
   },
 };
 
+export const sosApi = {
+  trigger: async (payload: {
+    siteId: string;
+    latitude: number;
+    longitude: number;
+    message?: string;
+  }) => {
+    const res = await apiClient.post('/sos/trigger', payload);
+    return res.data;
+  },
+  getActive: async () => {
+    const res = await apiClient.get('/sos/active');
+    return res.data;
+  },
+  acknowledge: async (alertId: string) => {
+    const res = await apiClient.post(`/sos/${alertId}/acknowledge`);
+    return res.data;
+  },
+  resolve: async (alertId: string, resolutionNotes: string) => {
+    const res = await apiClient.post(`/sos/${alertId}/resolve`, { resolutionNotes });
+    return res.data;
+  },
+};
+
+export const driverApi = {
+  startTrip: async (payload: {
+    siteId: string;
+    vehiclePlateNumber: string;
+    vehicleType: string;
+    originLocation: string;
+    destinationLocation: string;
+    odometerStart: number;
+    tripNotes?: string;
+  }) => {
+    const res = await apiClient.post('/driver/trips/start', payload);
+    return res.data;
+  },
+  completeTrip: async (tripId: string, payload: { odometerEnd: number; tripNotes?: string }) => {
+    const res = await apiClient.post(`/driver/trips/${tripId}/complete`, payload);
+    return res.data;
+  },
+  getActiveTrip: async () => {
+    const res = await apiClient.get('/driver/trips/active');
+    return res.data;
+  },
+  getTrips: async (siteId?: string, limit?: number) => {
+    const res = await apiClient.get('/driver/trips', { params: { siteId, limit } });
+    return res.data;
+  },
+};
+
+export const reportsApi = {
+  getHrisAttendanceRecap: async (params?: { startDate?: string; endDate?: string; siteId?: string; division?: string }) => {
+    const res = await apiClient.get('/reports/hris-attendance', { params });
+    return res.data;
+  },
+};
+
+
+

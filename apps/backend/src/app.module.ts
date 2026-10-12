@@ -8,6 +8,7 @@ import { CheckpointsModule } from './modules/checkpoints/checkpoints.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
 import { PatrolModule } from './modules/patrol/patrol.module';
 import { CleaningModule } from './modules/cleaning/cleaning.module';
+import { DriverModule } from './modules/driver/driver.module';
 import { SosModule } from './modules/sos/sos.module';
 import { ReportsModule } from './modules/reports/reports.module';
 
@@ -25,6 +26,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     AttendanceModule,
     PatrolModule,
     CleaningModule,
+    DriverModule,
     SosModule,
     ReportsModule,
   ],

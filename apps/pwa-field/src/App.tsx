@@ -20,7 +20,8 @@ import { Division, Attendance, AttendanceStatus } from '@patrol/types';
 import { SelfieCameraModal } from './components/SelfieCameraModal';
 import { LeaveModal } from './components/LeaveModal';
 import { PatrolScanModal } from './components/PatrolScanModal';
-import { attendanceApi, sitesApi } from './services/api';
+import { DriverTripModal } from './components/DriverTripModal';
+import { attendanceApi, sitesApi, sosApi } from './services/api';
 
 export default function App() {
   const [currentDivision, setCurrentDivision] = useState<Division>(Division.SECURITY);
@@ -38,6 +39,7 @@ export default function App() {
   const [cameraMode, setCameraMode] = useState<'CLOCK_IN' | 'CLOCK_OUT'>('CLOCK_IN');
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
   const [isPatrolScanOpen, setIsPatrolScanOpen] = useState<boolean>(false);
+  const [isDriverModalOpen, setIsDriverModalOpen] = useState<boolean>(false);
   const [patrolProgress, setPatrolProgress] = useState<{ scanned: number; total: number }>({ scanned: 4, total: 7 });
 
   // SOS Panic Button State
@@ -197,9 +199,29 @@ export default function App() {
     } else if (sosCountdown === 0) {
       setSosTriggered(true);
       setSosCountdown(null);
+      const lat = gpsLocation?.lat || -6.2255;
+      const lng = gpsLocation?.lng || 106.8090;
+      sosApi.trigger({
+        siteId: DEFAULT_SITE_ID,
+        latitude: lat,
+        longitude: lng,
+        message: 'Bantuan darurat dibutuhkan di pos!',
+      }).catch((err) => {
+        console.warn('SOS backend call failed (offline simulation):', err);
+      });
     }
     return () => clearTimeout(timer);
-  }, [sosCountdown]);
+  }, [sosCountdown, gpsLocation]);
+
+  const cycleDivision = () => {
+    if (currentDivision === Division.SECURITY) {
+      setCurrentDivision(Division.CLEANING);
+    } else if (currentDivision === Division.CLEANING) {
+      setCurrentDivision(Division.DRIVER);
+    } else {
+      setCurrentDivision(Division.SECURITY);
+    }
+  };
 
   const isClockedIn = activeAttendance && activeAttendance.status === AttendanceStatus.IN && !activeAttendance.clockOutTime;
 
@@ -247,7 +269,7 @@ export default function App() {
 
           <div className="text-right">
             <button
-              onClick={() => setCurrentDivision(currentDivision === Division.SECURITY ? Division.CLEANING : Division.SECURITY)}
+              onClick={cycleDivision}
               className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 cursor-pointer transition active:scale-95"
               title="Klik untuk beralih divisi"
             >
@@ -363,42 +385,57 @@ export default function App() {
             <div className="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-white flex items-center space-x-2">
-                  {currentDivision === Division.SECURITY ? (
+                  {currentDivision === Division.SECURITY && (
                     <>
                       <QrCode className="w-4 h-4 text-blue-400" />
                       <span>Patroli Rute Checkpoint</span>
                     </>
-                  ) : (
+                  )}
+                  {currentDivision === Division.CLEANING && (
                     <>
                       <Sparkles className="w-4 h-4 text-emerald-400" />
                       <span>Checklist Sanitasi Area</span>
                     </>
                   )}
+                  {currentDivision === Division.DRIVER && (
+                    <>
+                      <Truck className="w-4 h-4 text-purple-400" />
+                      <span>Log Perjalanan Armada</span>
+                    </>
+                  )}
                 </h3>
                 <span className="text-xs text-blue-400 font-medium">
-                  {currentDivision === Division.SECURITY
-                    ? `Progress: ${patrolProgress.scanned}/${patrolProgress.total} Titik`
-                    : 'Sanitasi Berkala'}
+                  {currentDivision === Division.SECURITY && `Progress: ${patrolProgress.scanned}/${patrolProgress.total} Titik`}
+                  {currentDivision === Division.CLEANING && 'Sanitasi Berkala'}
+                  {currentDivision === Division.DRIVER && 'Armada Logistik'}
                 </span>
               </div>
 
               <p className="text-xs text-slate-400">
-                {currentDivision === Division.SECURITY
-                  ? 'Scan barcode QR Code pada setiap pos checkpoint di Head Office Sudirman.'
-                  : 'Pindai barcode QR Code di toilet / koridor untuk mengisi checklist kebersihan.'}
+                {currentDivision === Division.SECURITY && 'Scan barcode QR Code pada setiap pos checkpoint di Head Office Sudirman.'}
+                {currentDivision === Division.CLEANING && 'Pindai barcode QR Code di toilet / koridor untuk mengisi checklist kebersihan.'}
+                {currentDivision === Division.DRIVER && 'Pencatatan rute armada, nomor plat, tujuan distribusi, dan odometer kendaraan.'}
               </p>
 
-              <button
-                onClick={() => setIsPatrolScanOpen(true)}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition"
-              >
-                <QrCode className="w-5 h-5" />
-                <span>
-                  {currentDivision === Division.SECURITY
-                    ? 'Scan QR Checkpoint'
-                    : 'Pindai QR Sanitasi'}
-                </span>
-              </button>
+              {currentDivision === Division.DRIVER ? (
+                <button
+                  onClick={() => setIsDriverModalOpen(true)}
+                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition"
+                >
+                  <Truck className="w-5 h-5" />
+                  <span>Input Perjalanan Armada</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsPatrolScanOpen(true)}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition"
+                >
+                  <QrCode className="w-5 h-5" />
+                  <span>
+                    {currentDivision === Division.SECURITY ? 'Scan QR Checkpoint' : 'Pindai QR Sanitasi'}
+                  </span>
+                </button>
+              )}
             </div>
 
             {/* Emergency SOS Panic Button */}
@@ -487,6 +524,16 @@ export default function App() {
             leaveReason: data.leaveReason,
           });
           setStatusMessage({ type: 'success', text: 'Pengajuan Izin/Sakit berhasil dikirim!' });
+        }}
+      />
+
+      <DriverTripModal
+        isOpen={isDriverModalOpen}
+        onClose={() => setIsDriverModalOpen(false)}
+        siteId={DEFAULT_SITE_ID}
+        driverName="Budi Santoso"
+        onSuccess={(msg) => {
+          setStatusMessage({ type: 'success', text: msg });
         }}
       />
     </div>

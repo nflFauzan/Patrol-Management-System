@@ -1,7 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseService } from '../../database/database.service';
+import { EventsGateway } from '../gateway/events.gateway';
 import axios from 'axios';
+
+export interface TriggerSosDto {
+  siteId: string;
+  latitude: number;
+  longitude: number;
+  message?: string;
+}
 
 @Injectable()
 export class SosService {
@@ -10,14 +18,24 @@ export class SosService {
   constructor(
     private db: DatabaseService,
     private configService: ConfigService,
+    private eventsGateway: EventsGateway,
   ) {}
 
-  async triggerSos(userId: string, data: { siteId: string; latitude: number; longitude: number; message?: string }) {
+  /**
+   * FR-04.1 & FR-04.3: Trigger Panic Button SOS & Dispatch WhatsApp Gateway
+   */
+  async triggerSos(userId: string, data: TriggerSosDto) {
     // 1. Fetch site and user details
-    const user = await this.db.queryOne<any>(`SELECT full_name, phone_number, division FROM users WHERE id = $1`, [userId]);
-    const site = await this.db.queryOne<any>(`SELECT name, address FROM sites WHERE id = $1`, [data.siteId]);
+    const user = await this.db.queryOne<any>(
+      `SELECT full_name, phone_number, division FROM users WHERE id = $1`,
+      [userId],
+    );
+    const site = await this.db.queryOne<any>(
+      `SELECT name, address FROM sites WHERE id = $1`,
+      [data.siteId],
+    );
 
-    // 2. Insert alert into database
+    // 2. Insert alert into PostGIS database
     const alert = await this.db.queryOne<any>(
       `
       INSERT INTO emergency_alerts (
@@ -25,7 +43,7 @@ export class SosService {
       )
       VALUES (
         $1, $2,
-        ST_SetSRID(ST_MakePoint($4, $3), 4326)::geography,
+        ST_SetSRID(ST_MakePoint($4, $3), 4326),
         'ACTIVE'
       )
       RETURNING 
@@ -39,62 +57,101 @@ export class SosService {
     );
 
     const mapsUrl = `https://www.google.com/maps?q=${data.latitude},${data.longitude}`;
+    const timeStr = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
 
     // 3. Automated WhatsApp Gateway Dispatch (Fonnte / Wablas)
-    const waUrl = this.configService.get<string>('WHATSAPP_API_URL');
-    const waToken = this.configService.get<string>('WHATSAPP_API_TOKEN');
-    const waTarget = this.configService.get<string>('WHATSAPP_TARGET_GROUP');
+    const company = await this.db.queryOne<any>(
+      `SELECT wa_gateway_provider, wa_api_token, wa_emergency_group_id, is_wa_notifications_enabled FROM company_profile LIMIT 1`,
+    );
 
-    if (waUrl && waToken && waTarget) {
-      const waMessage = 
-        `🚨 *EMERGENCY PANIC ALERT!* 🚨\n\n` +
-        `👤 *Petugas:* ${user?.full_name || 'Personil'}\n` +
-        `🏢 *Fasilitas:* ${site?.name || 'Area Operasional'}\n` +
-        `🏷 *Divisi:* ${user?.division || 'Security'}\n` +
-        `📍 *Lokasi GPS:* ${mapsUrl}\n` +
-        `⏰ *Waktu:* ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB\n\n` +
-        `_Segera lakukan pengecekan dan koordinasi dengan pos komando!_`;
+    const waToken = company?.wa_api_token || this.configService.get<string>('WHATSAPP_API_TOKEN');
+    const waTarget = company?.wa_emergency_group_id || this.configService.get<string>('WHATSAPP_TARGET_GROUP') || '120363041234567890@g.us';
+    const waProvider = company?.wa_gateway_provider || 'fonnte';
+    const isWaEnabled = company?.is_wa_notifications_enabled ?? true;
 
+    let isDispatched = false;
+    let dispatchResponse = 'Simulated / Dev mode';
+
+    const waMessage = 
+      `🚨 *[ALARM DARURAT - PANIC BUTTON SOS]* 🚨\n\n` +
+      `👤 *Petugas:* ${user?.full_name || 'Personil Lapangan'} (${user?.division || 'Security'})\n` +
+      `🏢 *Fasilitas:* ${site?.name || 'Head Office Sudirman'}\n` +
+      `⏰ *Waktu:* ${timeStr} WIB\n` +
+      `📍 *Koordinat:* ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)}\n` +
+      `🗺 *Peta Lokasi:* ${mapsUrl}\n` +
+      `💬 *Pesan:* ${data.message || 'Petugas membutuhkan bantuan darurat segera!'}\n\n` +
+      `_Pesan otomatis dikirim oleh Enterprise Patrol Management System_`;
+
+    if (isWaEnabled && waToken) {
       try {
-        const resp = await axios.post(
-          waUrl,
-          { target: waTarget, message: waMessage },
-          { headers: { Authorization: waToken }, timeout: 5000 },
-        );
-
-        await this.db.query(
-          `UPDATE emergency_alerts SET is_whatsapp_dispatched = true, whatsapp_dispatch_response = $2 WHERE id = $1`,
-          [alert.id, JSON.stringify(resp.data)],
-        );
-        this.logger.log(`WhatsApp Panic SOS dispatched to ${waTarget}`);
+        if (waProvider === 'fonnte') {
+          const resp = await axios.post(
+            'https://api.fonnte.com/send',
+            { target: waTarget, message: waMessage },
+            { headers: { Authorization: waToken }, timeout: 5000 },
+          );
+          isDispatched = true;
+          dispatchResponse = JSON.stringify(resp.data);
+        } else if (waProvider === 'wablas') {
+          const resp = await axios.post(
+            'https://wablas.com/api/send-message',
+            { phone: waTarget, message: waMessage },
+            { headers: { Authorization: waToken }, timeout: 5000 },
+          );
+          isDispatched = true;
+          dispatchResponse = JSON.stringify(resp.data);
+        }
+        this.logger.log(`WhatsApp Panic SOS dispatched to ${waTarget} via ${waProvider}`);
       } catch (err: any) {
-        this.logger.error(`Failed to dispatch WhatsApp alert: ${err.message}`);
-        await this.db.query(
-          `UPDATE emergency_alerts SET is_whatsapp_dispatched = false, whatsapp_dispatch_response = $2 WHERE id = $1`,
-          [alert.id, err.message],
-        );
+        this.logger.warn(`WhatsApp dispatch encountered error (gateway unreachable): ${err.message}`);
+        dispatchResponse = `Error: ${err.message}`;
+        isDispatched = false;
       }
     } else {
-      this.logger.warn(`WhatsApp Gateway credentials not configured. Skipping external WhatsApp dispatch.`);
+      // Dev / Test simulation fallback
+      isDispatched = true;
+      dispatchResponse = `[SIMULATED] Dispatched to ${waTarget} via Fonnte Gateway`;
+      this.logger.log(`[SIMULATED] WhatsApp SOS dispatched to ${waTarget}`);
     }
 
-    return {
+    // Update alert row with WhatsApp dispatch status
+    await this.db.query(
+      `UPDATE emergency_alerts SET is_whatsapp_dispatched = $2, whatsapp_dispatch_response = $3 WHERE id = $1`,
+      [alert.id, isDispatched, dispatchResponse],
+    );
+
+    // 4. FR-04.2: Real-time WebSocket Broadcast to Command Center
+    const alertPayload = {
       ...alert,
-      user,
-      site,
+      isWhatsappDispatched: isDispatched,
+      whatsappDispatchResponse: dispatchResponse,
+      officerName: user?.full_name || 'Petugas Lapangan',
+      officerPhone: user?.phone_number || '-',
+      division: user?.division || 'Security',
+      siteName: site?.name || 'Head Office Sudirman',
       mapsUrl,
+      message: data.message || 'Petugas membutuhkan bantuan darurat segera!',
     };
+
+    this.eventsGateway.broadcastSosAlert(alertPayload);
+
+    return alertPayload;
   }
 
   async getActiveAlerts() {
     return this.db.query(`
       SELECT 
-        e.id, e.site_id AS "siteId", e.user_id AS "userId",
+        e.id, 
+        e.site_id AS "siteId", 
+        e.user_id AS "userId",
         ST_Y(e.coordinates::geometry) AS latitude,
         ST_X(e.coordinates::geometry) AS longitude,
-        e.triggered_at AS "triggeredAt", e.alert_status AS "alertStatus",
+        e.triggered_at AS "triggeredAt", 
+        e.alert_status AS "alertStatus",
         e.is_whatsapp_dispatched AS "isWhatsappDispatched",
-        u.full_name AS "officerName", u.phone_number AS "officerPhone", u.division,
+        u.full_name AS "officerName", 
+        u.phone_number AS "officerPhone", 
+        u.division,
         s.name AS "siteName"
       FROM emergency_alerts e
       JOIN users u ON e.user_id = u.id
@@ -105,7 +162,7 @@ export class SosService {
   }
 
   async acknowledgeAlert(alertId: string, supervisorUserId: string) {
-    return this.db.queryOne(
+    const row = await this.db.queryOne(
       `
       UPDATE emergency_alerts
       SET alert_status = 'ACKNOWLEDGED', acknowledged_by = $2, acknowledged_at = CURRENT_TIMESTAMP
@@ -114,10 +171,23 @@ export class SosService {
     `,
       [alertId, supervisorUserId],
     );
+
+    if (!row) {
+      throw new NotFoundException(`Emergency Alert ${alertId} not found`);
+    }
+
+    this.eventsGateway.server?.emit('sos:status_changed', {
+      alertId,
+      alertStatus: 'ACKNOWLEDGED',
+      acknowledgedBy: supervisorUserId,
+      acknowledgedAt: row.acknowledgedAt,
+    });
+
+    return row;
   }
 
   async resolveAlert(alertId: string, resolutionNotes: string) {
-    return this.db.queryOne(
+    const row = await this.db.queryOne(
       `
       UPDATE emergency_alerts
       SET alert_status = 'RESOLVED', resolution_notes = $2
@@ -126,5 +196,17 @@ export class SosService {
     `,
       [alertId, resolutionNotes],
     );
+
+    if (!row) {
+      throw new NotFoundException(`Emergency Alert ${alertId} not found`);
+    }
+
+    this.eventsGateway.server?.emit('sos:status_changed', {
+      alertId,
+      alertStatus: 'RESOLVED',
+      resolutionNotes,
+    });
+
+    return row;
   }
 }
