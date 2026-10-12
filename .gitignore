@@ -26,6 +26,7 @@ pnpm-debug.log*
 lerna-debug.log*
 test-results/
 playwright-report/
+.playwright-mcp/
 coverage/
 
 # Docker data volumes (if mounted locally)

@@ -11,6 +11,8 @@
     "dev:backend": "npm run dev --workspace=@patrol/backend",
     "dev:admin": "npm run dev --workspace=@patrol/web-admin",
     "dev:pwa": "npm run dev --workspace=@patrol/pwa-field",
+    "dev:start": "start-dev.bat",
+    "dev:stop": "stop-dev.bat",
     "dev": "npm run dev:backend",
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces --if-present",

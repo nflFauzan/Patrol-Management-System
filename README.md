@@ -48,6 +48,13 @@ npm install
 ```
 
 ### 4. Menjalankan Layanan (Development Mode)
+
+#### Opsi A: 1-Click Script (Windows Batch)
+Cukup jalankan file batch di root direktori:
+- **`start-dev.bat`**: Otomatis menjalankan Docker (PostGIS & Redis), mengompilasi `@patrol/types`, dan meluncurkan Backend API (:3000), Web Admin (:3001), serta PWA Field (:5173) dalam jendela terminal interaktif terpisah.
+- **`stop-dev.bat`**: Menutup semua jendela terminal dev, membebaskan port 3000, 3001, 5173, dan mematikan container Docker.
+
+#### Opsi B: Manual Terminal
 ```bash
 # Menjalankan Backend API (Port 3000)
 npm run dev:backend
