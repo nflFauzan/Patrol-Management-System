@@ -1,3 +1,5 @@
+@import 'leaflet/dist/leaflet.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,10 +7,63 @@
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+
+  /* PATROLI.SITE EXACT AREA THEME VARIABLES */
+  --area-primary: #1769aa;
+  --area-primary-dark: #104b7a;
+  --area-primary-soft: #eaf4ff;
+  --area-accent: #198754;
+  --area-text: #243447;
+  --area-muted: #6b7b8c;
+  --area-border: #d8e5f1;
+  --area-surface: #ffffff;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =====================================================
+   PATROLI.SITE EXACT AREA / SITE BUTTON & COMPONENT STYLES
+===================================================== */
+.btn-tambah-area {
+  background: linear-gradient(135deg, #1769aa, #104b7a);
+  color: #fff !important;
+  border: 0;
+  border-radius: 7px;
+  padding: 10px 16px;
+  box-shadow: 0 3px 8px rgba(16, 75, 122, .18);
+  transition: all .2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-tambah-area:hover {
+  background: linear-gradient(135deg, #145a91, #0b3d65);
+  transform: translateY(-1px);
+}
+
+.btn-simpan-area {
+  background: linear-gradient(135deg, #198754, #146c43);
+  border: 0;
+  color: #fff !important;
+  border-radius: 7px;
+  padding: 9px 17px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.btn-simpan-area:hover {
+  background: #146c43;
 }
