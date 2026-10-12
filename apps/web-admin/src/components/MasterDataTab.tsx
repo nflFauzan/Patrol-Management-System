@@ -13,9 +13,15 @@ import {
   QrCode,
   DollarSign,
   RefreshCw,
-  Search
+  Search,
+  Trash2,
+  KeyRound,
+  AlertTriangle,
+  X,
+  Check
 } from 'lucide-react';
 import { Division, SecurityRank, UserRole } from '@patrol/types';
+import { AreaManagementView, AreaSiteData } from './AreaManagementView';
 
 interface MasterDataTabProps {
   onOpenBulkImport: (type: 'CHECKPOINT' | 'PERSONIL') => void;
@@ -30,6 +36,38 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
 }) => {
   const [subTab, setSubTab] = useState<'AREA' | 'CHECKPOINT' | 'PERSONIL'>('AREA');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Delete protection modal state (Verifikasi Password Admin matching patroli.site)
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: 'AREA' | 'CHECKPOINT' | 'PERSONIL';
+    id: string;
+    name: string;
+  } | null>(null);
+  const [adminPasswordInput, setAdminPasswordInput] = useState<string>('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [actionSuccessMsg, setActionSuccessMsg] = useState<string | null>(null);
+
+  const handleConfirmDelete = () => {
+    if (!adminPasswordInput.trim()) {
+      setDeleteError('Verifikasi Password Admin wajib diisi!');
+      return;
+    }
+
+    if (!deleteTarget) return;
+
+    if (deleteTarget.type === 'AREA') {
+      setSites((prev) => prev.filter((s) => s.id !== deleteTarget.id));
+    } else if (deleteTarget.type === 'CHECKPOINT') {
+      setCheckpoints((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+    } else if (deleteTarget.type === 'PERSONIL') {
+      setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id));
+    }
+
+    setActionSuccessMsg(`Data "${deleteTarget.name}" berhasil dihapus permanen.`);
+    setDeleteTarget(null);
+    setAdminPasswordInput('');
+    setDeleteError(null);
+  };
 
   // Sample sites data matching DB
   const [sites, setSites] = useState<any[]>([
@@ -229,69 +267,24 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
         </div>
       </div>
 
-      {/* SUBTAB 1: AREA / SITE */}
+      {/* SUBTAB 1: AREA / SITE (100% PARITY DENGAN PATROLI.SITE DATA INDUK AREA) */}
       {subTab === 'AREA' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {sites.map((s) => (
-              <div key={s.id} className="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 space-y-3">
-                <div className="flex justify-between items-start border-b border-slate-200 pb-2">
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-sm">{s.name}</h3>
-                    <p className="text-xs text-slate-500 flex items-center mt-0.5">
-                      <MapPin className="w-3.5 h-3.5 mr-1 text-blue-600" />
-                      {s.address}
-                    </p>
-                  </div>
-                  <span className="text-[10px] font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                    Radius {s.geofenceRadiusMeters}m
-                  </span>
-                </div>
-
-                {/* Shift Hours Matrix for Site */}
-                <div className="space-y-1.5 text-xs bg-white p-3 rounded-xl border border-slate-200">
-                  <span className="font-bold text-slate-700 block text-[11px] mb-1">
-                    Konfigurasi Jam & Menit Shift Fasilitas:
-                  </span>
-                  <div className="grid grid-cols-2 gap-2 text-[11px]">
-                    <div className="flex justify-between border-b border-slate-100 py-0.5">
-                      <span className="text-slate-500">Shift Pagi:</span>
-                      <span className="font-semibold text-slate-900">{s.shiftPagiIn} - {s.shiftPagiOut}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-slate-100 py-0.5">
-                      <span className="text-slate-500">Shift Siang:</span>
-                      <span className="font-semibold text-slate-900">{s.shiftSiangIn} - {s.shiftSiangOut}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-slate-100 py-0.5">
-                      <span className="text-slate-500">Shift Malam:</span>
-                      <span className="font-semibold text-slate-900">{s.shiftMalamIn} - {s.shiftMalamOut}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-slate-100 py-0.5">
-                      <span className="text-slate-500">Shift Staf:</span>
-                      <span className="font-semibold text-slate-900">{s.shiftStaffIn} - {s.shiftStaffOut}</span>
-                    </div>
-                    <div className="flex justify-between py-0.5 col-span-2">
-                      <span className="text-slate-500">Shift Chief Manager:</span>
-                      <span className="font-semibold text-slate-900">{s.shiftChiefIn} - {s.shiftChiefOut}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center text-[11px] text-slate-500 pt-1">
-                  <span>GPS: {s.latitude}, {s.longitude}</span>
-                  <a
-                    href={`https://www.google.com/maps?q=${s.latitude},${s.longitude}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-600 hover:underline font-semibold"
-                  >
-                    Buka Peta Satelit ↗
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <AreaManagementView
+          sites={sites}
+          onAddSite={(newSite) => setSites((prev) => [newSite, ...prev])}
+          onUpdateSite={(updatedSite) =>
+            setSites((prev) => prev.map((s) => (s.id === updatedSite.id ? updatedSite : s)))
+          }
+          onDeleteSite={(siteId) => setSites((prev) => prev.filter((s) => s.id !== siteId))}
+          checkpointsCount={{
+            '11111111-1111-1111-1111-111111111111': 3,
+            '22222222-2222-2222-2222-222222222222': 1,
+          }}
+          personnelCount={{
+            '11111111-1111-1111-1111-111111111111': 4,
+            '22222222-2222-2222-2222-222222222222': 1,
+          }}
+        />
       )}
 
       {/* SUBTAB 2: CHECKPOINT / ASET */}
@@ -341,13 +334,24 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
                       <div>{c.locationDetail}</div>
                       <div className="text-[10px] text-slate-400 italic">{c.taskDescription}</div>
                     </td>
-                    <td className="py-2.5 px-3 text-center">
+                    <td className="py-2.5 px-3 text-center flex items-center justify-center space-x-1.5">
                       <button
                         onClick={() => onOpenPrintQr(c)}
                         className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
                         title="Cetak Label Kartu QR Code Checkpoint"
                       >
                         <Printer className="w-4 h-4 text-indigo-600" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDeleteTarget({ type: 'CHECKPOINT', id: c.id, name: c.name });
+                          setAdminPasswordInput('');
+                          setDeleteError(null);
+                        }}
+                        className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition"
+                        title="Hapus Checkpoint (Perlu Password Admin)"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
@@ -408,7 +412,7 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
                     <td className="py-2.5 px-3 font-semibold">Rp {u.gajiPokok?.toLocaleString('id-ID')}</td>
                     <td className="py-2.5 px-3">Rp {u.tunjangan?.toLocaleString('id-ID')}</td>
                     <td className="py-2.5 px-3 text-emerald-700 font-medium">Rp {u.lemburPerJam?.toLocaleString('id-ID')}</td>
-                    <td className="py-2.5 px-3 text-center">
+                    <td className="py-2.5 px-3 text-center flex items-center justify-center space-x-1.5">
                       <button
                         onClick={() => onOpenPrintIdCard(u)}
                         className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
@@ -416,11 +420,110 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
                       >
                         <Printer className="w-4 h-4 text-emerald-600" />
                       </button>
+                      <button
+                        onClick={() => {
+                          setDeleteTarget({ type: 'PERSONIL', id: u.id, name: u.fullName });
+                          setAdminPasswordInput('');
+                          setDeleteError(null);
+                        }}
+                        className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition"
+                        title="Hapus Personil (Perlu Password Admin)"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Action Toast Feedback */}
+      {actionSuccessMsg && (
+        <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 p-3 rounded-xl text-xs flex justify-between items-center shadow-sm">
+          <span className="font-semibold flex items-center space-x-1.5">
+            <Check className="w-4 h-4 text-emerald-600" />
+            <span>{actionSuccessMsg}</span>
+          </span>
+          <button onClick={() => setActionSuccessMsg(null)} className="text-slate-400 hover:text-slate-700">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Modal Verifikasi Password Admin (Matching patroli.site) */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                <AlertTriangle className="w-5 h-5 text-rose-600" />
+                <span>Konfirmasi Hapus Data Permanen</span>
+              </h3>
+              <button
+                onClick={() => {
+                  setDeleteTarget(null);
+                  setDeleteError(null);
+                }}
+                className="p-1 text-slate-400 hover:text-slate-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 space-y-1">
+              <p className="font-bold">
+                Apakah Anda yakin akan menghapus data {deleteTarget.type.toLowerCase()} ini?
+              </p>
+              <p className="font-mono text-slate-700">
+                Target: <strong>{deleteTarget.name}</strong>
+              </p>
+              <p className="text-[11px] text-rose-600 mt-1">
+                Tindakan ini tidak dapat dibatalkan. Masukkan Password Admin untuk memverifikasi otorisasi Anda.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+                <KeyRound className="w-3.5 h-3.5 text-blue-600" />
+                <span>Verifikasi Password Admin</span>
+              </label>
+              <input
+                type="password"
+                value={adminPasswordInput}
+                onChange={(e) => {
+                  setAdminPasswordInput(e.target.value);
+                  setDeleteError(null);
+                }}
+                placeholder="Masukkan password admin Anda..."
+                className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500 bg-slate-50"
+                autoFocus
+              />
+              {deleteError && (
+                <p className="text-[11px] text-rose-600 font-semibold">{deleteError}</p>
+              )}
+            </div>
+
+            <div className="flex space-x-2 pt-2">
+              <button
+                onClick={handleConfirmDelete}
+                className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-sm transition active:scale-95"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Ya, Hapus Data</span>
+              </button>
+              <button
+                onClick={() => {
+                  setDeleteTarget(null);
+                  setDeleteError(null);
+                }}
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition"
+              >
+                Batal
+              </button>
+            </div>
           </div>
         </div>
       )}
