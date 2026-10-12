@@ -58,3 +58,68 @@ export const sitesApi = {
     return res.data;
   },
 };
+
+export const checkpointsApi = {
+  getBySite: async (siteId: string, category?: string) => {
+    const res = await apiClient.get(`/checkpoints/site/${siteId}`, {
+      params: { category },
+    });
+    return res.data;
+  },
+  getByQrToken: async (qrToken: string) => {
+    const res = await apiClient.get(`/checkpoints/scan/${qrToken}`);
+    return res.data;
+  },
+};
+
+export const patrolApi = {
+  getLogs: async (siteId?: string, limit?: number) => {
+    const res = await apiClient.get('/patrol/logs', {
+      params: { siteId, limit },
+    });
+    return res.data;
+  },
+  recordScan: async (payload: {
+    siteId: string;
+    checkpointId?: string;
+    qrPayload?: string;
+    latitude: number;
+    longitude: number;
+    statusResult?: string;
+    notes?: string;
+    photoKey?: string;
+  }) => {
+    const res = await apiClient.post('/patrol/scan', payload);
+    return res.data;
+  },
+  getIncidents: async (siteId?: string) => {
+    const res = await apiClient.get('/patrol/incidents', {
+      params: { siteId },
+    });
+    return res.data;
+  },
+};
+
+export const cleaningApi = {
+  submitChecklist: async (payload: {
+    siteId: string;
+    checkpointId?: string;
+    qrPayload?: string;
+    floorCleaned: boolean;
+    trashEmptied: boolean;
+    suppliesRestocked: boolean;
+    odorNormal: boolean;
+    notes?: string;
+    photoKey?: string;
+  }) => {
+    const res = await apiClient.post('/cleaning/checklist', payload);
+    return res.data;
+  },
+  getChecklists: async (siteId?: string, limit?: number) => {
+    const res = await apiClient.get('/cleaning/checklists', {
+      params: { siteId, limit },
+    });
+    return res.data;
+  },
+};
+

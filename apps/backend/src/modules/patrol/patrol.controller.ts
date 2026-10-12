@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
-import { PatrolService } from './patrol.service';
+import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { PatrolService, RecordScanDto } from './patrol.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { User } from '@patrol/types';
@@ -20,17 +20,22 @@ export class PatrolController {
   @Post('scan')
   async recordScan(
     @CurrentUser() user: User,
-    @Body() body: {
-      siteId: string;
-      checkpointId: string;
-      qrPayload: string;
-      latitude: number;
-      longitude: number;
-      statusResult?: string;
-      notes?: string;
-      photoKey?: string;
-    },
+    @Body() body: RecordScanDto,
   ) {
     return this.patrolService.recordScan(user.id, body);
+  }
+
+  @Get('incidents')
+  async getIncidents(@Query('siteId') siteId?: string) {
+    return this.patrolService.getIncidentTickets(siteId);
+  }
+
+  @Patch('incidents/:id/resolve')
+  async resolveIncident(
+    @Param('id') ticketId: string,
+    @CurrentUser() user: User,
+    @Body('notes') notes: string,
+  ) {
+    return this.patrolService.resolveIncidentTicket(ticketId, user.id, notes || 'Insiden selesai ditangani.');
   }
 }

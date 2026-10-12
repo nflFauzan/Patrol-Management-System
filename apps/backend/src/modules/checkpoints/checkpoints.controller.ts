@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { CheckpointsService } from './checkpoints.service';
+import { CheckpointsService, CheckpointItem } from './checkpoints.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { UserRole, Division, Checkpoint } from '@patrol/types';
+import { UserRole } from '@patrol/types';
 
 @Controller('checkpoints')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -13,19 +13,24 @@ export class CheckpointsController {
   @Get('site/:siteId')
   async getBySite(
     @Param('siteId') siteId: string,
-    @Query('division') division?: Division,
-  ): Promise<Checkpoint[]> {
-    return this.checkpointsService.findBySite(siteId, division);
+    @Query('category') category?: string,
+  ): Promise<CheckpointItem[]> {
+    return this.checkpointsService.findBySite(siteId, category);
+  }
+
+  @Get('scan/:qrToken')
+  async getByQrToken(@Param('qrToken') qrToken: string): Promise<CheckpointItem> {
+    return this.checkpointsService.findByQrToken(qrToken);
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string): Promise<Checkpoint> {
+  async getById(@Param('id') id: string): Promise<CheckpointItem> {
     return this.checkpointsService.findById(id);
   }
 
   @Post()
   @Roles(UserRole.ADMIN_SUPER, UserRole.OPS_MANAGER, UserRole.SITE_SUPERVISOR)
-  async create(@Body() body: Partial<Checkpoint>): Promise<Checkpoint> {
+  async create(@Body() body: any): Promise<CheckpointItem> {
     return this.checkpointsService.create(body);
   }
 }

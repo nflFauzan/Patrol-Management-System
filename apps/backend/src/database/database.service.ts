@@ -94,33 +94,37 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Checkpoint proximity verification
+   * Checkpoint proximity verification (checks officer location relative to site coordinates)
    */
   async checkCheckpointProximity(checkpointId: string, latitude: number, longitude: number): Promise<{
     isWithin: boolean;
     distanceMeters: number;
     checkpointName: string;
-    allowedDistanceMeters: number;
+    siteName: string;
+    geofenceRadiusMeters: number;
   }> {
     const sql = `
       SELECT 
-        name,
-        allowed_distance_meters,
+        c.name AS checkpoint_name,
+        s.name AS site_name,
+        s.geofence_radius_meters,
         ST_Distance(
-          coordinates,
+          s.coordinates::geography,
           ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography
         ) AS distance_meters,
         ST_DWithin(
-          coordinates,
+          s.coordinates::geography,
           ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography,
-          allowed_distance_meters
+          s.geofence_radius_meters
         ) AS is_within
-      FROM checkpoints
-      WHERE id = $1 AND is_active = true
+      FROM checkpoints c
+      JOIN sites s ON c.site_id = s.id
+      WHERE c.id = $1 AND c.is_active = true
     `;
     const result = await this.queryOne<{
-      name: string;
-      allowed_distance_meters: number;
+      checkpoint_name: string;
+      site_name: string;
+      geofence_radius_meters: number;
       distance_meters: number;
       is_within: boolean;
     }>(sql, [checkpointId, longitude, latitude]);
@@ -132,8 +136,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     return {
       isWithin: result.is_within,
       distanceMeters: Math.round(Number(result.distance_meters)),
-      checkpointName: result.name,
-      allowedDistanceMeters: result.allowed_distance_meters,
+      checkpointName: result.checkpoint_name,
+      siteName: result.site_name,
+      geofenceRadiusMeters: result.geofence_radius_meters,
     };
   }
 }

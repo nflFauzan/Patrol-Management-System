@@ -19,6 +19,7 @@ import {
 import { Division, Attendance, AttendanceStatus } from '@patrol/types';
 import { SelfieCameraModal } from './components/SelfieCameraModal';
 import { LeaveModal } from './components/LeaveModal';
+import { PatrolScanModal } from './components/PatrolScanModal';
 import { attendanceApi, sitesApi } from './services/api';
 
 export default function App() {
@@ -36,6 +37,8 @@ export default function App() {
   const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
   const [cameraMode, setCameraMode] = useState<'CLOCK_IN' | 'CLOCK_OUT'>('CLOCK_IN');
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
+  const [isPatrolScanOpen, setIsPatrolScanOpen] = useState<boolean>(false);
+  const [patrolProgress, setPatrolProgress] = useState<{ scanned: number; total: number }>({ scanned: 4, total: 7 });
 
   // SOS Panic Button State
   const [sosCountdown, setSosCountdown] = useState<number | null>(null);
@@ -243,9 +246,13 @@ export default function App() {
           </div>
 
           <div className="text-right">
-            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-900/60 text-blue-300 border border-blue-700/50">
+            <button
+              onClick={() => setCurrentDivision(currentDivision === Division.SECURITY ? Division.CLEANING : Division.SECURITY)}
+              className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 cursor-pointer transition active:scale-95"
+              title="Klik untuk beralih divisi"
+            >
               {currentDivision}
-            </span>
+            </button>
             <div className="flex items-center justify-end space-x-1 text-[10px] text-slate-400 mt-1">
               <Navigation className="w-3 h-3 text-emerald-400" />
               <span>
@@ -353,28 +360,46 @@ export default function App() {
             </div>
 
             {/* Division-Specific Primary Actions */}
-            {currentDivision === Division.SECURITY && (
-              <div className="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-white flex items-center space-x-2">
-                    <QrCode className="w-4 h-4 text-blue-400" />
-                    <span>Patroli Rute Checkpoint</span>
-                  </h3>
-                  <span className="text-xs text-blue-400 font-medium">Progress: 4/7 Titik</span>
-                </div>
-
-                <p className="text-xs text-slate-400">
-                  Scan barcode QR Code pada setiap pos checkpoint di Head Office Sudirman.
-                </p>
-
-                <button
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition"
-                >
-                  <QrCode className="w-5 h-5" />
-                  <span>Scan QR Checkpoint</span>
-                </button>
+            <div className="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-white flex items-center space-x-2">
+                  {currentDivision === Division.SECURITY ? (
+                    <>
+                      <QrCode className="w-4 h-4 text-blue-400" />
+                      <span>Patroli Rute Checkpoint</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-emerald-400" />
+                      <span>Checklist Sanitasi Area</span>
+                    </>
+                  )}
+                </h3>
+                <span className="text-xs text-blue-400 font-medium">
+                  {currentDivision === Division.SECURITY
+                    ? `Progress: ${patrolProgress.scanned}/${patrolProgress.total} Titik`
+                    : 'Sanitasi Berkala'}
+                </span>
               </div>
-            )}
+
+              <p className="text-xs text-slate-400">
+                {currentDivision === Division.SECURITY
+                  ? 'Scan barcode QR Code pada setiap pos checkpoint di Head Office Sudirman.'
+                  : 'Pindai barcode QR Code di toilet / koridor untuk mengisi checklist kebersihan.'}
+              </p>
+
+              <button
+                onClick={() => setIsPatrolScanOpen(true)}
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition"
+              >
+                <QrCode className="w-5 h-5" />
+                <span>
+                  {currentDivision === Division.SECURITY
+                    ? 'Scan QR Checkpoint'
+                    : 'Pindai QR Sanitasi'}
+                </span>
+              </button>
+            </div>
 
             {/* Emergency SOS Panic Button */}
             <div className="bg-rose-950/30 border border-rose-900/60 rounded-2xl p-4 text-center space-y-3">
@@ -433,6 +458,22 @@ export default function App() {
         onClose={() => setIsCameraOpen(false)}
         onCapture={handlePhotoCaptured}
         title={cameraMode === 'CLOCK_IN' ? 'Swafoto Absen Masuk' : 'Swafoto Absen Pulang'}
+      />
+
+      <PatrolScanModal
+        isOpen={isPatrolScanOpen}
+        onClose={() => setIsPatrolScanOpen(false)}
+        siteId={DEFAULT_SITE_ID}
+        division={currentDivision}
+        gpsLocation={gpsLocation}
+        officerName="Ahmad Fauzi"
+        onSuccess={(msg) => {
+          setStatusMessage({ type: 'success', text: msg });
+          setPatrolProgress((prev) => ({
+            ...prev,
+            scanned: Math.min(prev.total, prev.scanned + 1),
+          }));
+        }}
       />
 
       <LeaveModal

@@ -1,58 +1,84 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
-import { Checkpoint, Division } from '@patrol/types';
+
+export interface CheckpointItem {
+  id: string;
+  siteId: string;
+  qrCodeToken: string;
+  category: string;
+  name: string;
+  locationDetail?: string;
+  taskDescription?: string;
+  latitude: number;
+  longitude: number;
+  allowedDistanceMeters: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 @Injectable()
 export class CheckpointsService {
   constructor(private db: DatabaseService) {}
 
-  async findBySite(siteId: string, division?: Division): Promise<Checkpoint[]> {
+  async findBySite(siteId: string, category?: string): Promise<CheckpointItem[]> {
     let query = `
       SELECT 
-        id, site_id AS "siteId", division, code, name, location_description AS "locationDescription",
-        ST_Y(coordinates::geometry) AS latitude,
-        ST_X(coordinates::geometry) AS longitude,
-        allowed_distance_meters AS "allowedDistanceMeters",
-        qr_payload AS "qrPayload",
-        sequence_order AS "sequenceOrder",
-        is_active AS "isActive",
-        created_at AS "createdAt",
-        updated_at AS "updatedAt"
-      FROM checkpoints
-      WHERE site_id = $1 AND is_active = true
+        c.id, 
+        c.site_id AS "siteId", 
+        c.qr_code_token AS "qrCodeToken", 
+        c.category, 
+        c.name, 
+        c.location_detail AS "locationDetail",
+        c.task_description AS "taskDescription",
+        ST_Y(s.coordinates::geometry) AS latitude,
+        ST_X(s.coordinates::geometry) AS longitude,
+        s.geofence_radius_meters AS "allowedDistanceMeters",
+        c.is_active AS "isActive",
+        c.created_at AS "createdAt",
+        c.updated_at AS "updatedAt"
+      FROM checkpoints c
+      JOIN sites s ON c.site_id = s.id
+      WHERE c.site_id = $1 AND c.is_active = true
     `;
     const params: any[] = [siteId];
 
-    if (division) {
-      query += ` AND division = $2`;
-      params.push(division);
+    if (category) {
+      query += ` AND c.category ILIKE $2`;
+      params.push(`%${category}%`);
     }
 
-    query += ` ORDER BY sequence_order ASC, name ASC`;
+    query += ` ORDER BY c.name ASC`;
 
     const rows = await this.db.query<any>(query, params);
     return rows.map((r) => ({
       ...r,
       latitude: Number(r.latitude),
       longitude: Number(r.longitude),
+      allowedDistanceMeters: Number(r.allowedDistanceMeters),
     }));
   }
 
-  async findById(id: string): Promise<Checkpoint> {
+  async findById(id: string): Promise<CheckpointItem> {
     const row = await this.db.queryOne<any>(
       `
       SELECT 
-        id, site_id AS "siteId", division, code, name, location_description AS "locationDescription",
-        ST_Y(coordinates::geometry) AS latitude,
-        ST_X(coordinates::geometry) AS longitude,
-        allowed_distance_meters AS "allowedDistanceMeters",
-        qr_payload AS "qrPayload",
-        sequence_order AS "sequenceOrder",
-        is_active AS "isActive",
-        created_at AS "createdAt",
-        updated_at AS "updatedAt"
-      FROM checkpoints
-      WHERE id = $1
+        c.id, 
+        c.site_id AS "siteId", 
+        c.qr_code_token AS "qrCodeToken", 
+        c.category, 
+        c.name, 
+        c.location_detail AS "locationDetail",
+        c.task_description AS "taskDescription",
+        ST_Y(s.coordinates::geometry) AS latitude,
+        ST_X(s.coordinates::geometry) AS longitude,
+        s.geofence_radius_meters AS "allowedDistanceMeters",
+        c.is_active AS "isActive",
+        c.created_at AS "createdAt",
+        c.updated_at AS "updatedAt"
+      FROM checkpoints c
+      JOIN sites s ON c.site_id = s.id
+      WHERE c.id = $1
     `,
       [id],
     );
@@ -65,51 +91,74 @@ export class CheckpointsService {
       ...row,
       latitude: Number(row.latitude),
       longitude: Number(row.longitude),
+      allowedDistanceMeters: Number(row.allowedDistanceMeters),
     };
   }
 
-  async create(data: Partial<Checkpoint>): Promise<Checkpoint> {
+  async findByQrToken(qrToken: string): Promise<CheckpointItem> {
     const row = await this.db.queryOne<any>(
       `
-      INSERT INTO checkpoints (
-        site_id, division, code, name, location_description, coordinates,
-        allowed_distance_meters, qr_payload, sequence_order, is_active
-      )
-      VALUES (
-        $1, $2, $3, $4, $5,
-        ST_SetSRID(ST_MakePoint($7, $6), 4326)::geography,
-        $8, $9, $10, $11
-      )
-      RETURNING 
-        id, site_id AS "siteId", division, code, name, location_description AS "locationDescription",
-        ST_Y(coordinates::geometry) AS latitude,
-        ST_X(coordinates::geometry) AS longitude,
-        allowed_distance_meters AS "allowedDistanceMeters",
-        qr_payload AS "qrPayload",
-        sequence_order AS "sequenceOrder",
-        is_active AS "isActive",
-        created_at AS "createdAt",
-        updated_at AS "updatedAt"
+      SELECT 
+        c.id, 
+        c.site_id AS "siteId", 
+        c.qr_code_token AS "qrCodeToken", 
+        c.category, 
+        c.name, 
+        c.location_detail AS "locationDetail",
+        c.task_description AS "taskDescription",
+        ST_Y(s.coordinates::geometry) AS latitude,
+        ST_X(s.coordinates::geometry) AS longitude,
+        s.geofence_radius_meters AS "allowedDistanceMeters",
+        c.is_active AS "isActive",
+        c.created_at AS "createdAt",
+        c.updated_at AS "updatedAt"
+      FROM checkpoints c
+      JOIN sites s ON c.site_id = s.id
+      WHERE c.qr_code_token = $1 AND c.is_active = true
     `,
-      [
-        data.siteId,
-        data.division || Division.SECURITY,
-        data.code,
-        data.name,
-        data.locationDescription || null,
-        data.latitude,
-        data.longitude,
-        data.allowedDistanceMeters || 30,
-        data.qrPayload || data.code,
-        data.sequenceOrder || 1,
-        data.isActive ?? true,
-      ],
+      [qrToken],
     );
+
+    if (!row) {
+      throw new NotFoundException(`Checkpoint with QR Code "${qrToken}" not found`);
+    }
 
     return {
       ...row,
       latitude: Number(row.latitude),
       longitude: Number(row.longitude),
+      allowedDistanceMeters: Number(row.allowedDistanceMeters),
     };
+  }
+
+  async create(data: {
+    siteId: string;
+    qrCodeToken: string;
+    category?: string;
+    name: string;
+    locationDetail?: string;
+    taskDescription?: string;
+    isActive?: boolean;
+  }): Promise<CheckpointItem> {
+    const row = await this.db.queryOne<any>(
+      `
+      INSERT INTO checkpoints (
+        site_id, qr_code_token, category, name, location_detail, task_description, is_active
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id
+    `,
+      [
+        data.siteId,
+        data.qrCodeToken,
+        data.category || 'Security',
+        data.name,
+        data.locationDetail || null,
+        data.taskDescription || null,
+        data.isActive ?? true,
+      ],
+    );
+
+    return this.findById(row.id);
   }
 }
