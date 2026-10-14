@@ -1,12 +1,14 @@
 'use client';
 
 import React from 'react';
-import { X, Printer, QrCode } from 'lucide-react';
+import { X, Printer, Shield } from 'lucide-react';
+import { QrCodeSvg } from '../lib/qrGenerator';
+import { CheckpointItem } from '../lib/DataContext';
 
 interface PrintQrModalProps {
   isOpen: boolean;
   onClose: () => void;
-  checkpoint: any;
+  checkpoint: CheckpointItem | null;
 }
 
 export const PrintQrModal: React.FC<PrintQrModalProps> = ({
@@ -16,53 +18,110 @@ export const PrintQrModal: React.FC<PrintQrModalProps> = ({
 }) => {
   if (!isOpen || !checkpoint) return null;
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex justify-between items-center border-b pb-3">
-          <h3 className="font-bold text-slate-900 text-sm">Label Barcode QR Checkpoint</h3>
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+      {/* Print Specific CSS to only print the single QR card */}
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #printable-single-qr,
+          #printable-single-qr * {
+            visibility: visible;
+          }
+          #printable-single-qr {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0 !important;
+            padding: 16px !important;
+            border: 3px solid #000 !important;
+            background-color: #f4e5dd !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="flex justify-between items-center border-b pb-3 no-print">
+          <div>
+            <h3 className="font-bold text-slate-900 text-sm">Cetak Barcode QR Checkpoint</h3>
+            <p className="text-[11px] text-slate-500">Format stiker cetak label aset / pos checkpoint</p>
+          </div>
           <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-700">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Printable Label Card */}
-        <div id="printable-qr-card" className="border-2 border-slate-900 rounded-2xl p-5 text-center space-y-3 bg-white">
-          <div className="border-b-2 border-slate-900 pb-2">
-            <h4 className="font-black text-sm uppercase text-slate-900 tracking-wider">PATROL MANAGEMENT SYSTEM</h4>
-            <p className="text-[10px] text-slate-500 font-bold uppercase">{checkpoint.siteName || 'HEAD OFFICE SUDIRMAN'}</p>
-          </div>
-
-          <div className="p-3 bg-slate-100 rounded-xl inline-block border border-slate-300">
-            {/* High visual QR placeholder with token */}
-            <div className="w-36 h-36 mx-auto bg-white border-2 border-slate-900 p-2 flex flex-col items-center justify-center relative">
-              <QrCode className="w-28 h-28 text-slate-950" />
+        {/* ========================================================
+            EXACT PARITY CARD: cetak-aset?kode_aset=...
+            Kotak solid border, 350px width, #f4e5dd background
+            ======================================================== */}
+        <div className="flex justify-center items-center py-2">
+          <div
+            id="printable-single-qr"
+            className="w-[350px] border-2 border-black bg-[#f4e5dd] p-4 text-center text-uppercase flex flex-col items-center shadow-md rounded-sm"
+            style={{ backgroundColor: '#f4e5dd' }}
+          >
+            {/* Scannable ISO QR Code */}
+            <div className="bg-white p-2 border border-black/30 rounded-xs flex items-center justify-center">
+              <QrCodeSvg
+                value={checkpoint.qrCodeToken || checkpoint.id}
+                size={270}
+                className="mx-auto"
+              />
             </div>
-            <p className="font-mono font-black text-xs text-slate-900 mt-1 tracking-widest">{checkpoint.qrCodeToken}</p>
-          </div>
 
-          <div>
-            <h5 className="font-extrabold text-sm text-slate-950 uppercase">{checkpoint.name}</h5>
-            <p className="text-xs text-slate-600 mt-0.5">{checkpoint.locationDetail}</p>
-            <p className="text-[10px] text-slate-400 mt-1 italic">Kategori: {checkpoint.category} • {checkpoint.assetType}</p>
-          </div>
+            <hr className="w-full my-3 border-t-2 border-black" />
 
-          <div className="border-t border-dashed border-slate-300 pt-2 text-[9px] text-slate-400 font-mono">
-            TEMPEL DI AREA PERIMETER • SCAN VIA APLIKASI SATPAM
+            {/* Label Information */}
+            <div className="text-[12px] font-bold text-slate-900 space-y-1 uppercase leading-tight">
+              <div className="flex justify-center mb-1">
+                <div className="w-10 h-10 rounded-full bg-[#007bff] text-white flex items-center justify-center font-black text-xs shadow-xs">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <div className="text-sm font-extrabold text-black tracking-wide">
+                {checkpoint.name}
+              </div>
+              <div className="text-xs font-semibold text-slate-800">
+                {checkpoint.category}
+              </div>
+              <div className="text-xs font-normal text-slate-700">
+                {checkpoint.locationDetail}
+              </div>
+              <div className="text-xs font-bold text-emerald-800">
+                {checkpoint.siteName}
+              </div>
+              <div className="text-[10px] font-mono text-slate-500 tracking-wider pt-1">
+                TOKEN: {checkpoint.qrCodeToken || checkpoint.id}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex space-x-2 pt-2">
+        {/* Modal Action Buttons */}
+        <div className="flex space-x-2 pt-2 border-t no-print">
           <button
-            onClick={() => window.print()}
-            className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-sm"
+            onClick={handlePrint}
+            className="flex-1 bg-[#28a745] hover:bg-[#218838] text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-sm transition active:scale-95"
           >
             <Printer className="w-4 h-4" />
-            <span>Cetak Thermal / PDF</span>
+            <span className="uppercase tracking-wide">Cetak QR Code</span>
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs"
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition"
           >
             Tutup
           </button>
