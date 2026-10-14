@@ -29,6 +29,10 @@ playwright-report/
 .playwright-mcp/
 coverage/
 
+# Temporary and unpacked files
+*.zip
+template_unzipped/
+
 # Docker data volumes (if mounted locally)
 postgres_data/
 redis_data/
