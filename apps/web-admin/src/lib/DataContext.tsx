@@ -55,6 +55,7 @@ interface DataContextType {
   updateSite: (site: AreaSiteData) => void;
   deleteSite: (id: string) => void;
   addCheckpoint: (cp: CheckpointItem) => void;
+  updateCheckpoint: (cp: CheckpointItem) => void;
   deleteCheckpoint: (id: string) => void;
   addUser: (user: UserItem) => void;
   deleteUser: (id: string) => void;
@@ -64,6 +65,8 @@ interface DataContextType {
   setBulkImportType: (type: 'CHECKPOINT' | 'PERSONIL' | null) => void;
   printQrTarget: any | null;
   setPrintQrTarget: (target: any | null) => void;
+  batchPrintConfig: { siteName: string; category: string; items: CheckpointItem[] } | null;
+  setBatchPrintConfig: (config: { siteName: string; category: string; items: CheckpointItem[] } | null) => void;
   printIdCardTarget: any | null;
   setPrintIdCardTarget: (target: any | null) => void;
 
@@ -201,6 +204,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [bulkImportType, setBulkImportType] = useState<'CHECKPOINT' | 'PERSONIL' | null>(null);
   const [printQrTarget, setPrintQrTarget] = useState<any | null>(null);
+  const [batchPrintConfig, setBatchPrintConfig] = useState<{ siteName: string; category: string; items: CheckpointItem[] } | null>(null);
   const [printIdCardTarget, setPrintIdCardTarget] = useState<any | null>(null);
 
   const [activeSosAlert, setActiveSosAlert] = useState<SosAlert | null>(null);
@@ -251,6 +255,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCheckpoints((prev) => [cp, ...prev]);
   };
 
+  const updateCheckpoint = (cp: CheckpointItem) => {
+    setCheckpoints((prev) => prev.map((c) => (c.id === cp.id ? cp : c)));
+  };
+
   const deleteCheckpoint = (id: string) => {
     setCheckpoints((prev) => prev.filter((c) => c.id !== id));
   };
@@ -273,6 +281,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateSite,
         deleteSite,
         addCheckpoint,
+        updateCheckpoint,
         deleteCheckpoint,
         addUser,
         deleteUser,
@@ -280,6 +289,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setBulkImportType,
         printQrTarget,
         setPrintQrTarget,
+        batchPrintConfig,
+        setBatchPrintConfig,
         printIdCardTarget,
         setPrintIdCardTarget,
         activeSosAlert,

@@ -4,6 +4,7 @@ import React from 'react';
 import { useData } from '../lib/DataContext';
 import { BulkImportModal } from './BulkImportModal';
 import { PrintQrModal } from './PrintQrModal';
+import { BatchPrintQrModal } from './BatchPrintQrModal';
 import { PrintIdCardModal } from './PrintIdCardModal';
 
 export const GlobalModals: React.FC = () => {
@@ -12,6 +13,8 @@ export const GlobalModals: React.FC = () => {
     setBulkImportType,
     printQrTarget,
     setPrintQrTarget,
+    batchPrintConfig,
+    setBatchPrintConfig,
     printIdCardTarget,
     setPrintIdCardTarget,
   } = useData();
@@ -35,6 +38,14 @@ export const GlobalModals: React.FC = () => {
           isOpen={!!printQrTarget}
           onClose={() => setPrintQrTarget(null)}
           checkpoint={printQrTarget}
+        />
+      )}
+
+      {batchPrintConfig && (
+        <BatchPrintQrModal
+          isOpen={!!batchPrintConfig}
+          onClose={() => setBatchPrintConfig(null)}
+          config={batchPrintConfig}
         />
       )}
 
