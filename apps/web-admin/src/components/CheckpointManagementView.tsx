@@ -11,9 +11,9 @@ import {
   Check,
   X,
   Search,
-  Plus,
-  QrCode,
-  KeyRound
+  KeyRound,
+  Shield,
+  Layers
 } from 'lucide-react';
 import { useData, CheckpointItem } from '../lib/DataContext';
 
@@ -22,9 +22,11 @@ export const CheckpointManagementView: React.FC = () => {
     sites,
     checkpoints,
     addCheckpoint,
+    updateCheckpoint,
     deleteCheckpoint,
     setBulkImportType,
     setPrintQrTarget,
+    setBatchPrintConfig,
   } = useData();
 
   // Filters & Pagination
@@ -34,23 +36,76 @@ export const CheckpointManagementView: React.FC = () => {
   const [pageSize, setPageSize] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Print Barcode selection state (header right)
+  // Header Batch Print selection state (matching patroli.site updateKategoriCetak & updatePrintLink)
   const [printSelectedArea, setPrintSelectedArea] = useState('');
   const [printSelectedCategory, setPrintSelectedCategory] = useState('');
 
   // Modals state
   const [isTambahModalOpen, setIsTambahModalOpen] = useState(false);
+  const [editingCheckpoint, setEditingCheckpoint] = useState<CheckpointItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CheckpointItem | null>(null);
   const [adminPassword, setAdminPassword] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Form Tambah Checkpoint state
-  const [formSiteName, setFormSiteName] = useState(sites[0]?.name || 'Site Proyek Demo');
-  const [formCategory, setFormCategory] = useState<'Security' | 'Cleaning Service' | 'Driver'>('Security');
-  const [formName, setFormName] = useState('');
-  const [formLocation, setFormLocation] = useState('');
-  const [formTask, setFormTask] = useState('');
+  // ==========================================================
+  // Form Tambah Checkpoint state (matching insert-aset.php & updateCheckpointForm)
+  // ==========================================================
+  const [tambahKategori, setTambahKategori] = useState<'Security' | 'Cleaning Service' | ''>('');
+  const [tambahNamaAset, setTambahNamaAset] = useState('');
+  const [tambahDeskripsiAset, setTambahDeskripsiAset] = useState('');
+  const [tambahLokasi, setTambahLokasi] = useState('');
+  const [tambahJenisAset, setTambahJenisAset] = useState('');
+  const [tambahLokasiArea, setTambahLokasiArea] = useState('');
+
+  // Dynamic placeholders based on category selection (100% exact parity with patroli.site JS)
+  const dynamicPlaceholders = useMemo(() => {
+    if (tambahKategori === 'Security') {
+      return {
+        nama: 'Nama Checkpoint: Pos Security / Pos Gerbang / Lobby',
+        deskripsi: 'Deskripsi Tugas: Patroli / Pemeriksaan Tamu / Pemeriksaan Area',
+        lokasi: 'Lokasi: Gerbang Utama / Lobby / Area Parkir',
+        jenis: 'Jenis Checkpoint: Keamanan / Patroli / Pemeriksaan',
+        disabled: false,
+      };
+    } else if (tambahKategori === 'Cleaning Service') {
+      return {
+        nama: 'Nama Checkpoint: Toilet / Lobby / Ruang Meeting',
+        deskripsi: 'Deskripsi Tugas: Membersihkan / Memeriksa Kebersihan / Mengisi Perlengkapan',
+        lokasi: 'Lokasi: Toilet Lantai 1 / Lobby / Ruang Meeting',
+        jenis: 'Jenis Checkpoint: Kebersihan / Toilet / Area Umum',
+        disabled: false,
+      };
+    }
+    return {
+      nama: 'Pilih Kategori Terlebih Dahulu',
+      deskripsi: 'Pilih Kategori Terlebih Dahulu',
+      lokasi: 'Pilih Kategori Terlebih Dahulu',
+      jenis: 'Pilih Kategori Terlebih Dahulu',
+      disabled: true,
+    };
+  }, [tambahKategori]);
+
+  // ==========================================================
+  // Form Edit Checkpoint state (matching aset_edit.php & aset_update.php)
+  // ==========================================================
+  const [editKategori, setEditKategori] = useState<'Security' | 'Cleaning Service' | 'Driver'>('Security');
+  const [editNamaAset, setEditNamaAset] = useState('');
+  const [editDeskripsiAset, setEditDeskripsiAset] = useState('');
+  const [editLokasi, setEditLokasi] = useState('');
+  const [editJenisAset, setEditJenisAset] = useState('');
+  const [editLokasiArea, setEditLokasiArea] = useState('');
+
+  // Open Edit Modal & preload existing data
+  const handleOpenEdit = (cp: CheckpointItem) => {
+    setEditingCheckpoint(cp);
+    setEditKategori(cp.category);
+    setEditNamaAset(cp.name);
+    setEditDeskripsiAset(cp.taskDescription);
+    setEditLokasi(cp.locationDetail);
+    setEditJenisAset(cp.assetType || (cp.category === 'Security' ? 'Keamanan' : 'Kebersihan'));
+    setEditLokasiArea(cp.siteName);
+  };
 
   // Filtered checkpoints
   const filteredCheckpoints = useMemo(() => {
@@ -78,27 +133,62 @@ export const CheckpointManagementView: React.FC = () => {
   // Submit Tambah Checkpoint
   const handleSaveTambah = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName.trim() || !formLocation.trim()) {
-      alert('Nama Aset dan Lokasi Aset wajib diisi!');
+    if (!tambahKategori) {
+      alert('Silakan pilih Kategori Checkpoint terlebih dahulu!');
+      return;
+    }
+    if (!tambahNamaAset.trim() || !tambahLokasi.trim()) {
+      alert('Nama Checkpoint dan Lokasi wajib diisi!');
       return;
     }
 
+    const selectedSite = sites.find((s) => s.name === tambahLokasiArea) || sites[0];
     const newCp: CheckpointItem = {
       id: `cp-${Date.now()}`,
-      qrCodeToken: `QR-${formSiteName.slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`,
-      name: formName.trim(),
-      locationDetail: formLocation.trim(),
-      category: formCategory,
-      taskDescription: formTask.trim() || 'Pemeriksaan rutin sesuai SOP fasilitas',
-      siteName: formSiteName,
+      qrCodeToken: `${Date.now().toString().slice(-4)}`,
+      name: tambahNamaAset.trim(),
+      locationDetail: tambahLokasi.trim(),
+      category: tambahKategori,
+      assetType: tambahJenisAset.trim() || (tambahKategori === 'Security' ? 'Keamanan' : 'Kebersihan'),
+      taskDescription: tambahDeskripsiAset.trim() || 'Pemeriksaan rutin sesuai SOP',
+      siteName: selectedSite?.name || 'Site Proyek Demo',
+      siteId: selectedSite?.id,
     };
 
     addCheckpoint(newCp);
     setIsTambahModalOpen(false);
-    setFormName('');
-    setFormLocation('');
-    setFormTask('');
+    // Reset form
+    setTambahKategori('');
+    setTambahNamaAset('');
+    setTambahDeskripsiAset('');
+    setTambahLokasi('');
+    setTambahJenisAset('');
+    setTambahLokasiArea('');
     setToastMessage(`Checkpoint "${newCp.name}" berhasil ditambahkan.`);
+  };
+
+  // Submit Update Checkpoint
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCheckpoint) return;
+    if (!editNamaAset.trim() || !editLokasi.trim()) {
+      alert('Nama Checkpoint dan Lokasi wajib diisi!');
+      return;
+    }
+
+    const updated: CheckpointItem = {
+      ...editingCheckpoint,
+      category: editKategori,
+      name: editNamaAset.trim(),
+      taskDescription: editDeskripsiAset.trim(),
+      locationDetail: editLokasi.trim(),
+      assetType: editJenisAset.trim(),
+      siteName: editLokasiArea || editingCheckpoint.siteName,
+    };
+
+    updateCheckpoint(updated);
+    setEditingCheckpoint(null);
+    setToastMessage(`Checkpoint "${updated.name}" berhasil diperbarui.`);
   };
 
   // Confirm Delete Checkpoint
@@ -117,6 +207,26 @@ export const CheckpointManagementView: React.FC = () => {
     setDeleteError(null);
   };
 
+  // Trigger Batch Print Modal matching cetak_qrcode.php
+  const handleTriggerBatchPrint = () => {
+    if (!printSelectedArea) {
+      alert('Silakan pilih Area / Site terlebih dahulu untuk cetak QR code batch!');
+      return;
+    }
+
+    const matched = checkpoints.filter((cp) => {
+      const matchSite = cp.siteName.toLowerCase() === printSelectedArea.toLowerCase();
+      const matchCat = printSelectedCategory ? cp.category.toLowerCase() === printSelectedCategory.toLowerCase() : true;
+      return matchSite && matchCat;
+    });
+
+    setBatchPrintConfig({
+      siteName: printSelectedArea,
+      category: printSelectedCategory || 'Semua Kategori',
+      items: matched,
+    });
+  };
+
   return (
     <div className="w-full space-y-4">
       {/* Toast Notification */}
@@ -133,15 +243,23 @@ export const CheckpointManagementView: React.FC = () => {
       )}
 
       {/* ========================================================
-          HEADER CARD: 100% PARITY DENGAN SCREENSHOT REFERENSI
+          HEADER CARD: 100% EXACT PARITY DENGAN patroli.site
           ======================================================== */}
       <div className="bg-[#007bff] text-white p-4 rounded-t-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-sm">
         {/* KIRI: TOMBOL CHECKPOINT & IMPORT */}
         <div className="flex items-center flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setIsTambahModalOpen(true)}
-            className="px-3 py-2 bg-[#212529] hover:bg-[#1a1e21] text-white font-bold rounded-lg text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-95"
+            onClick={() => {
+              setTambahKategori('');
+              setTambahNamaAset('');
+              setTambahDeskripsiAset('');
+              setTambahLokasi('');
+              setTambahJenisAset('');
+              setTambahLokasiArea(sites[0]?.name || '');
+              setIsTambahModalOpen(true);
+            }}
+            className="px-3 py-2 bg-[#212529] hover:bg-[#1a1e21] text-white font-bold rounded-lg text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-95 cursor-pointer"
           >
             <Building2 className="w-4 h-4 text-white" />
             <span className="tracking-wide uppercase">TAMBAH CHECKPOINT</span>
@@ -150,7 +268,7 @@ export const CheckpointManagementView: React.FC = () => {
           <button
             type="button"
             onClick={() => setBulkImportType('CHECKPOINT')}
-            className="px-3 py-2 bg-[#ffc107] hover:bg-[#e0a800] text-slate-900 font-bold rounded-lg text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-95"
+            className="px-3 py-2 bg-[#ffc107] hover:bg-[#e0a800] text-slate-900 font-bold rounded-lg text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-95 cursor-pointer"
           >
             <Upload className="w-4 h-4 text-slate-900" />
             <span className="tracking-wide uppercase">IMPORT CHECKPOINT</span>
@@ -162,10 +280,13 @@ export const CheckpointManagementView: React.FC = () => {
           <div className="flex items-center flex-wrap justify-center gap-2">
             <select
               value={printSelectedArea}
-              onChange={(e) => setPrintSelectedArea(e.target.value)}
+              onChange={(e) => {
+                setPrintSelectedArea(e.target.value);
+                setPrintSelectedCategory('');
+              }}
               className="bg-white text-slate-800 text-xs rounded-lg px-3 py-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-300 w-48 font-medium"
             >
-              <option value="" disabled>PILIH AREA / SITE</option>
+              <option value="">PILIH AREA / SITE</option>
               {sites.map((s) => (
                 <option key={s.id} value={s.name}>{s.name}</option>
               ))}
@@ -184,11 +305,9 @@ export const CheckpointManagementView: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => {
-                const targetCp = checkpoints.find((c) => !printSelectedArea || c.siteName === printSelectedArea) || checkpoints[0];
-                setPrintQrTarget(targetCp);
-              }}
-              className="px-3 py-2 bg-[#28a745] hover:bg-[#218838] text-white font-bold rounded-lg text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-95"
+              onClick={handleTriggerBatchPrint}
+              disabled={!printSelectedArea}
+              className="px-3 py-2 bg-[#28a745] hover:bg-[#218838] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-lg text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-95 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span className="tracking-wide uppercase">CETAK CHECKPOINT</span>
@@ -203,7 +322,7 @@ export const CheckpointManagementView: React.FC = () => {
       </div>
 
       {/* ========================================================
-          TABLE WRAPPER: EXACT STYLING FROM SCREENSHOT
+          TABLE WRAPPER: EXACT STYLING & PARITY FROM patroli.site
           ======================================================== */}
       <div className="bg-white border border-[#007bff]/40 rounded-b-xl shadow-xs p-4 space-y-4 -mt-4">
         {/* TOP CONTROLS: SHOW ENTRIES & SEARCH */}
@@ -246,7 +365,7 @@ export const CheckpointManagementView: React.FC = () => {
           <table className="w-full text-xs text-left border-collapse">
             <thead>
               <tr className="bg-[#007bff] text-white text-center font-bold">
-                {/* FILTER SEMUA LOKASI */}
+                {/* FILTER SEMUA LOKASI (RED BORDER SELECT) */}
                 <th className="py-2 px-3 border-r border-[#007bff]/50 w-56">
                   <select
                     value={filterLokasi}
@@ -263,7 +382,7 @@ export const CheckpointManagementView: React.FC = () => {
                   </select>
                 </th>
 
-                {/* FILTER SEMUA KATEGORI */}
+                {/* FILTER SEMUA KATEGORI (BLUE BORDER SELECT) */}
                 <th className="py-2 px-3 border-r border-[#007bff]/50 w-44">
                   <select
                     value={filterKategori}
@@ -338,7 +457,7 @@ export const CheckpointManagementView: React.FC = () => {
 
                     <td className="py-3 px-3 text-center">
                       <div className="inline-flex items-center rounded-md shadow-xs" role="group">
-                        {/* Hapus Button (Red) */}
+                        {/* Hapus Button (Red #dc3545) */}
                         <button
                           type="button"
                           onClick={() => {
@@ -346,27 +465,27 @@ export const CheckpointManagementView: React.FC = () => {
                             setAdminPassword('');
                             setDeleteError(null);
                           }}
-                          className="px-2 py-1.5 bg-[#dc3545] hover:bg-[#c82333] text-white rounded-l text-xs font-bold transition"
+                          className="px-2 py-1.5 bg-[#dc3545] hover:bg-[#c82333] text-white rounded-l text-xs font-bold transition cursor-pointer"
                           title="Hapus Checkpoint"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
 
-                        {/* Edit Button (Cyan) */}
+                        {/* Edit Button (Cyan #17a2b8) */}
                         <button
                           type="button"
-                          onClick={() => alert(`Edit Checkpoint: ${cp.name}`)}
-                          className="px-2 py-1.5 bg-[#17a2b8] hover:bg-[#138496] text-white text-xs font-bold transition border-l border-white/20"
+                          onClick={() => handleOpenEdit(cp)}
+                          className="px-2 py-1.5 bg-[#17a2b8] hover:bg-[#138496] text-white text-xs font-bold transition border-l border-white/20 cursor-pointer"
                           title="Edit Checkpoint"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
 
-                        {/* Cetak QR Barcode (Blue) */}
+                        {/* Cetak QR Barcode (Blue #007bff) */}
                         <button
                           type="button"
                           onClick={() => setPrintQrTarget(cp)}
-                          className="px-2 py-1.5 bg-[#007bff] hover:bg-[#0069d9] text-white rounded-r text-xs font-bold transition border-l border-white/20"
+                          className="px-2 py-1.5 bg-[#007bff] hover:bg-[#0069d9] text-white rounded-r text-xs font-bold transition border-l border-white/20 cursor-pointer"
                           title="Cetak Barcode QR Checkpoint"
                         >
                           <Printer className="w-3.5 h-3.5" />
@@ -392,7 +511,7 @@ export const CheckpointManagementView: React.FC = () => {
               type="button"
               disabled={currentPage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1 border border-slate-300 rounded text-slate-700 disabled:opacity-40 hover:bg-slate-50 text-xs"
+              className="px-3 py-1 border border-slate-300 rounded text-slate-700 disabled:opacity-40 hover:bg-slate-50 text-xs cursor-pointer"
             >
               PREVIOUS
             </button>
@@ -403,7 +522,7 @@ export const CheckpointManagementView: React.FC = () => {
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1 border border-slate-300 rounded text-slate-700 disabled:opacity-40 hover:bg-slate-50 text-xs"
+              className="px-3 py-1 border border-slate-300 rounded text-slate-700 disabled:opacity-40 hover:bg-slate-50 text-xs cursor-pointer"
             >
               NEXT
             </button>
@@ -412,34 +531,254 @@ export const CheckpointManagementView: React.FC = () => {
       </div>
 
       {/* ========================================================
-          MODAL TAMBAH CHECKPOINT
+          MODAL TAMBAH CHECKPOINT (100% PARITY #exampleModalCenter)
           ======================================================== */}
       {isTambahModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3">
-          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="bg-[#007bff] text-white px-5 py-4 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Header: Green bg-success text-light */}
+            <div className="bg-[#28a745] text-white px-5 py-3.5 flex items-center justify-between">
               <h5 className="font-bold text-sm tracking-wide flex items-center space-x-2 text-white">
                 <Building2 className="w-4 h-4 text-white" />
-                <span>Form Tambah Checkpoint / Aset</span>
+                <span>Tambah Checkpoint</span>
               </h5>
               <button
                 type="button"
                 onClick={() => setIsTambahModalOpen(false)}
-                className="text-white hover:text-white/80 font-bold text-xl leading-none"
+                className="text-white hover:text-white/80 font-bold text-xl leading-none cursor-pointer"
               >
                 ×
               </button>
             </div>
 
-            <form onSubmit={handleSaveTambah} className="p-5 space-y-4">
+            <form onSubmit={handleSaveTambah} className="p-5 space-y-3.5 text-xs">
+              {/* Kategori Checkpoint */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Pilih Area / Site Fasilitas
+                <label className="block font-bold text-slate-700 mb-1">
+                  Kategori Checkpoint <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={formSiteName}
-                  onChange={(e) => setFormSiteName(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                  value={tambahKategori}
+                  onChange={(e) => setTambahKategori(e.target.value as any)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium"
+                >
+                  <option value="">Pilih Kategori</option>
+                  <option value="Security">Security</option>
+                  <option value="Cleaning Service">Cleaning Service</option>
+                </select>
+              </div>
+
+              {/* Nama Checkpoint */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Nama Checkpoint <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={50}
+                  disabled={dynamicPlaceholders.disabled}
+                  value={tambahNamaAset}
+                  onChange={(e) => setTambahNamaAset(e.target.value)}
+                  placeholder={dynamicPlaceholders.nama}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs text-slate-800 disabled:bg-slate-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Deskripsi Tugas */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Deskripsi Tugas <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={50}
+                  disabled={dynamicPlaceholders.disabled}
+                  value={tambahDeskripsiAset}
+                  onChange={(e) => setTambahDeskripsiAset(e.target.value)}
+                  placeholder={dynamicPlaceholders.deskripsi}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs text-slate-800 disabled:bg-slate-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Lokasi */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Lokasi <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={50}
+                  disabled={dynamicPlaceholders.disabled}
+                  value={tambahLokasi}
+                  onChange={(e) => setTambahLokasi(e.target.value)}
+                  placeholder={dynamicPlaceholders.lokasi}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs text-slate-800 disabled:bg-slate-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Jenis Aset */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Jenis Aset <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={50}
+                  disabled={dynamicPlaceholders.disabled}
+                  value={tambahJenisAset}
+                  onChange={(e) => setTambahJenisAset(e.target.value)}
+                  placeholder={dynamicPlaceholders.jenis}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs text-slate-800 disabled:bg-slate-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Pilih Lokasi Area */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Pilih Lokasi Area <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required
+                  disabled={dynamicPlaceholders.disabled}
+                  value={tambahLokasiArea}
+                  onChange={(e) => setTambahLokasiArea(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs bg-white text-slate-800 disabled:bg-slate-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500 font-medium"
+                >
+                  <option value="">Pilih Area Terlebih Dahulu</option>
+                  {sites.map((s) => (
+                    <option key={s.id} value={s.name}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end items-center space-x-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => setIsTambahModalOpen(false)}
+                  className="px-4 py-2 bg-slate-500 hover:bg-slate-600 text-white font-bold rounded-md text-xs cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  disabled={dynamicPlaceholders.disabled}
+                  className="px-4 py-2 bg-[#28a745] hover:bg-[#218838] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-md text-xs shadow-sm cursor-pointer"
+                >
+                  Simpan Checkpoint
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          MODAL EDIT CHECKPOINT (100% PARITY aset_edit.php)
+          ======================================================== */}
+      {editingCheckpoint && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Header: Cyan bg-[#17a2b8] text-white */}
+            <div className="bg-[#17a2b8] text-white px-5 py-3.5 flex items-center justify-between">
+              <h5 className="font-bold text-sm tracking-wide flex items-center space-x-2 text-white">
+                <Pencil className="w-4 h-4 text-white" />
+                <span>Edit Checkpoint</span>
+              </h5>
+              <button
+                type="button"
+                onClick={() => setEditingCheckpoint(null)}
+                className="text-white hover:text-white/80 font-bold text-xl leading-none cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="p-5 space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Kategori Checkpoint <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required
+                  value={editKategori}
+                  onChange={(e) => setEditKategori(e.target.value as any)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium"
+                >
+                  <option value="Security">Security</option>
+                  <option value="Cleaning Service">Cleaning Service</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Nama Checkpoint <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={50}
+                  value={editNamaAset}
+                  onChange={(e) => setEditNamaAset(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Deskripsi Tugas <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={50}
+                  value={editDeskripsiAset}
+                  onChange={(e) => setEditDeskripsiAset(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Lokasi <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={50}
+                  value={editLokasi}
+                  onChange={(e) => setEditLokasi(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Jenis Aset <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={50}
+                  value={editJenisAset}
+                  onChange={(e) => setEditJenisAset(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Pilih Lokasi Area <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required
+                  value={editLokasiArea}
+                  onChange={(e) => setEditLokasiArea(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-xs bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium"
                 >
                   {sites.map((s) => (
                     <option key={s.id} value={s.name}>{s.name}</option>
@@ -447,75 +786,19 @@ export const CheckpointManagementView: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Kategori Divisi
-                </label>
-                <select
-                  value={formCategory}
-                  onChange={(e) => setFormCategory(e.target.value as any)}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Security">Security (Patroli Rute Satpam)</option>
-                  <option value="Cleaning Service">Cleaning Service (Checklist Kebersihan)</option>
-                  <option value="Driver">Driver (Logistik Kendaraan)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Nama Aset / Pos Checkpoint
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="Contoh: Toilet Lobby, Pos Gerbang Barat, Ruang Server"
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Detail Lokasi Penempelan Stiker QR
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formLocation}
-                  onChange={(e) => setFormLocation(e.target.value)}
-                  placeholder="Contoh: Lantai 1 Sayap Kanan Dinding Pintu Masuk"
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Instruksi / Deskripsi Tugas Petugas Saat Scan
-                </label>
-                <textarea
-                  rows={3}
-                  value={formTask}
-                  onChange={(e) => setFormTask(e.target.value)}
-                  placeholder="Contoh: Bersihkan kloset, wastafel, cek suhu AC, dan pastikan pintu terkunci."
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="flex justify-end items-center space-x-2 pt-2 border-t">
+              <div className="flex justify-end items-center space-x-2 pt-3 border-t">
                 <button
                   type="button"
-                  onClick={() => setIsTambahModalOpen(false)}
-                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs"
+                  onClick={() => setEditingCheckpoint(null)}
+                  className="px-4 py-2 bg-slate-500 hover:bg-slate-600 text-white font-bold rounded-md text-xs cursor-pointer"
                 >
-                  Batal
+                  Close
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#007bff] hover:bg-[#0069d9] text-white font-bold rounded-lg text-xs shadow-sm"
+                  className="px-4 py-2 bg-[#17a2b8] hover:bg-[#138496] text-white font-bold rounded-md text-xs shadow-sm cursor-pointer"
                 >
-                  Simpan Checkpoint
+                  Update Checkpoint
                 </button>
               </div>
             </form>
@@ -528,7 +811,7 @@ export const CheckpointManagementView: React.FC = () => {
           ======================================================== */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border-0 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl border-0 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="bg-[#dc3545] text-white px-5 py-3.5 flex items-center justify-between">
               <h5 className="font-bold text-sm tracking-wide flex items-center space-x-2 text-white">
                 <Trash2 className="w-4 h-4 text-white" />
@@ -541,7 +824,7 @@ export const CheckpointManagementView: React.FC = () => {
                   setAdminPassword('');
                   setDeleteError(null);
                 }}
-                className="text-white hover:text-white/80 font-bold text-lg leading-none"
+                className="text-white hover:text-white/80 font-bold text-lg leading-none cursor-pointer"
               >
                 ×
               </button>
@@ -588,13 +871,13 @@ export const CheckpointManagementView: React.FC = () => {
                     setAdminPassword('');
                     setDeleteError(null);
                   }}
-                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs"
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#dc3545] hover:bg-[#c82333] text-white font-bold rounded-lg text-xs"
+                  className="px-4 py-2 bg-[#dc3545] hover:bg-[#c82333] text-white font-bold rounded-lg text-xs cursor-pointer"
                 >
                   Ya, Hapus Permanen
                 </button>
