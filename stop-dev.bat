@@ -6,7 +6,7 @@ color 0C
 
 echo ===============================================================================
 echo     PATROL ^& FACILITY MANAGEMENT SYSTEM (ENTERPRISE IN-HOUSE)
-echo                       DEV SERVICES SHUTDOWN UTILITY
+echo                    DEV SERVICES SHUTDOWN UTILITY
 echo ===============================================================================
 echo.
 
@@ -29,7 +29,7 @@ for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":3000 " ^| findstr "L
 for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":3001 " ^| findstr "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
 for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":5173 " ^| findstr "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
 for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":8080 " ^| findstr "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
-echo [OK] Port 3000, 3001, 5173, dan 8080 telah dibebaskan.
+echo [OK] Port 3000, 3001, 5173, dan 8080 telah dibebaskan sepenuhnya.
 echo.
 
 echo [3/3] Mematikan container Docker (PostGIS 17 ^& Redis 7)...

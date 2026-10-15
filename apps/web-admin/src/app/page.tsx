@@ -1,419 +1,700 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
-  ShieldAlert,
-  MapPin,
   Users,
-  Clock,
-  CheckCircle2,
+  CheckCircle,
+  ListChecks,
+  Check,
   AlertTriangle,
-  Sparkles,
-  Truck,
-  Building2,
-  ExternalLink,
-  Radio,
-  Calendar,
+  MapPin,
+  Shield,
+  Leaf,
+  Car,
+  Briefcase,
   FileText,
-  DollarSign,
-  Download,
-  QrCode,
+  LogOut,
+  User,
+  Clock,
   ArrowRight
 } from 'lucide-react';
 import { useData } from '../lib/DataContext';
 
-interface ActivityItem {
-  id: string;
-  badge: string;
-  badgeColor: string;
-  officerName: string;
-  timeStr: string;
-  title: string;
-  detail: string;
-}
-
 export default function DashboardPage() {
-  const { sites, checkpoints, users, setActiveSosAlert } = useData();
+  const { sites, checkpoints, users } = useData();
 
-  const [selectedSiteId, setSelectedSiteId] = useState<string>(sites[0]?.id || '11111111-1111-1111-1111-111111111111');
-  const [selectedDivision, setSelectedDivision] = useState<'ALL' | 'SECURITY' | 'CLEANING' | 'DRIVER'>('ALL');
+  // Dynamic counts based on actual registered data
+  const totalPersonil = users.length;
+  const totalCheckpoint = checkpoints.length;
 
-  // Live Activity Feed
-  const [activities] = useState<ActivityItem[]>([
-    {
-      id: 'act-1',
-      badge: 'SEC',
-      badgeColor: 'bg-blue-100 text-blue-600',
-      officerName: 'Ahmad Fauzi (Satpam Regu A)',
-      timeStr: '13:20 WIB',
-      title: 'Scan Checkpoint #3: Ruang Server IT Lt 3',
-      detail: 'Status: Situasi Aman Terkendali • Jarak 18m dari geofence',
-    },
-    {
-      id: 'act-2',
-      badge: 'CLN',
-      badgeColor: 'bg-emerald-100 text-emerald-600',
-      officerName: 'Akmal (Cleaning Service)',
-      timeStr: '13:15 WIB',
-      title: 'Checklist Sanitasi Restroom Lt 2 Selesai',
-      detail: 'Lantai dipel, kloset disikat, wastafel bersih, aroma lavender',
-    },
-    {
-      id: 'act-3',
-      badge: 'DRV',
-      badgeColor: 'bg-purple-100 text-purple-600',
-      officerName: 'Budi Santoso (Driver Logistik)',
-      timeStr: '13:00 WIB',
-      title: 'Perjalanan Logistik: Site Proyek Demo ➔ Cikarang',
-      detail: 'Armada B 1234 CD • Odometer: 45.210 km • Muatan aman',
-    },
-  ]);
+  const securityPersonil = users.filter((u) => u.division === 'SECURITY').length;
+  const cleaningPersonil = users.filter((u) => u.division === 'CLEANING').length;
+  const driverPersonil = users.filter((u) => u.division === 'DRIVER').length;
 
-  const handleSimulateSos = () => {
-    setActiveSosAlert({
-      id: `sos-${Date.now()}`,
-      officerName: 'Budi Satpam Test',
-      officerPhone: '0812-3456-7890',
-      division: 'Security',
-      siteName: 'Site Proyek Demo',
-      latitude: -6.566873,
-      longitude: 106.857802,
-      mapsUrl: 'https://www.google.com/maps?q=-6.566873,106.857802',
-      triggeredAt: new Date().toLocaleTimeString('id-ID'),
-      alertStatus: 'ACTIVE',
-      isWhatsappDispatched: true,
-      message: '🚨 PANIC SOS DIPICU! Petugas butuh bantuan darurat segera di Gerbang Utama!',
-    });
-  };
+  const securityCheckpoints = checkpoints.filter((c) => c.category === 'Security').length;
+  const cleaningCheckpoints = checkpoints.filter((c) => c.category === 'Cleaning Service').length;
+
+  const currentDate = new Date();
+  const monthName = currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
   return (
-    <div className="space-y-6">
-      {/* Subheader / Facility Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-            <Building2 className="w-5 h-5 text-blue-600" />
-            <span>Dashboard Pusat Komando Fasilitas & Operasional</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Monitoring Geofence PostGIS Satpam, Checklist Sanitasi CS, dan Log Armada Driver
-          </p>
+    <div className="space-y-6 pb-12">
+      {/* ========================================================
+          1. KPI UTAMA (6 CARDS DENGAN WATERMARK ICON)
+          ======================================================== */}
+      <div className="kpi-row">
+        {/* TOTAL PERSONIL */}
+        <div className="kpi-card kpi-primary">
+          <div className="kpi-label">TOTAL PERSONIL</div>
+          <div className="kpi-value">{totalPersonil}</div>
+          <Users className="kpi-card-watermark w-14 h-14" />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Site Selector */}
-          <select
-            value={selectedSiteId}
-            onChange={(e) => setSelectedSiteId(e.target.value)}
-            className="border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {sites.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
-
-          {/* Division Selector */}
-          <select
-            value={selectedDivision}
-            onChange={(e) => setSelectedDivision(e.target.value as any)}
-            className="border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="ALL">Semua 3 Divisi</option>
-            <option value="SECURITY">🛡️ Satpam (Security)</option>
-            <option value="CLEANING">✨ Cleaning Service</option>
-            <option value="DRIVER">🚚 Driver Logistik</option>
-          </select>
-
-          <button
-            onClick={handleSimulateSos}
-            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-xl text-xs font-bold transition flex items-center space-x-1"
-            title="Uji coba alert panic button SOS"
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Test Alarm SOS</span>
-          </button>
-        </div>
-      </div>
-
-      {/* QUICK NAVIGATION SHORTCUTS KE SUB-HALAMAN */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link
-          href="/datainduk/area"
-          className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-blue-500 hover:shadow-md transition group space-y-2"
-        >
-          <div className="flex items-center justify-between">
-            <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-105 transition">
-              <MapPin className="w-5 h-5" />
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-900 text-sm">Area & Shift Fasilitas</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Kelola {sites.length} site, koordinat GPS satelit, dan jam kerja shift
-            </p>
-          </div>
-        </Link>
-
-        <Link
-          href="/datainduk/checkpoint"
-          className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-emerald-500 hover:shadow-md transition group space-y-2"
-        >
-          <div className="flex items-center justify-between">
-            <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-105 transition">
-              <QrCode className="w-5 h-5" />
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-900 text-sm">Checkpoint / Aset</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Kelola {checkpoints.length} titik stiker QR Code & cetak barcode resmi
-            </p>
-          </div>
-        </Link>
-
-        <Link
-          href="/datainduk/personil"
-          className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-purple-500 hover:shadow-md transition group space-y-2"
-        >
-          <div className="flex items-center justify-between">
-            <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl group-hover:scale-105 transition">
-              <Users className="w-5 h-5" />
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 transition" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-900 text-sm">Personel & Gaji</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Kelola {users.length} personil 3 divisi & cetak ID Card
-            </p>
-          </div>
-        </Link>
-
-        <Link
-          href="/absensi"
-          className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-amber-500 hover:shadow-md transition group space-y-2"
-        >
-          <div className="flex items-center justify-between">
-            <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl group-hover:scale-105 transition">
-              <Calendar className="w-5 h-5" />
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-900 text-sm">Absensi 31-Hari</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Audit matriks kehadiran bulanan, toleransi telat, dan lembur
-            </p>
-          </div>
-        </Link>
-      </div>
-
-      {/* KPI METRIC CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-4">
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-            <Users className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500">Petugas Hadir Dinas</p>
-            <h3 className="text-xl font-bold text-slate-900">42 / 45</h3>
-            <span className="text-[11px] text-emerald-600 font-semibold">93.3% Tingkat Hadir</span>
-          </div>
+        {/* HADIR HARI INI */}
+        <div className="kpi-card kpi-info">
+          <div className="kpi-label">HADIR HARI INI</div>
+          <div className="kpi-value">0</div>
+          <CheckCircle className="kpi-card-watermark w-14 h-14" />
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-4">
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-            <Clock className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500">Patroli Satpam Shift Ini</p>
-            <h3 className="text-xl font-bold text-slate-900">128 Scan</h3>
-            <span className="text-[11px] text-indigo-600 font-semibold">Rute Berjalan 100%</span>
-          </div>
+        {/* KEGIATAN HARI INI */}
+        <div className="kpi-card kpi-warning">
+          <div className="kpi-label">KEGIATAN HARI INI</div>
+          <div className="kpi-value">0</div>
+          <ListChecks className="kpi-card-watermark w-14 h-14" />
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-4">
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500">Sanitasi CS Selesai</p>
-            <h3 className="text-xl font-bold text-slate-900">18 / 20 Zona</h3>
-            <span className="text-[11px] text-emerald-600 font-semibold">90% Sesuai Jadwal</span>
-          </div>
+        {/* PERJALANAN SELESAI */}
+        <div className="kpi-card kpi-success">
+          <div className="kpi-label">PERJALANAN SELESAI</div>
+          <div className="kpi-value">0</div>
+          <Check className="kpi-card-watermark w-14 h-14" />
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-4">
-          <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
-            <Truck className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500">Log Armada Driver</p>
-            <h3 className="text-xl font-bold text-slate-900">6 Kendaraan</h3>
-            <span className="text-[11px] text-purple-600 font-semibold">Odometer Terverifikasi</span>
-          </div>
+        {/* TEMUAN AKTIF */}
+        <div className="kpi-card kpi-danger">
+          <div className="kpi-label">TEMUAN AKTIF</div>
+          <div className="kpi-value">0</div>
+          <AlertTriangle className="kpi-card-watermark w-14 h-14" />
+        </div>
+
+        {/* TOTAL CHECKPOINT */}
+        <div className="kpi-card kpi-dark">
+          <div className="kpi-label">TOTAL CHECKPOINT</div>
+          <div className="kpi-value">{totalCheckpoint}</div>
+          <MapPin className="kpi-card-watermark w-14 h-14" />
         </div>
       </div>
 
-      {/* MONITORING GRID: FACILITY STATUS & LIVE STREAM FEED */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Status Fasilitas */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-              <Building2 className="w-4 h-4 text-slate-500" />
-              <span>Status Fasilitas & Lokasi</span>
-            </h2>
-            <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">PostGIS Geofence</span>
+      {/* ========================================================
+          2. PANEL UNIT 4 DIVISI (SECURITY, CLEANING, DRIVER, STAF)
+          ======================================================== */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* SECURITY */}
+        <div className="unit-card unit-security">
+          <div className="unit-head">
+            <div className="unit-icon bg-blue">
+              <Shield className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="unit-name">Security</div>
+              <div className="unit-sub">Monitoring keamanan & patroli</div>
+            </div>
           </div>
 
-          <div className="space-y-3">
-            {sites.map((s) => (
-              <div key={s.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-bold text-xs text-slate-900">{s.name}</h4>
-                    <p className="text-[11px] text-slate-500">{s.address || 'Kawasan Fasilitas Korporat'}</p>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-                    Radius {s.geofenceRadiusMeters}m
-                  </span>
-                </div>
-                <div className="text-[11px] text-slate-600 flex justify-between pt-1 border-t border-slate-200/60">
-                  <span>GPS: {s.latitude}, {s.longitude}</span>
-                  <a
-                    href={`https://www.google.com/maps?q=${s.latitude},${s.longitude}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-600 hover:underline font-semibold"
-                  >
-                    Peta ↗
-                  </a>
-                </div>
+          <div className="unit-grid">
+            <div className="unit-stat">
+              <div className="unit-stat-label">Personil</div>
+              <div className="unit-stat-value">{securityPersonil}</div>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Hadir</div>
+              <div className="unit-stat-value">0</div>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Patroli</div>
+              <div className="unit-stat-value">0</div>
+              <small>hari ini</small>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Checkpoint</div>
+              <div className="unit-stat-value">{securityCheckpoints}</div>
+              <small>Security</small>
+            </div>
+
+            <div className="unit-stat col-span-2">
+              <div className="unit-stat-label">Temuan</div>
+              <div className="unit-stat-value">0</div>
+              <small>aktif</small>
+            </div>
+          </div>
+        </div>
+
+        {/* CLEANING SERVICE */}
+        <div className="unit-card unit-cleaning">
+          <div className="unit-head">
+            <div className="unit-icon bg-green">
+              <Leaf className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="unit-name">Cleaning Service</div>
+              <div className="unit-sub">Monitoring kegiatan kebersihan</div>
+            </div>
+          </div>
+
+          <div className="unit-grid">
+            <div className="unit-stat">
+              <div className="unit-stat-label">Personil</div>
+              <div className="unit-stat-value">{cleaningPersonil}</div>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Hadir</div>
+              <div className="unit-stat-value">0</div>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Kegiatan</div>
+              <div className="unit-stat-value">0</div>
+              <small>hari ini</small>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Checkpoint</div>
+              <div className="unit-stat-value">{cleaningCheckpoints}</div>
+              <small>Cleaning</small>
+            </div>
+
+            <div className="unit-stat col-span-2">
+              <div className="unit-stat-label">Temuan</div>
+              <div className="unit-stat-value">0</div>
+              <small>aktif</small>
+            </div>
+          </div>
+        </div>
+
+        {/* DRIVER */}
+        <div className="unit-card unit-driver">
+          <div className="unit-head">
+            <div className="unit-icon bg-orange">
+              <Car className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="unit-name">Driver</div>
+              <div className="unit-sub">Monitoring perjalanan kendaraan</div>
+            </div>
+          </div>
+
+          <div className="unit-grid">
+            <div className="unit-stat">
+              <div className="unit-stat-label">Driver</div>
+              <div className="unit-stat-value">{driverPersonil}</div>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Hadir</div>
+              <div className="unit-stat-value">0</div>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Perjalanan</div>
+              <div className="unit-stat-value">0</div>
+              <small>hari ini</small>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Berjalan</div>
+              <div className="unit-stat-value">0</div>
+              <small>belum selesai</small>
+            </div>
+          </div>
+        </div>
+
+        {/* STAF */}
+        <div className="unit-card unit-staf">
+          <div className="unit-head">
+            <div className="unit-icon bg-dark">
+              <Briefcase className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="unit-name">Staf</div>
+              <div className="unit-sub">Administrasi dan laporan</div>
+            </div>
+          </div>
+
+          <div className="unit-grid">
+            <div className="unit-stat">
+              <div className="unit-stat-label">Personil</div>
+              <div className="unit-stat-value">0</div>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Hadir</div>
+              <div className="unit-stat-value">0</div>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Selesai Bertugas</div>
+              <div className="unit-stat-value">0</div>
+            </div>
+
+            <div className="unit-stat">
+              <div className="unit-stat-label">Izin</div>
+              <div className="unit-stat-value">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================
+          3. RINGKASAN OPERASIONAL & STATUS PERSONIL HARI INI
+          ======================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* RINGKASAN OPERASIONAL */}
+        <div className="summary-card">
+          <div className="summary-title">📊 Ringkasan Operasional</div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-blue">
+                <Users className="w-4 h-4" />
               </div>
-            ))}
+              <span>Total Personil</span>
+            </div>
+            <div className="summary-value">{totalPersonil}</div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-green">
+                <Check className="w-4 h-4" />
+              </div>
+              <span>Hadir Hari Ini</span>
+            </div>
+            <div className="summary-badge badge-success">0</div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-cyan">
+                <ListChecks className="w-4 h-4" />
+              </div>
+              <span>Kegiatan Hari Ini</span>
+            </div>
+            <div className="summary-value">0</div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-dark">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <span>Total Checkpoint</span>
+            </div>
+            <div className="summary-value">{totalCheckpoint}</div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-orange">
+                <Car className="w-4 h-4" />
+              </div>
+              <span>Driver Sedang Berjalan</span>
+            </div>
+            <div className="summary-badge badge-warning">0</div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-red">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <span>Temuan Hari Ini</span>
+            </div>
+            <div className="summary-badge badge-success">Tidak Ada Temuan</div>
           </div>
         </div>
 
-        {/* Live Activity Stream Feed */}
-        <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-              <Clock className="w-4 h-4 text-slate-500" />
-              <span>Live Feed Aktivitas Lapangan (Real-time Socket.io)</span>
-            </h2>
-            <span className="text-xs text-emerald-600 flex items-center space-x-1">
-              <Radio className="w-3 h-3 animate-ping" />
-              <span>Stream Aktif</span>
-            </span>
+        {/* STATUS PERSONIL HARI INI */}
+        <div className="summary-card">
+          <div className="summary-title">👥 Status Personil Hari Ini</div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-green">
+                <Shield className="w-4 h-4" />
+              </div>
+              <span>Security Hadir</span>
+            </div>
+            <div className="summary-badge badge-success">0</div>
           </div>
 
-          <div className="divide-y divide-slate-100">
-            {activities.map((act) => (
-              <div key={act.id} className="py-3 flex items-start space-x-3">
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs mt-0.5 ${act.badgeColor}`}>
-                  {act.badge}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-slate-900">{act.officerName}</p>
-                    <span className="text-xs text-slate-400">{act.timeStr}</span>
-                  </div>
-                  <p className="text-xs text-slate-600">{act.title}</p>
-                  <span className="inline-block mt-1 text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
-                    {act.detail}
-                  </span>
-                </div>
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-green">
+                <Leaf className="w-4 h-4" />
               </div>
-            ))}
+              <span>Cleaning Hadir</span>
+            </div>
+            <div className="summary-badge badge-success">0</div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-green">
+                <Car className="w-4 h-4" />
+              </div>
+              <span>Driver Hadir</span>
+            </div>
+            <div className="summary-badge badge-success">0</div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-dark">
+                <Briefcase className="w-4 h-4" />
+              </div>
+              <span>Staf Hadir</span>
+            </div>
+            <div className="summary-badge badge-success">0</div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-orange">
+                <FileText className="w-4 h-4" />
+              </div>
+              <span>Izin Tidak Masuk</span>
+            </div>
+            <div className="summary-badge badge-warning">0</div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-blue">
+                <LogOut className="w-4 h-4" />
+              </div>
+              <span>Selesai Bertugas</span>
+            </div>
+            <div className="summary-value">0</div>
           </div>
         </div>
       </div>
 
-      {/* OPERATIONAL WATCHDOG & LEADERBOARD CARDS */}
+      {/* ========================================================
+          4. PERHATIAN OPERASIONAL (3 CARDS)
+          ======================================================== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Watchdog 1: Security Perlu Perhatian */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-          <div className="flex items-center justify-between border-b pb-2.5">
-            <h3 className="font-bold text-xs text-slate-900 flex items-center space-x-1.5 uppercase">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              <span>Security Perlu Perhatian</span>
-            </h3>
-            <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-              1 Orang
-            </span>
-          </div>
-          <p className="text-[11px] text-slate-500">
-            Personil hadir dinas tetapi belum melakukan pemindaian patroli sama sekali:
-          </p>
-          <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200 flex items-center justify-between">
-            <div>
-              <h4 className="font-extrabold text-xs text-slate-900">BUDI SATPAM TEST</h4>
-              <p className="text-[10px] text-slate-500">Hadir: 07:05 WIB • Site Proyek Demo</p>
+        {/* SECURITY PERLU PERHATIAN */}
+        <div className="summary-card">
+          <div className="summary-title">⚠️ Security Perlu Perhatian</div>
+
+          <div className="attention-item">
+            <div className="attention-icon bg-red">
+              <User className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-mono font-bold bg-rose-500 text-white px-2 py-0.5 rounded">
-              0 Scan
+            <div>
+              <div className="attention-title">Personil Belum Patroli</div>
+              <div className="attention-desc">Personil hadir tetapi belum melakukan patroli.</div>
+            </div>
+            <div className="ml-auto font-extrabold text-sm text-slate-800">
+              0
+            </div>
+          </div>
+
+          <div className="attention-item">
+            <div className="attention-icon bg-orange">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="attention-title">Checkpoint Belum Dipatroli</div>
+              <div className="attention-desc">Checkpoint Security tanpa patroli hari ini.</div>
+            </div>
+            <div className="ml-auto font-extrabold text-sm text-slate-800">
+              {securityCheckpoints}
+            </div>
+          </div>
+
+          <div className="attention-item">
+            <div className="attention-icon bg-red">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="attention-title">Temuan Aktif</div>
+              <div className="attention-desc">Temuan Security yang masih aktif.</div>
+            </div>
+            <div className="ml-auto font-extrabold text-sm text-slate-800">
+              0
+            </div>
+          </div>
+        </div>
+
+        {/* CLEANING SERVICE */}
+        <div className="summary-card">
+          <div className="summary-title">🧹 Cleaning Service</div>
+
+          <div className="attention-item">
+            <div className="attention-icon bg-green">
+              <ListChecks className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="attention-title">Kegiatan Hari Ini</div>
+              <div className="attention-desc">Aktivitas Cleaning Service.</div>
+            </div>
+            <div className="ml-auto font-extrabold text-sm text-slate-800">
+              0
+            </div>
+          </div>
+
+          <div className="attention-item">
+            <div className="attention-icon bg-blue">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="attention-title">Checkpoint</div>
+              <div className="attention-desc">Total checkpoint Cleaning Service.</div>
+            </div>
+            <div className="ml-auto font-extrabold text-sm text-slate-800">
+              {cleaningCheckpoints}
+            </div>
+          </div>
+
+          <div className="attention-item">
+            <div className="attention-icon bg-orange">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="attention-title">Belum Dicek</div>
+              <div className="attention-desc">Checkpoint Cleaning Service yang belum diperiksa hari ini.</div>
+            </div>
+            <div className="ml-auto font-extrabold text-sm text-slate-800">
+              {cleaningCheckpoints}
+            </div>
+          </div>
+
+          <div className="attention-item">
+            <div className="attention-icon bg-red">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="attention-title">Temuan Aktif</div>
+              <div className="attention-desc">Temuan Cleaning Service.</div>
+            </div>
+            <div className="ml-auto font-extrabold text-sm text-slate-800">
+              0
+            </div>
+          </div>
+        </div>
+
+        {/* DRIVER PERLU PERHATIAN */}
+        <div className="summary-card flex flex-col items-center justify-center text-center">
+          <div className="summary-title w-full text-left">🚗 Driver Perlu Perhatian</div>
+
+          <div className="py-8 flex flex-col items-center justify-center space-y-3">
+            <CheckCircle className="w-10 h-10 text-emerald-500" />
+            <strong className="text-sm font-bold text-slate-800">
+              Tidak ada perjalanan yang masih berjalan
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================
+          5. RANKING DAN TEMUAN (3 CARDS)
+          ======================================================== */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* TOP 5 SECURITY */}
+        <div className="summary-card">
+          <div className="summary-title">🏆 Top 5 Security Hari Ini</div>
+          <div className="text-center py-8 text-xs text-slate-400">
+            Belum ada data patroli untuk peringkat hari ini.
+          </div>
+        </div>
+
+        {/* SECURITY BELUM PATROLI */}
+        <div className="summary-card flex flex-col items-center justify-center text-center">
+          <div className="summary-title w-full text-left">👤 Security Belum Patroli</div>
+
+          <div className="py-4 flex flex-col items-center justify-center space-y-2">
+            <CheckCircle className="w-9 h-9 text-emerald-500" />
+            <strong className="text-sm font-bold text-slate-800">
+              Semua Security sudah patroli
+            </strong>
+          </div>
+
+          <div className="mt-2">
+            <span className="summary-badge badge-warning">
+              0 Personil
             </span>
           </div>
         </div>
 
-        {/* Watchdog 2: Checkpoint Belum Dicek */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-          <div className="flex items-center justify-between border-b pb-2.5">
-            <h3 className="font-bold text-xs text-slate-900 flex items-center space-x-1.5 uppercase">
-              <MapPin className="w-4 h-4 text-rose-500" />
-              <span>Checkpoint Belum Dicek</span>
-            </h3>
-            <span className="text-[10px] font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full">
-              1 Titik
-            </span>
+        {/* TEMUAN AKTIF */}
+        <div className="summary-card flex flex-col items-center justify-center text-center">
+          <div className="summary-title w-full text-left">🚨 Temuan Aktif</div>
+
+          <div className="py-6 flex flex-col items-center justify-center space-y-2 text-emerald-600">
+            <CheckCircle className="w-8 h-8" />
+            <span className="text-sm font-bold">Tidak Ada Temuan Aktif</span>
           </div>
-          <p className="text-[11px] text-slate-500">
-            Titik pos / aset fasilitas yang belum tersentuh rute patroli hari ini:
-          </p>
-          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
-            <div>
-              <p className="font-bold text-xs text-slate-900">Ruang Server IT Lt 3</p>
-              <p className="text-[10px] text-slate-400">Site Proyek Demo</p>
+        </div>
+      </div>
+
+      {/* ========================================================
+          6. AREA SECURITY PERLU PERHATIAN (3 CARDS)
+          ======================================================== */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* COVERAGE SECURITY */}
+        <div className="summary-card flex flex-col items-center justify-center text-center">
+          <div className="summary-title w-full text-left">
+            <span>⚠️ Area Security Perlu Perhatian</span>
+            <div className="text-xs font-bold uppercase tracking-wide text-rose-600 mt-1">
+              Coverage Monitoring Terendah {monthName}
             </div>
-            <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
-              Terlewat
+          </div>
+
+          <div className="py-6 flex flex-col items-center justify-center space-y-2">
+            <CheckCircle className="w-9 h-9 text-emerald-500" />
+            <strong className="text-sm font-bold text-slate-800">
+              Coverage Security baik
+            </strong>
+          </div>
+        </div>
+
+        {/* CHECKPOINT SECURITY BELUM DIPATROLI */}
+        <div className="summary-card">
+          <div className="summary-title">🚨 Checkpoint Security Belum Dipatroli</div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-red">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="font-semibold text-xs text-slate-900">
+                  POS GERBANG UTAMA - GERBANG UTAMA DEPAN
+                </div>
+                <small className="text-slate-500">site proyek demo</small>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-3">
+            <span className="summary-badge badge-danger">
+              1 Checkpoint
             </span>
           </div>
         </div>
 
-        {/* Watchdog 3: Leaderboard Patroli */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-          <div className="flex items-center justify-between border-b pb-2.5">
-            <h3 className="font-bold text-xs text-slate-900 flex items-center space-x-1.5 uppercase">
-              <span>🏆 Leaderboard Patroli</span>
-            </h3>
-            <span className="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
-              Shift Aktif
+        {/* CHECKPOINT SECURITY PERLU PERHATIAN */}
+        <div className="summary-card">
+          <div className="summary-title">🚨 Checkpoint Security Perlu Perhatian</div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div>
+                <div className="font-semibold text-xs text-slate-900">
+                  POS GERBANG UTAMA - GERBANG UTAMA DEPAN
+                </div>
+                <small className="text-slate-500">site proyek demo</small>
+                <br />
+                <small className="text-rose-600 font-semibold">28 hari terakhir</small>
+              </div>
+            </div>
+            <div className="summary-value text-right">
+              1
+              <br />
+              <small className="text-[11px] text-slate-500 font-normal">patroli</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================
+          7. AREA CLEANING SERVICE (3 CARDS)
+          ======================================================== */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* COVERAGE CLEANING */}
+        <div className="summary-card flex flex-col items-center justify-center text-center">
+          <div className="summary-title w-full text-left">
+            <span>🧹 Area Cleaning Perlu Perhatian</span>
+            <div className="text-xs font-bold uppercase tracking-wide text-emerald-600 mt-1">
+              Coverage Monitoring Terendah {monthName}
+            </div>
+          </div>
+
+          <div className="py-6 flex flex-col items-center justify-center space-y-2">
+            <CheckCircle className="w-9 h-9 text-emerald-500" />
+            <strong className="text-sm font-bold text-slate-800">
+              Coverage Cleaning baik
+            </strong>
+          </div>
+        </div>
+
+        {/* CHECKPOINT CLEANING BELUM DICEK */}
+        <div className="summary-card">
+          <div className="summary-title">🧹 Checkpoint Cleaning Belum Dicek</div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div className="summary-icon bg-green">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="font-semibold text-xs text-slate-900">
+                  TOILET - LOBBY
+                </div>
+                <small className="text-slate-500">site proyek demo</small>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-3">
+            <span className="summary-badge badge-success">
+              1 Checkpoint
             </span>
           </div>
-          <p className="text-[11px] text-slate-500">
-            Ranking pemindaian checkpoint patroli tertinggi shift berjalan:
-          </p>
-          <div className="space-y-1.5 text-xs">
-            <div className="flex items-center justify-between p-2 bg-yellow-50/60 rounded-xl border border-yellow-200">
-              <span className="font-bold text-slate-900 flex items-center space-x-1.5 text-xs">
-                <span className="text-yellow-600 font-black">🥇 1.</span>
-                <span>Ahmad Fauzi</span>
-              </span>
-              <span className="font-extrabold text-blue-700 font-mono text-xs">12 Pos</span>
+        </div>
+
+        {/* CHECKPOINT CLEANING PERLU PERHATIAN */}
+        <div className="summary-card">
+          <div className="summary-title">🧹 Checkpoint Cleaning Perlu Perhatian</div>
+
+          <div className="summary-item">
+            <div className="summary-left">
+              <div>
+                <div className="font-semibold text-xs text-slate-900">
+                  TOILET - LOBBY
+                </div>
+                <small className="text-slate-500">site proyek demo</small>
+                <br />
+                <small className="text-emerald-600 font-semibold">28 hari terakhir</small>
+              </div>
             </div>
-            <div className="flex items-center justify-between p-2 bg-slate-50 rounded-xl">
-              <span className="font-semibold text-slate-700 flex items-center space-x-1.5 text-xs">
-                <span className="text-slate-400 font-bold">🥈 2.</span>
-                <span>Akmal</span>
-              </span>
-              <span className="font-bold text-slate-700 font-mono text-xs">9 Pos</span>
+            <div className="summary-value text-right">
+              2
+              <br />
+              <small className="text-[11px] text-slate-500 font-normal">kegiatan</small>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ========================================================
+          8. IZIN TIDAK MASUK (FULL WIDTH CARD)
+          ======================================================== */}
+      <div className="summary-card">
+        <div className="summary-title">📋 Izin Tidak Masuk Hari Ini</div>
+
+        <div className="text-center py-6 flex flex-col items-center justify-center space-y-2">
+          <CheckCircle className="w-10 h-10 text-emerald-500" />
+          <strong className="text-sm font-bold text-slate-800">
+            Tidak ada personil yang izin hari ini
+          </strong>
         </div>
       </div>
     </div>

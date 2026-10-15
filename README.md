@@ -49,13 +49,16 @@ npm install
 
 ### 4. Menjalankan Layanan (Development Mode)
 
-#### Opsi A: 1-Click Script (Windows Batch)
-Cukup jalankan file batch di root direktori:
-- **`start-dev.bat`**: Otomatis menjalankan Docker (PostGIS & Redis), mengompilasi `@patrol/types`, dan meluncurkan Backend API (:3000), Web Admin (:3001), serta PWA Field (:5173) dalam jendela terminal interaktif terpisah.
-- **`stop-dev.bat`**: Menutup semua jendela terminal dev, membebaskan port 3000, 3001, 5173, dan mematikan container Docker.
+#### Opsi A: 1-Click Script (Windows Batch — Sangat Direkomendasikan)
+Cukup klik ganda file batch di root direktori:
+- **`start-dev.bat`**: Otomatis menjalankan Docker (PostGIS & Redis), mengompilasi `@patrol/types`, meluncurkan seluruh service, dan langsung membuka **Portal Induk Satu Pintu di `http://localhost:8080`** pada browser default Anda.
+- **`stop-dev.bat`**: Menutup seluruh terminal window dev, membebaskan port 3000, 3001, 5173, 8080, dan mematikan container Docker dengan aman.
 
 #### Opsi B: Manual Terminal
 ```bash
+# Menjalankan Gateway Satu Pintu (Port 8080)
+npm run gateway
+
 # Menjalankan Backend API (Port 3000)
 npm run dev:backend
 
@@ -65,6 +68,18 @@ npm run dev:admin
 # Menjalankan Mobile Field App PWA (Port 5173)
 npm run dev:pwa
 ```
+
+---
+
+## 🌐 Daftar Akses Portal Terpadu (Satu Pintu)
+
+| Layanan | URL Akses | Keterangan |
+| :--- | :--- | :--- |
+| **Portal Hub Utama** | **`http://localhost:8080`** | Dashboard navigasi sentral dengan health monitor status semua service |
+| **Web Admin Command Center** | `http://localhost:8080/admin` | Command Center Peta Leaflet, SOS, Absensi & Shift |
+| **PWA Mobile Field App** | `http://localhost:8080/pwa` | Aplikasi Satpam, Cleaning Service & Driver Lapangan |
+| **Smartphone Simulator** | `http://localhost:8080/simulator` | Mockup interaktif layar iPhone untuk demo ke klien |
+| **Backend REST API** | `http://localhost:8080/api/v1` | Fastify PostGIS Spatial Gateway |
 
 ---
 
