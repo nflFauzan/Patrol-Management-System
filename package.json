@@ -11,6 +11,7 @@
     "dev:backend": "npm run dev --workspace=@patrol/backend",
     "dev:admin": "npm run dev --workspace=@patrol/web-admin",
     "dev:pwa": "npm run dev --workspace=@patrol/pwa-field",
+    "gateway": "node scripts/local-gateway.js",
     "dev:start": "start-dev.bat",
     "dev:stop": "stop-dev.bat",
     "dev": "npm run dev:backend",
@@ -33,6 +34,8 @@
   "author": "Engineering Team",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@playwright/test": "^1.64.0"
+    "@playwright/test": "^1.64.0",
+    "@types/http-proxy": "^1.17.17",
+    "http-proxy": "^1.18.1"
   }
 }
