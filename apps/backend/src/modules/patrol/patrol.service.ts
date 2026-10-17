@@ -67,10 +67,10 @@ export class PatrolService {
     const checkpointParams: any[] = [];
 
     if (data.checkpointId) {
-      checkpointQuery += ` AND id = $1`;
+      checkpointQuery += ` AND (id = $1 OR id::text = $1 OR qr_code_token = $1 OR qr_code_token ILIKE $1)`;
       checkpointParams.push(data.checkpointId);
     } else if (data.qrPayload) {
-      checkpointQuery += ` AND qr_code_token = $1`;
+      checkpointQuery += ` AND (qr_code_token = $1 OR qr_code_token ILIKE $1 OR id::text = $1)`;
       checkpointParams.push(data.qrPayload);
     } else {
       throw new BadRequestException('Either checkpointId or qrPayload must be provided');
@@ -82,9 +82,17 @@ export class PatrolService {
       throw new NotFoundException('Checkpoint not found or inactive');
     }
 
-    // If QR payload provided, verify match
-    if (data.qrPayload && cp.qr_code_token !== data.qrPayload) {
-      throw new BadRequestException('QR Code does not match this checkpoint');
+    // Check user division vs checkpoint category (patroli.site parity)
+    const user = await this.db.queryOne<any>('SELECT division FROM users WHERE id = $1', [userId]);
+    if (user && user.division) {
+      const isSecurityUser = user.division.toLowerCase().includes('security') || user.division.toLowerCase().includes('satpam');
+      const isCleaningUser = user.division.toLowerCase().includes('cleaning');
+      const isSecurityCp = cp.category.toLowerCase().includes('security') || cp.category.toLowerCase().includes('satpam');
+      const isCleaningCp = cp.category.toLowerCase().includes('clean');
+
+      if ((isSecurityUser && isCleaningCp) || (isCleaningUser && isSecurityCp)) {
+        throw new BadRequestException('Gagal..Scan QRcode sesuai bagian anda');
+      }
     }
 
     // 2. PostGIS proximity verification against the site
@@ -142,7 +150,7 @@ export class PatrolService {
     }
 
     // 5. Broadcast real-time event to Web Admin
-    const user = await this.db.queryOne<any>(
+    const userDetail = await this.db.queryOne<any>(
       `SELECT full_name, username, division FROM users WHERE id = $1`,
       [userId],
     );
@@ -153,8 +161,8 @@ export class PatrolService {
       checkpointName: cp.name,
       locationDetail: cp.location_detail,
       officerId: userId,
-      officerName: user?.full_name || 'Petugas Satpam',
-      division: user?.division || 'Security',
+      officerName: userDetail?.full_name || 'Petugas Satpam',
+      division: userDetail?.division || 'Security',
       latitude: data.latitude,
       longitude: data.longitude,
       distanceMeters: proximity.distanceMeters,

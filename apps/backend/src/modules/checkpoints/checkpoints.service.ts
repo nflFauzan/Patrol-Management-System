@@ -114,7 +114,7 @@ export class CheckpointsService {
         c.updated_at AS "updatedAt"
       FROM checkpoints c
       JOIN sites s ON c.site_id = s.id
-      WHERE c.qr_code_token = $1 AND c.is_active = true
+      WHERE (c.qr_code_token = $1 OR c.qr_code_token ILIKE $1 OR c.id::text = $1) AND c.is_active = true
     `,
       [qrToken],
     );
