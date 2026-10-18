@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { User, ClockInRequestDto, ClockOutRequestDto, LeaveRequestDto, Attendance, AttendanceMatrixResponse } from '@patrol/types';
+import { 
+  User, 
+  ClockInRequestDto, 
+  ClockOutRequestDto, 
+  LeaveRequestDto, 
+  Attendance, 
+  AttendanceMatrixResponse,
+  AttendanceRecordsResponse,
+  AttendanceDetailResponse,
+  AttendancePersonilOption
+} from '@patrol/types';
 
 @Controller('attendance')
 @UseGuards(JwtAuthGuard)
@@ -29,6 +39,38 @@ export class AttendanceController {
     @Query('division') division?: string,
   ): Promise<AttendanceMatrixResponse> {
     return this.attendanceService.getAttendanceMatrix({ month, siteId, division });
+  }
+
+  @Get('records')
+  async getRecords(
+    @Query('siteName') siteName?: string,
+    @Query('division') division?: string,
+    @Query('userName') userName?: string,
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<AttendanceRecordsResponse> {
+    return this.attendanceService.getAttendanceRecords({
+      siteName,
+      division,
+      userName,
+      search,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 5,
+    });
+  }
+
+  @Get('personil-options')
+  async getPersonilOptions(
+    @Query('siteName') siteName?: string,
+    @Query('division') division?: string,
+  ): Promise<AttendancePersonilOption[]> {
+    return this.attendanceService.getPersonilOptions(siteName, division);
+  }
+
+  @Get(':id/detail')
+  async getDetail(@Param('id') id: string): Promise<AttendanceDetailResponse> {
+    return this.attendanceService.getAttendanceDetail(id);
   }
 
   @Post('clock-in')

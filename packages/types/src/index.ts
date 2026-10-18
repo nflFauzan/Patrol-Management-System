@@ -398,6 +398,84 @@ export interface AttendanceMatrixResponse {
   rows: AttendanceMatrixRow[];
 }
 
+export interface AttendanceFilterDto {
+  siteName?: string;
+  division?: string;
+  userName?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AttendanceRecordItem {
+  id: string;
+  siteName: string;
+  division: string;
+  personilName: string;
+  userAvatar?: string | null;
+  // Clock in info
+  clockInDateStr: string; // e.g. "Sabtu, 17 Oct 2026"
+  clockInTimeStr: string; // e.g. "00:46:13"
+  isLate: boolean;
+  lateText?: string | null; // e.g. "3 jam 1 menit 17 detik"
+  clockInWithinGeofence: boolean;
+  clockInLatitude?: number | null;
+  clockInLongitude?: number | null;
+  clockInPhotoUrl?: string | null;
+  clockInDistanceMeters?: number | null;
+  // Clock out info
+  isClockedOut: boolean;
+  isLupaAbsenPulang: boolean;
+  clockOutDateStr?: string | null;
+  clockOutTimeStr?: string | null;
+  clockOutWithinGeofence?: boolean | null;
+  clockOutLatitude?: number | null;
+  clockOutLongitude?: number | null;
+  clockOutPhotoUrl?: string | null;
+  clockOutDistanceMeters?: number | null;
+  // Site coordinate
+  siteLatitude?: number | null;
+  siteLongitude?: number | null;
+}
+
+export interface AttendanceRecordsResponse {
+  draw?: number;
+  recordsTotal: number;
+  recordsFiltered: number;
+  data: AttendanceRecordItem[];
+}
+
+export interface AttendanceDetailLocation {
+  lat: number;
+  lon: number;
+  label: string;
+  personilName?: string;
+}
+
+export interface AttendanceDetailResponse {
+  id: string;
+  userId: string;
+  personilName: string;
+  siteName: string;
+  division: string;
+  userAvatar?: string | null;
+  clockInDateFull: string;
+  clockOutDateFull: string;
+  clockInPhotoUrl?: string | null;
+  clockOutPhotoUrl?: string | null;
+  locationsIn: AttendanceDetailLocation[];
+  locationsOut: AttendanceDetailLocation[];
+  distanceInMeters?: number | null;
+  distanceOutMeters?: number | null;
+}
+
+export interface AttendancePersonilOption {
+  id: string;
+  name: string;
+  division: string;
+  siteName: string;
+}
+
 export interface HourlyPatrolMatrixRow {
   checkpointId: string;
   assetName: string;

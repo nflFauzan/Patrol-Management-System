@@ -16,6 +16,7 @@
     "dev:stop": "stop-dev.bat",
     "dev": "npm run dev:backend",
     "build": "npm run build --workspaces",
+    "typecheck:admin": "npm run typecheck --workspace=@patrol/web-admin",
     "test": "npm run test --workspaces --if-present",
     "test:e2e": "playwright test",
     "lint": "npm run lint --workspaces",

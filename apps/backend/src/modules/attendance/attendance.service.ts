@@ -12,7 +12,12 @@ import {
   AttendanceMatrixDay,
   AttendanceMatrixStatusCode,
   UserRole,
-  Division
+  Division,
+  AttendanceFilterDto,
+  AttendanceRecordsResponse,
+  AttendanceRecordItem,
+  AttendanceDetailResponse,
+  AttendancePersonilOption
 } from '@patrol/types';
 
 @Injectable()
@@ -513,6 +518,316 @@ export class AttendanceService {
 
     const rows = await this.db.query<any>(sql, [userId, limit]);
     return rows.map((r) => this.mapRowToAttendance(r));
+  }
+
+  private formatIndonesianDate(d: Date): string {
+    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dayName = days[d.getDay()];
+    const day = d.getDate();
+    const monthName = months[d.getMonth()];
+    const year = d.getFullYear();
+    return `${dayName}, ${day} ${monthName} ${year}`;
+  }
+
+  private formatTime(d: Date): string {
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    const ss = String(d.getSeconds()).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
+  }
+
+  private formatLateDuration(minutes: number): string {
+    if (!minutes || minutes <= 0) return '0 menit';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    const parts: string[] = [];
+    if (h > 0) parts.push(`${h} jam`);
+    if (m > 0 || h === 0) parts.push(`${m} menit`);
+    return parts.join(' ');
+  }
+
+  /**
+   * 100% Parity Server-side Presensi (patroli.site/serverside-presensi.php)
+   */
+  async getAttendanceRecords(filter: AttendanceFilterDto): Promise<AttendanceRecordsResponse> {
+    const page = Math.max(1, Number(filter.page) || 1);
+    const limit = Math.max(1, Math.min(1000, Number(filter.limit) || 5));
+    const offset = (page - 1) * limit;
+
+    const conditions: string[] = ['1=1'];
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (filter.siteName && filter.siteName.trim()) {
+      conditions.push(`s.name ILIKE $${paramIndex}`);
+      params.push(`%${filter.siteName.trim()}%`);
+      paramIndex++;
+    }
+
+    if (filter.division && filter.division.trim()) {
+      conditions.push(`u.division ILIKE $${paramIndex}`);
+      params.push(`%${filter.division.trim()}%`);
+      paramIndex++;
+    }
+
+    if (filter.userName && filter.userName.trim()) {
+      conditions.push(`u.full_name ILIKE $${paramIndex}`);
+      params.push(`%${filter.userName.trim()}%`);
+      paramIndex++;
+    }
+
+    if (filter.search && filter.search.trim()) {
+      const q = `%${filter.search.trim()}%`;
+      conditions.push(`(u.full_name ILIKE $${paramIndex} OR s.name ILIKE $${paramIndex} OR u.division ILIKE $${paramIndex})`);
+      params.push(q);
+      paramIndex++;
+    }
+
+    const whereClause = conditions.join(' AND ');
+
+    // Total records
+    const countSql = `
+      SELECT COUNT(*) as total
+      FROM attendances a
+      JOIN users u ON a.user_id = u.id
+      JOIN sites s ON a.site_id = s.id
+      WHERE ${whereClause}
+    `;
+    const countRes = await this.db.queryOne<{ total: string }>(countSql, params);
+    const recordsTotal = countRes ? parseInt(countRes.total, 10) : 0;
+
+    // Fetch records
+    const dataSql = `
+      SELECT 
+        a.id,
+        a.user_id AS "userId",
+        a.site_id AS "siteId",
+        s.name AS "siteName",
+        u.full_name AS "personilName",
+        u.division AS "division",
+        u.photo_key AS "userAvatar",
+        a.attendance_date AS "date",
+        a.clock_in_at AS "clockInTime",
+        ST_Y(a.clock_in_coordinates::geometry) AS "clockInLatitude",
+        ST_X(a.clock_in_coordinates::geometry) AS "clockInLongitude",
+        a.clock_in_photo_key AS "clockInPhotoUrl",
+        a.clock_in_distance_meters AS "clockInDistanceMeters",
+        a.is_late AS "isLate",
+        a.late_minutes AS "lateMinutes",
+        a.clock_out_at AS "clockOutTime",
+        ST_Y(a.clock_out_coordinates::geometry) AS "clockOutLatitude",
+        ST_X(a.clock_out_coordinates::geometry) AS "clockOutLongitude",
+        a.clock_out_photo_key AS "clockOutPhotoUrl",
+        a.clock_out_distance_meters AS "clockOutDistanceMeters",
+        s.geofence_radius_meters AS "geofenceRadiusMeters",
+        ST_Y(s.location_coordinates::geometry) AS "siteLatitude",
+        ST_X(s.location_coordinates::geometry) AS "siteLongitude"
+      FROM attendances a
+      JOIN users u ON a.user_id = u.id
+      JOIN sites s ON a.site_id = s.id
+      WHERE ${whereClause}
+      ORDER BY a.clock_in_at DESC, a.created_at DESC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+
+    const dataParams = [...params, limit, offset];
+    const rows = await this.db.query<any>(dataSql, dataParams);
+
+    const items: AttendanceRecordItem[] = rows.map((r) => {
+      const clockInDate = r.clockInTime ? new Date(r.clockInTime) : new Date(r.date);
+      const clockOutDate = r.clockOutTime ? new Date(r.clockOutTime) : null;
+      const geofenceRadius = Number(r.geofenceRadiusMeters) || 100;
+
+      const clockInDist = r.clockInDistanceMeters !== null ? Number(r.clockInDistanceMeters) : null;
+      const clockInWithinGeofence = clockInDist !== null ? clockInDist <= geofenceRadius : true;
+
+      const clockOutDist = r.clockOutDistanceMeters !== null ? Number(r.clockOutDistanceMeters) : null;
+      const clockOutWithinGeofence = clockOutDist !== null ? clockOutDist <= geofenceRadius : null;
+
+      const lateMins = Number(r.lateMinutes) || 0;
+      const isLate = Boolean(r.isLate) || lateMins > 0;
+
+      const isClockedOut = Boolean(r.clockOutTime);
+      const isLupaAbsenPulang = !isClockedOut && (new Date().getTime() - clockInDate.getTime()) > 16 * 60 * 60 * 1000;
+
+      return {
+        id: r.id,
+        siteName: r.siteName,
+        division: r.division,
+        personilName: r.personilName,
+        userAvatar: r.userAvatar || null,
+        clockInDateStr: this.formatIndonesianDate(clockInDate),
+        clockInTimeStr: this.formatTime(clockInDate),
+        isLate,
+        lateText: isLate ? this.formatLateDuration(lateMins) : null,
+        clockInWithinGeofence,
+        clockInLatitude: r.clockInLatitude ? Number(r.clockInLatitude) : null,
+        clockInLongitude: r.clockInLongitude ? Number(r.clockInLongitude) : null,
+        clockInPhotoUrl: r.clockInPhotoUrl || null,
+        clockInDistanceMeters: clockInDist,
+        isClockedOut,
+        isLupaAbsenPulang,
+        clockOutDateStr: clockOutDate ? this.formatIndonesianDate(clockOutDate) : null,
+        clockOutTimeStr: clockOutDate ? this.formatTime(clockOutDate) : null,
+        clockOutWithinGeofence,
+        clockOutLatitude: r.clockOutLatitude ? Number(r.clockOutLatitude) : null,
+        clockOutLongitude: r.clockOutLongitude ? Number(r.clockOutLongitude) : null,
+        clockOutPhotoUrl: r.clockOutPhotoUrl || null,
+        clockOutDistanceMeters: clockOutDist,
+        siteLatitude: r.siteLatitude ? Number(r.siteLatitude) : null,
+        siteLongitude: r.siteLongitude ? Number(r.siteLongitude) : null,
+      };
+    });
+
+    return {
+      draw: 1,
+      recordsTotal,
+      recordsFiltered: recordsTotal,
+      data: items,
+    };
+  }
+
+  /**
+   * 100% Parity Detail Absen (patroli.site/detail-absen.php)
+   */
+  async getAttendanceDetail(id: string): Promise<AttendanceDetailResponse> {
+    const sql = `
+      SELECT 
+        a.id,
+        a.user_id AS "userId",
+        u.full_name AS "personilName",
+        u.photo_key AS "userAvatar",
+        u.division AS "division",
+        s.name AS "siteName",
+        a.clock_in_at AS "clockInTime",
+        ST_Y(a.clock_in_coordinates::geometry) AS "clockInLatitude",
+        ST_X(a.clock_in_coordinates::geometry) AS "clockInLongitude",
+        a.clock_in_photo_key AS "clockInPhotoUrl",
+        a.clock_in_distance_meters AS "clockInDistanceMeters",
+        a.clock_out_at AS "clockOutTime",
+        ST_Y(a.clock_out_coordinates::geometry) AS "clockOutLatitude",
+        ST_X(a.clock_out_coordinates::geometry) AS "clockOutLongitude",
+        a.clock_out_photo_key AS "clockOutPhotoUrl",
+        a.clock_out_distance_meters AS "clockOutDistanceMeters",
+        s.geofence_radius_meters AS "geofenceRadiusMeters",
+        ST_Y(s.location_coordinates::geometry) AS "siteLatitude",
+        ST_X(s.location_coordinates::geometry) AS "siteLongitude"
+      FROM attendances a
+      JOIN users u ON a.user_id = u.id
+      JOIN sites s ON a.site_id = s.id
+      WHERE a.id = $1
+      LIMIT 1
+    `;
+
+    const row = await this.db.queryOne<any>(sql, [id]);
+    if (!row) {
+      throw new NotFoundException(`Data absensi dengan ID ${id} tidak ditemukan`);
+    }
+
+    const clockInDate = row.clockInTime ? new Date(row.clockInTime) : new Date();
+    const clockOutDate = row.clockOutTime ? new Date(row.clockOutTime) : null;
+
+    const clockInDateFull = `${this.formatIndonesianDate(clockInDate)} | ${this.formatTime(clockInDate)}`;
+    const clockOutDateFull = clockOutDate 
+      ? `${this.formatIndonesianDate(clockOutDate)} | ${this.formatTime(clockOutDate)}`
+      : 'Hari tidak valid, 30 Nov -0001 | 00:00:00';
+
+    const siteLat = Number(row.siteLatitude) || -6.2088;
+    const siteLon = Number(row.siteLongitude) || 106.8456;
+
+    const clockInLat = row.clockInLatitude ? Number(row.clockInLatitude) : siteLat;
+    const clockInLon = row.clockInLongitude ? Number(row.clockInLongitude) : siteLon;
+
+    const clockOutLat = row.clockOutLatitude ? Number(row.clockOutLatitude) : 0;
+    const clockOutLon = row.clockOutLongitude ? Number(row.clockOutLongitude) : 0;
+
+    const locationsIn = [
+      {
+        lat: clockInLat,
+        lon: clockInLon,
+        label: `Lokasi absen masuk ${row.personilName}`,
+        personilName: row.personilName,
+      },
+      {
+        lat: siteLat,
+        lon: siteLon,
+        label: 'Lokasi Area / Site',
+      },
+    ];
+
+    const locationsOut = [
+      {
+        lat: clockOutLat,
+        lon: clockOutLon,
+        label: `Lokasi absen pulang ${row.personilName}`,
+        personilName: row.personilName,
+      },
+      {
+        lat: siteLat,
+        lon: siteLon,
+        label: 'Lokasi Area / Site',
+      },
+    ];
+
+    return {
+      id: row.id,
+      userId: row.userId,
+      personilName: row.personilName,
+      siteName: row.siteName,
+      division: row.division,
+      userAvatar: row.userAvatar || null,
+      clockInDateFull,
+      clockOutDateFull,
+      clockInPhotoUrl: row.clockInPhotoUrl || null,
+      clockOutPhotoUrl: row.clockOutPhotoUrl || null,
+      locationsIn,
+      locationsOut,
+      distanceInMeters: row.clockInDistanceMeters ? Number(row.clockInDistanceMeters) : null,
+      distanceOutMeters: row.clockOutDistanceMeters ? Number(row.clockOutDistanceMeters) : null,
+    };
+  }
+
+  /**
+   * 100% Parity Load Personil Filter Dropdown (patroli.site/get_absen.php)
+   */
+  async getPersonilOptions(siteName?: string, division?: string): Promise<AttendancePersonilOption[]> {
+    const conditions: string[] = ['u.is_active = true'];
+    const params: any[] = [];
+    let pIdx = 1;
+
+    if (siteName && siteName.trim()) {
+      conditions.push(`s.name ILIKE $${pIdx}`);
+      params.push(`%${siteName.trim()}%`);
+      pIdx++;
+    }
+
+    if (division && division.trim()) {
+      conditions.push(`u.division ILIKE $${pIdx}`);
+      params.push(`%${division.trim()}%`);
+      pIdx++;
+    }
+
+    const sql = `
+      SELECT DISTINCT
+        u.id,
+        u.full_name AS "name",
+        u.division,
+        COALESCE(s.name, '') AS "siteName"
+      FROM users u
+      LEFT JOIN user_site_assignments usa ON u.id = usa.user_id
+      LEFT JOIN sites s ON usa.site_id = s.id
+      WHERE ${conditions.join(' AND ')}
+      ORDER BY u.full_name ASC
+    `;
+
+    const rows = await this.db.query<any>(sql, params);
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      division: r.division,
+      siteName: r.siteName,
+    }));
   }
 }
 

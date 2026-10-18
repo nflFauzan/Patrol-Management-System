@@ -46,8 +46,8 @@ test.describe('PWA Field App — 100% Parity Touch-Card Grid & Operational Flows
     // 6. Test Input Kegiatan / Patrol Scan Modal
     const inputKegiatanBtn = page.locator('button:has-text("INPUT KEGIATAN")');
     await inputKegiatanBtn.click();
-    await expect(page.locator('text=Scan QR Code Checkpoint')).toBeVisible();
-    await page.locator('button:has(.lucide-x)').first().click();
+    await expect(page.locator('text=Silakan Scan QR Code')).toBeVisible();
+    await page.locator('button:has-text("Kembali ke Dashboard")').click();
 
     // 7. Test Riwayat Absen Modal
     const riwayatAbsenBtn = page.locator('button:has-text("RIWAYAT ABSEN")');

@@ -237,7 +237,7 @@ export const Navbar: React.FC = () => {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Link
-                      href="/absensi"
+                      href="/absensi?tab=semua-data"
                       onClick={handleLinkClick}
                       className="patroli-dropdown-item"
                     >
@@ -246,7 +246,7 @@ export const Navbar: React.FC = () => {
                     </Link>
 
                     <Link
-                      href="/absensi"
+                      href="/absensi?tab=monitoring"
                       onClick={handleLinkClick}
                       className="patroli-dropdown-item"
                     >

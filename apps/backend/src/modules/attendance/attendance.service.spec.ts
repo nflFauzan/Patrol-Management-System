@@ -167,4 +167,100 @@ describe('AttendanceService (HRIS Attendance & Shift Engine)', () => {
       expect(overtimeMinutes).toBe(0);
     });
   });
+
+  describe('Server-side Presensi & Detail (100% Parity patroli.site)', () => {
+    it('TC-ATT-08: should retrieve formatted attendance records with Indonesian date and late status', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({ total: '1' });
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([
+        {
+          id: 'att-2034',
+          userId: 'usr-1',
+          siteId: 'site-1',
+          siteName: 'site proyek demo',
+          personilName: 'budi satpam test',
+          division: 'Security',
+          userAvatar: null,
+          date: '2026-10-17',
+          clockInTime: '2026-10-17T00:46:13Z',
+          clockInLatitude: -6.562719,
+          clockInLongitude: 106.856125,
+          clockInPhotoUrl: 'foto/6acbcdd59a172.jpg',
+          clockInDistanceMeters: 45,
+          isLate: false,
+          lateMinutes: 0,
+          clockOutTime: null,
+          clockOutLatitude: null,
+          clockOutLongitude: null,
+          clockOutPhotoUrl: null,
+          clockOutDistanceMeters: null,
+          geofenceRadiusMeters: 100,
+          siteLatitude: -6.566873,
+          siteLongitude: 106.857802,
+        },
+      ]);
+
+      const response = await service.getAttendanceRecords({
+        siteName: 'site proyek demo',
+        division: 'Security',
+        page: 1,
+        limit: 5,
+      });
+
+      expect(response.recordsTotal).toBe(1);
+      expect(response.data.length).toBe(1);
+      const item = response.data[0];
+      expect(item.siteName).toBe('site proyek demo');
+      expect(item.personilName).toBe('budi satpam test');
+      expect(item.division).toBe('Security');
+      expect(item.clockInWithinGeofence).toBe(true);
+      expect(item.isLate).toBe(false);
+      expect(item.isClockedOut).toBe(false);
+    });
+
+    it('TC-ATT-09: should return complete attendance detail with Leaflet polyline points', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({
+        id: 'att-2030',
+        userId: 'usr-2',
+        personilName: 'akmal',
+        userAvatar: 'foto/6accb7f71da6d.jpg',
+        division: 'Cleaning Service',
+        siteName: 'site proyek demo',
+        clockInTime: '2026-10-12T17:36:20Z',
+        clockInLatitude: -6.56269,
+        clockInLongitude: 106.856161,
+        clockInPhotoUrl: 'foto-patroli/6accb8240bdd2',
+        clockInDistanceMeters: 480,
+        clockOutTime: '2026-10-12T17:38:02Z',
+        clockOutLatitude: -6.56269,
+        clockOutLongitude: 106.856161,
+        clockOutPhotoUrl: 'foto-patroli/6accb88a48052',
+        clockOutDistanceMeters: 480,
+        geofenceRadiusMeters: 100,
+        siteLatitude: -6.566873,
+        siteLongitude: 106.857802,
+      });
+
+      const detail = await service.getAttendanceDetail('att-2030');
+
+      expect(detail.id).toBe('att-2030');
+      expect(detail.personilName).toBe('akmal');
+      expect(detail.locationsIn.length).toBe(2);
+      expect(detail.locationsIn[0].label).toContain('Lokasi absen masuk akmal');
+      expect(detail.locationsIn[1].label).toBe('Lokasi Area / Site');
+      expect(detail.locationsOut.length).toBe(2);
+      expect(detail.distanceInMeters).toBe(480);
+    });
+
+    it('TC-ATT-10: should return filtered personil options list', async () => {
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([
+        { id: 'usr-1', name: 'budi satpam test', division: 'Security', siteName: 'site proyek demo' },
+      ]);
+
+      const options = await service.getPersonilOptions('site proyek demo', 'Security');
+
+      expect(options.length).toBe(1);
+      expect(options[0].name).toBe('budi satpam test');
+      expect(options[0].division).toBe('Security');
+    });
+  });
 });

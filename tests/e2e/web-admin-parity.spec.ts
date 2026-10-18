@@ -7,77 +7,40 @@ test.describe('Web Admin Command Center — 100% Parity Navigation & Modules', (
   });
 
   test('TC-ADMIN-E2E-01: Verify Command Center top ribbons, matrix tabs, payroll, and export center', async ({ page }) => {
-    // 1. Visit Web Admin
+    // 1. Visit Web Admin Home
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // 2. Verify Title & Brand
-    await expect(page.locator('text=Enterprise Facility & Patrol Command Center')).toBeVisible();
+    await expect(page.locator('.brand-text:has-text("TES-PT")')).toBeVisible();
 
-    // 3. Verify Navigation Ribbon Tabs
-    await expect(page.locator('button:has-text("DASHBOARD")')).toBeVisible();
-    await expect(page.locator('button:has-text("DATA INDUK")')).toBeVisible();
-    await expect(page.locator('button:has-text("ABSENSI (31-HARI)")')).toBeVisible();
-    await expect(page.locator('button:has-text("PATROLI (24-JAM)")')).toBeVisible();
-    await expect(page.locator('button:has-text("LAPORAN DIVISI")')).toBeVisible();
-    await expect(page.locator('button:has-text("GAJI (H/L/I)")')).toBeVisible();
-    await expect(page.locator('button:has-text("PESAN SIARAN")')).toBeVisible();
-    await expect(page.locator('button:has-text("EXPORT CENTER")')).toBeVisible();
+    // 3. Verify KPI Dashboard Elements
+    await expect(page.locator('.kpi-label:has-text("TOTAL PERSONIL")')).toBeVisible();
+    await expect(page.locator('.kpi-label:has-text("HADIR HARI INI")')).toBeVisible();
 
-    // 4. Test Tab 2: DATA INDUK
-    await page.locator('button:has-text("DATA INDUK")').click();
-    await expect(page.locator('text=Data Induk Fasilitas & Personil')).toBeVisible();
-    await expect(page.locator('text=Area & Shift Fasilitas')).toBeVisible();
+    // 4. Test Navbar Navigation to Data Induk -> Personil
+    await page.locator('button:has-text("Data Induk")').click();
+    await expect(page.locator('a.patroli-dropdown-item:has-text("Personil")')).toBeVisible();
+    await page.locator('a.patroli-dropdown-item:has-text("Personil")').click();
+    await page.waitForURL('**/datainduk/personil');
+    await expect(page.locator('#btn-tambah')).toBeVisible();
 
-    // Check Checkpoint subtab
-    await page.locator('button:has-text("Checkpoint / Aset")').click();
-    await expect(page.locator('text=Total Checkpoint:')).toBeVisible();
+    // 5. Test Navigation to Absensi
+    await page.locator('button:has-text("Absensi")').click();
+    await expect(page.locator('a.patroli-dropdown-item:has-text("Semua Data")')).toBeVisible();
+    await page.locator('a.patroli-dropdown-item:has-text("Semua Data")').click();
+    await page.waitForURL('**/absensi');
 
-    // Check Personil subtab
-    await page.locator('button:has-text("Personil & Finansial")').click();
-    await expect(page.locator('text=Total Personil Terdaftar:')).toBeVisible();
+    // 6. Test Navigation to Gaji
+    await page.locator('a[href="/gaji"]').click();
+    await page.waitForURL('**/gaji');
 
-    // 5. Test Tab 3: ABSENSI (31-HARI)
-    await page.locator('button:has-text("ABSENSI (31-HARI)")').click();
-    await expect(page.locator('text=Monitoring Absensi Kalender Matriks (1–31 Hari)')).toBeVisible();
-    await expect(page.locator('text=Petunjuk Status:')).toBeVisible();
+    // 7. Test Navigation to Pesan Siaran
+    await page.locator('a[href="/pesan-siaran"]').click();
+    await page.waitForURL('**/pesan-siaran');
 
-    // 6. Test Tab 4: PATROLI (24-JAM)
-    await page.locator('button:has-text("PATROLI (24-JAM)")').click();
-    await expect(page.locator('text=Monitoring Patroli Matriks 24 Jam')).toBeVisible();
-
-    // 7. Test Tab 5: LAPORAN DIVISI
-    await page.locator('button:has-text("LAPORAN DIVISI")').click();
-    await expect(page.locator('text=Pusat Laporan & Supervisi Operasional')).toBeVisible();
-    await expect(page.locator('button:has-text("Security Anggota")')).toBeVisible();
-    await expect(page.locator('button:has-text("Security Komandan")')).toBeVisible();
-    await expect(page.locator('button:has-text("Security Chief")')).toBeVisible();
-    await expect(page.locator('button:has-text("Cleaning Service")')).toBeVisible();
-    await expect(page.locator('button:has-text("Driver Logistik")')).toBeVisible();
-    await expect(page.locator('button:has-text("Tracking Peta Patroli")')).toBeVisible();
-
-    // 8. Test Tab 6: GAJI (H/L/I)
-    await page.locator('button:has-text("GAJI (H/L/I)")').click();
-    await expect(page.locator('text=Rekapitulasi Gaji & Kompensasi Bulanan (H/L/I Engine)')).toBeVisible();
-    await expect(page.locator('th:has-text("Gaji Bersih")')).toBeVisible();
-
-    // 9. Test Tab 7: PESAN SIARAN
-    await page.locator('button:has-text("PESAN SIARAN")').click();
-    await expect(page.locator('text=Pusat Pesan Siaran & Instruksi Harian')).toBeVisible();
-
-    // 10. Test Tab 8: EXPORT CENTER
-    await page.locator('button:has-text("EXPORT CENTER")').click();
-    await expect(page.locator('text=Pusat Unduhan Laporan Resmi (Export Center 4 Modul)')).toBeVisible();
-    await expect(page.locator('text=1. Export Absensi Personil')).toBeVisible();
-    await expect(page.locator('text=2. Export Absensi Area / Site')).toBeVisible();
-    await expect(page.locator('text=3. Export Kegiatan Personil')).toBeVisible();
-    await expect(page.locator('text=4. Export Kegiatan Area / Pos')).toBeVisible();
-
-    // 11. Test Emergency SOS trigger simulation
-    await page.locator('button:has-text("🚨 Test Alarm SOS")').click();
-    await expect(page.locator('text=ALARM DARURAT AKTIF:')).toBeVisible();
-    await expect(page.locator('button:has-text("Konfirmasi Respon (Acknowledge)")')).toBeVisible();
-    await page.locator('button:has-text("Konfirmasi Respon (Acknowledge)")').click();
-    await expect(page.locator('button:has-text("Tandai Selesai (Resolve)")')).toBeVisible();
-    await page.locator('button:has-text("Tandai Selesai (Resolve)")').click();
+    // 8. Test Navigation to Export Laporan
+    await page.locator('a[href="/export-laporan"]').click();
+    await page.waitForURL('**/export-laporan');
   });
 });

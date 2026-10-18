@@ -1,4 +1,5 @@
-import { Controller, Post, Body, Get, Patch, Param, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, Param, Query, UseGuards, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import { FastifyReply } from 'fastify';
 import { AuthService } from './auth.service';
 import { LoginRequestDto, LoginResponseDto, User } from '@patrol/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -44,6 +45,15 @@ export class AuthController {
   @Get('template/csv')
   async getTemplate() {
     return { templateCsv: this.authService.getPersonilTemplate() };
+  }
+
+  @Get('template/excel')
+  async getExcelTemplate(@Res() reply: FastifyReply) {
+    const sites = await this.authService.getActiveSites();
+    const buffer = await this.authService.generatePersonilExcelTemplate(sites);
+    reply.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    reply.header('Content-Disposition', 'attachment; filename="Template_Personil.xlsx"');
+    return reply.send(buffer);
   }
 
   @Patch('users/:id/password')

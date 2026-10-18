@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { DatabaseService } from '../../database/database.service';
 import { LoginRequestDto, LoginResponseDto, User } from '@patrol/types';
 import * as bcrypt from 'bcryptjs';
+import * as ExcelJS from 'exceljs';
 
 @Injectable()
 export class AuthService {
@@ -195,14 +196,60 @@ export class AuthService {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       try {
-        const username = (item.username || `user_${Date.now()}_${i}`).trim().toLowerCase();
+        const username = (
+          item.username ||
+          item.USERNAME ||
+          `user_${Date.now()}_${i}`
+        )
+          .toString()
+          .trim()
+          .toLowerCase();
+
         const existing = await this.db.queryOne(`SELECT id FROM users WHERE username = $1`, [username]);
         if (existing) {
           errors.push(`Row ${i + 1}: Username "${username}" already exists`);
           continue;
         }
 
-        const hashedPassword = await bcrypt.hash(item.password || 'password123', 10);
+        const rawPassword = (item.password || item.PASSWORD || 'Password123').toString().trim();
+        const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
+        const fullName = (
+          item.namaAnggota ||
+          item.NAMA_ANGGOTA ||
+          item['Nama Personel'] ||
+          item.nama ||
+          item.fullName ||
+          'Petugas Lapangan'
+        ).toString().trim();
+
+        const rawPosisi = (item.posisi || item.POSISI || item.role || 'Security').toString().toLowerCase();
+        let division = 'SECURITY';
+        let role = 'SECURITY_OFFICER';
+
+        if (rawPosisi.includes('clean')) {
+          division = 'CLEANING';
+          role = 'CLEANING_STAFF';
+        } else if (rawPosisi.includes('driver')) {
+          division = 'DRIVER';
+          role = 'DRIVER';
+        } else if (rawPosisi.includes('staf') || rawPosisi.includes('staff')) {
+          division = 'STAFF';
+          role = 'STAFF';
+        } else if (rawPosisi.includes('admin')) {
+          division = 'STAFF';
+          role = 'ADMIN_AREA';
+        }
+
+        const securityRank = (item.jabatan || item.securityRank || 'ANGGOTA').toString().toUpperCase();
+        const jamKerja = Number(item.jamKerja ?? item.JAM_KERJA ?? item.workingHoursPerDay ?? 8) || 8;
+        const gajiPokok = Number(item.gajiPokok ?? item.GAJI_POKOK ?? 0) || 0;
+        const tunjangan = Number(item.tunjangan ?? item.TUNJANGAN ?? 0) || 0;
+        const lemburPerJam = Number(item.lembur ?? item.LEMBUR ?? item.lemburPerJam ?? 0) || 0;
+        const potonganBpjs = Number(item.potBpjs ?? item.POT_BPJS ?? item.potonganBpjs ?? 0) || 0;
+        const potonganAlpa = Number(item.potTidakMasuk ?? item.POT_TIDAK_MASUK ?? item.potonganAlpa ?? 0) || 0;
+        const potonganLupaAbsen = Number(item.potLupaAbsensi ?? item.POT_LUPA_ABSENSI ?? item.potonganLupaAbsen ?? 0) || 0;
+
         const row = await this.db.queryOne<any>(
           `INSERT INTO users (
             username, password_hash, full_name, role, division,
@@ -214,21 +261,22 @@ export class AuthService {
           [
             username,
             hashedPassword,
-            item.nama || item.fullName || 'Petugas Lapangan',
-            item.posisi || item.role || 'PETUGAS',
-            item.division || 'Security',
-            item.jabatan || item.securityRank || 'ANGGOTA',
-            item.jamKerja || 8,
-            item.gajiPokok || 3000000,
-            item.tunjangan || 500000,
-            item.lemburPerJam || 25000,
-            item.potonganBpjs || 150000,
-            item.potonganAlpa || 100000,
-            item.potonganLupaAbsen || 50000,
+            fullName,
+            role,
+            division,
+            securityRank,
+            jamKerja,
+            gajiPokok,
+            tunjangan,
+            lemburPerJam,
+            potonganBpjs,
+            potonganAlpa,
+            potonganLupaAbsen,
           ],
         );
 
-        const siteId = (item.siteCodeOrName && siteMap.get(item.siteCodeOrName.trim().toLowerCase())) || defaultSiteId;
+        const areaName = (item.area || item.AREA || item.siteCodeOrName || '').toString().trim().toLowerCase();
+        const siteId = (areaName && siteMap.get(areaName)) || defaultSiteId;
         if (siteId) {
           await this.db.query(
             `INSERT INTO user_site_assignments (user_id, site_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
@@ -244,9 +292,153 @@ export class AuthService {
     return { importedCount, errors };
   }
 
+  async getActiveSites(): Promise<{ id: string; name: string }[]> {
+    return this.db.query<any>(`SELECT id, name FROM sites WHERE is_active = true ORDER BY name ASC`);
+  }
+
+  async generatePersonilExcelTemplate(sites: { name: string }[]): Promise<Buffer> {
+    const WorkbookClass = (ExcelJS as any).Workbook || (ExcelJS as any).default?.Workbook || (ExcelJS as any).default;
+    const wb = new WorkbookClass();
+    wb.creator = 'Patrol & Facility Management System';
+    wb.created = new Date();
+
+    const siteList = sites && sites.length > 0 ? sites : [{ name: 'Site Proyek Demo' }];
+    const standardPositions = ['Security', 'Cleaning Service', 'Driver', 'Staf'];
+
+    // Sheet 1: PERSONIL
+    const ws1 = wb.addWorksheet('PERSONIL', {
+      views: [{ state: 'frozen', ySplit: 1, topLeftCell: 'A2' }],
+    });
+
+    ws1.columns = [
+      { header: 'NAMA_ANGGOTA', key: 'nama_anggota', width: 25 },
+      { header: 'USERNAME', key: 'username', width: 22 },
+      { header: 'PASSWORD', key: 'password', width: 22 },
+      { header: 'JAM_KERJA', key: 'jam_kerja', width: 12 },
+      { header: 'POSISI', key: 'posisi', width: 22 },
+      { header: 'AREA', key: 'area', width: 38 },
+      { header: 'GAJI_POKOK', key: 'gaji_pokok', width: 18 },
+      { header: 'TUNJANGAN', key: 'tunjangan', width: 18 },
+      { header: 'LEMBUR', key: 'lembur', width: 18 },
+      { header: 'POT_BPJS', key: 'pot_bpjs', width: 18 },
+      { header: 'POT_TIDAK_MASUK', key: 'pot_tidak_masuk', width: 18 },
+      { header: 'POT_LUPA_ABSENSI', key: 'pot_lupa_absensi', width: 18 },
+    ];
+
+    const headerFill: ExcelJS.Fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD9EAF7' },
+    };
+
+    const thinBorder: Partial<ExcelJS.Borders> = {
+      top: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+      left: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+      bottom: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+      right: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+    };
+
+    const headerRow = ws1.getRow(1);
+    headerRow.height = 28;
+    headerRow.eachCell({ includeEmpty: true }, (cell) => {
+      cell.fill = headerFill;
+      cell.border = thinBorder;
+      cell.font = { name: 'Calibri', size: 11, bold: true };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+
+    const sampleRow = ws1.addRow({
+      nama_anggota: 'Contoh Nama',
+      username: 'contohuser',
+      password: 'Password123',
+      jam_kerja: 16,
+      posisi: 'Security',
+      area: siteList[0].name,
+      gaji_pokok: 0,
+      tunjangan: 0,
+      lembur: 0,
+      pot_bpjs: 0,
+      pot_tidak_masuk: 0,
+      pot_lupa_absensi: 0,
+    });
+    sampleRow.height = 22;
+    sampleRow.eachCell({ includeEmpty: true }, (cell) => {
+      cell.fill = headerFill;
+      cell.border = thinBorder;
+      cell.font = { name: 'Calibri', size: 11, bold: false };
+      cell.alignment = { vertical: 'middle' };
+    });
+
+    for (let r = 3; r <= 501; r++) {
+      const row = ws1.getRow(r);
+      for (let c = 1; c <= 12; c++) {
+        const cell = row.getCell(c);
+        cell.border = thinBorder;
+        cell.font = { name: 'Calibri', size: 11 };
+      }
+    }
+
+    for (let r = 2; r <= 501; r++) {
+      ws1.getCell(`E${r}`).dataValidation = {
+        type: 'list',
+        allowBlank: true,
+        formulae: ['=PosisiList'],
+        showErrorMessage: true,
+        showInputMessage: true,
+      };
+      ws1.getCell(`F${r}`).dataValidation = {
+        type: 'list',
+        allowBlank: true,
+        formulae: ['=AreaList'],
+        showErrorMessage: true,
+        showInputMessage: true,
+      };
+    }
+
+    // Sheet 2: DAFTAR_AREA
+    const ws2 = wb.addWorksheet('DAFTAR_AREA');
+    ws2.columns = [
+      { header: 'DAFTAR AREA', key: 'area', width: 45 },
+      { header: 'DAFTAR POSISI', key: 'posisi', width: 25 },
+    ];
+
+    const ws2Header = ws2.getRow(1);
+    ws2Header.height = 28;
+    ws2Header.eachCell({ includeEmpty: true }, (cell) => {
+      cell.fill = headerFill;
+      cell.border = thinBorder;
+      cell.font = { name: 'Calibri', size: 11, bold: true };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+
+    const maxRows = Math.max(siteList.length, standardPositions.length);
+    for (let i = 0; i < maxRows; i++) {
+      const rowNumber = i + 2;
+      const r = ws2.getRow(rowNumber);
+      const cellA = r.getCell(1);
+      const cellB = r.getCell(2);
+      cellA.value = siteList[i]?.name || '';
+      cellB.value = standardPositions[i] || '';
+      cellA.border = thinBorder;
+      cellB.border = thinBorder;
+      cellA.font = { name: 'Calibri', size: 11 };
+      cellB.font = { name: 'Calibri', size: 11 };
+    }
+
+    const lastAreaRow = Math.max(2, siteList.length + 1);
+    const lastPosRow = Math.max(2, standardPositions.length + 1);
+    wb.definedNames.add(`'DAFTAR_AREA'!$A$2:$A$${lastAreaRow}`, 'AreaList');
+    wb.definedNames.add(`'DAFTAR_AREA'!$B$2:$B$${lastPosRow}`, 'PosisiList');
+
+    const buffer = await wb.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
   getPersonilTemplate(): string {
-    return 'nama,username,password,posisi,jabatan,jamKerja,gajiPokok,tunjangan,siteCodeOrName\n' +
-      'Budi Satpam,satpambudi,satpam123,Security,Anggota,8,3500000,500000,Site Proyek Demo\n' +
-      'Siti Cleaning,siticlean,clean123,Cleaning Service,Anggota,8,3000000,400000,Site Proyek Demo';
+    return (
+      'NAMA_ANGGOTA,USERNAME,PASSWORD,JAM_KERJA,POSISI,AREA,GAJI_POKOK,TUNJANGAN,LEMBUR,POT_BPJS,POT_TIDAK_MASUK,POT_LUPA_ABSENSI\n' +
+      'Budi Satpam,satpambudi,Password123,8,Security,Site Proyek Demo,3500000,500000,25000,150000,100000,50000\n' +
+      'Siti Cleaning,siticlean,Password123,8,Cleaning Service,Site Proyek Demo,3000000,400000,20000,120000,80000,40000'
+    );
   }
 }

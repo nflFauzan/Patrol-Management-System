@@ -390,7 +390,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUsers((prev) => prev.filter((u) => u.id !== targetId));
         return { success: true, message: 'Personil berhasil dihapus (Mode Lokal)' };
       }
-      throw new Error(err.message || 'Password verifikasi admin salah');
+      throw new Error('Password verifikasi admin salah');
     }
   };
 
