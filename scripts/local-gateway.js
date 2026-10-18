@@ -12,7 +12,9 @@
  */
 
 const http = require('http');
+const https = require('https');
 const net = require('net');
+const tls = require('tls');
 const url = require('url');
 
 const GATEWAY_PORT = process.env.GATEWAY_PORT ? parseInt(process.env.GATEWAY_PORT, 10) : 8080;
@@ -21,6 +23,10 @@ const ADMIN_PORT = 3001;
 const PWA_PORT = 5173;
 const DB_PORT = 5432;
 const REDIS_PORT = 6379;
+
+// Connection pooling agents to eliminate connection latency & socket exhaustion
+const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 50 });
+const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 50, rejectUnauthorized: false });
 
 // Helper: Cek koneksi port TCP untuk status healthcheck
 function checkPort(port, host = '127.0.0.1', timeoutMs = 800) {
@@ -49,13 +55,17 @@ function checkPort(port, host = '127.0.0.1', timeoutMs = 800) {
   });
 }
 
-// Proxy HTTP Request generik menggunakan modul bawaan Node.js http
+// Proxy HTTP Request generik mendukung target HTTP dan HTTPS (PWA basicSsl)
 function proxyHttpRequest(req, res, targetPort, targetPath = req.url) {
+  const isHttps = targetPort === PWA_PORT;
+  const transport = isHttps ? https : http;
   const options = {
     hostname: '127.0.0.1',
     port: targetPort,
     path: targetPath,
     method: req.method,
+    agent: isHttps ? httpsAgent : httpAgent,
+    rejectUnauthorized: false,
     headers: {
       ...req.headers,
       host: `127.0.0.1:${targetPort}`,
@@ -65,28 +75,35 @@ function proxyHttpRequest(req, res, targetPort, targetPath = req.url) {
     },
   };
 
-  const proxyReq = http.request(options, (proxyRes) => {
+  const proxyReq = transport.request(options, (proxyRes) => {
     res.writeHead(proxyRes.statusCode, proxyRes.headers);
     proxyRes.pipe(res);
   });
 
   proxyReq.on('error', (err) => {
-    res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
-    res.end(JSON.stringify({
-      statusCode: 502,
-      error: 'Bad Gateway',
-      message: `Tidak dapat terhubung ke service lokal di port ${targetPort}. Pastikan service sudah dijalankan via start-dev.bat.`,
-      targetPort,
-      details: err.message,
-    }, null, 2));
+    if (!res.headersSent) {
+      res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({
+        statusCode: 502,
+        error: 'Bad Gateway',
+        message: `Tidak dapat terhubung ke service lokal di port ${targetPort}. Pastikan service sudah dijalankan via start-dev.bat.`,
+        targetPort,
+        details: err.message,
+      }, null, 2));
+    }
   });
 
   req.pipe(proxyReq);
 }
 
-// Proxy WebSocket Upgrade menggunakan modul bawaan Node.js net
+// Proxy WebSocket Upgrade menggunakan modul bawaan Node.js net / tls
 function proxyWebSocketUpgrade(req, clientSocket, head, targetPort, targetPath = req.url) {
-  const proxySocket = net.connect(targetPort, '127.0.0.1', () => {
+  const isHttps = targetPort === PWA_PORT;
+  const connectFn = isHttps
+    ? (cb) => tls.connect({ host: '127.0.0.1', port: targetPort, rejectUnauthorized: false }, cb)
+    : (cb) => net.connect(targetPort, '127.0.0.1', cb);
+
+  const proxySocket = connectFn(() => {
     let rawReq = `${req.method} ${targetPath} HTTP/${req.httpVersion}\r\n`;
     for (const [key, val] of Object.entries(req.headers)) {
       if (key.toLowerCase() === 'host') {

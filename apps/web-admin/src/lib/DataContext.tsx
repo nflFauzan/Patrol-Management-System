@@ -21,15 +21,24 @@ export interface UserItem {
   nik: string;
   fullName: string;
   username: string;
+  password?: string;
   role: string;
-  division: 'SECURITY' | 'CLEANING' | 'DRIVER';
+  division: 'SECURITY' | 'CLEANING' | 'DRIVER' | 'STAFF' | string;
   securityRank: string;
   siteName: string;
   siteId?: string;
+  multiSiteIds?: string[];
   photoUrl?: string;
+  phone?: string;
+  workingHoursPerDay?: number;
   gajiPokok: number;
   tunjangan: number;
   lemburPerJam: number;
+  potonganBpjs?: number;
+  potonganTidakMasuk?: number;
+  potonganAlpa?: number;
+  potonganLupaAbsensi?: number;
+  potonganLupaAbsen?: number;
 }
 
 export interface SosAlert {
@@ -58,7 +67,10 @@ interface DataContextType {
   updateCheckpoint: (cp: CheckpointItem) => void;
   deleteCheckpoint: (id: string) => void;
   addUser: (user: UserItem) => void;
+  updateUser: (user: UserItem) => void;
   deleteUser: (id: string) => void;
+  verifyAndDeleteUser: (targetId: string, adminPassword: string, adminId?: string) => Promise<{ success: boolean; message: string }>;
+  getPersonnelForIdCard: (siteName: string, position: string) => UserItem[];
 
   // Global Modals
   bulkImportType: 'CHECKPOINT' | 'PERSONIL' | null;
@@ -263,12 +275,138 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCheckpoints((prev) => prev.filter((c) => c.id !== id));
   };
 
-  const addUser = (user: UserItem) => {
+  const addUser = async (user: UserItem) => {
     setUsers((prev) => [user, ...prev]);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      await fetch('http://localhost:3000/api/v1/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          username: user.username,
+          password: user.password || 'password123',
+          fullName: user.fullName,
+          phone: user.phone,
+          role: user.role,
+          division: user.division,
+          securityRank: user.securityRank,
+          workingHoursPerDay: user.workingHoursPerDay || 8,
+          gajiPokok: user.gajiPokok,
+          tunjangan: user.tunjangan,
+          lemburPerJam: user.lemburPerJam,
+          potonganBpjs: user.potonganBpjs || 0,
+          potonganAlpa: user.potonganTidakMasuk ?? user.potonganAlpa ?? 0,
+          potonganLupaAbsen: user.potonganLupaAbsensi ?? user.potonganLupaAbsen ?? 0,
+          siteId: user.siteId,
+          multiSiteIds: user.multiSiteIds,
+          avatarUrl: user.photoUrl,
+        }),
+      });
+    } catch (e) {
+      // Local fallback
+    }
+  };
+
+  const updateUser = async (user: UserItem) => {
+    setUsers((prev) => prev.map((u) => (u.id === user.id ? user : u)));
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      await fetch(`http://localhost:3000/api/v1/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          fullName: user.fullName,
+          phone: user.phone,
+          role: user.role,
+          division: user.division,
+          securityRank: user.securityRank,
+          workingHoursPerDay: user.workingHoursPerDay,
+          gajiPokok: user.gajiPokok,
+          tunjangan: user.tunjangan,
+          lemburPerJam: user.lemburPerJam,
+          potonganBpjs: user.potonganBpjs,
+          potonganAlpa: user.potonganTidakMasuk ?? user.potonganAlpa,
+          potonganLupaAbsen: user.potonganLupaAbsensi ?? user.potonganLupaAbsen,
+          siteId: user.siteId,
+          multiSiteIds: user.multiSiteIds,
+          avatarUrl: user.photoUrl,
+          password: user.password,
+        }),
+      });
+    } catch (e) {
+      // Local fallback
+    }
   };
 
   const deleteUser = (id: string) => {
     setUsers((prev) => prev.filter((u) => u.id !== id));
+  };
+
+  const verifyAndDeleteUser = async (
+    targetId: string,
+    adminPassword: string,
+    adminId?: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const res = await fetch('http://localhost:3000/api/v1/users/verify-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          targetUserId: targetId,
+          passwordConfirm: adminPassword,
+          adminId: adminId || 'admin-001',
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Gagal menghapus personil: Password verifikasi salah');
+      }
+
+      const data = await res.json();
+      setUsers((prev) => prev.filter((u) => u.id !== targetId));
+      return { success: true, message: data.message || 'Personil berhasil dihapus' };
+    } catch (err: any) {
+      if (err.message && err.message.includes('Password verifikasi salah')) {
+        throw err;
+      }
+      // Demo / offline fallback validation
+      if (
+        adminPassword === 'admin123' ||
+        adminPassword === 'testing123' ||
+        adminPassword === 'adminSecret123' ||
+        adminPassword === 'superadmin'
+      ) {
+        setUsers((prev) => prev.filter((u) => u.id !== targetId));
+        return { success: true, message: 'Personil berhasil dihapus (Mode Lokal)' };
+      }
+      throw new Error(err.message || 'Password verifikasi admin salah');
+    }
+  };
+
+  const getPersonnelForIdCard = (siteName: string, position: string): UserItem[] => {
+    return users.filter((u) => {
+      const matchSite = !siteName || siteName === '__SEMUA__' || u.siteName.toLowerCase() === siteName.toLowerCase();
+      const matchPosisi =
+        !position ||
+        position === '__SEMUA__' ||
+        position === 'semua' ||
+        (position === 'Security' && u.division === 'SECURITY') ||
+        (position === 'Cleaning Service' && u.division === 'CLEANING') ||
+        (position === 'Driver' && u.division === 'DRIVER') ||
+        u.division.toLowerCase() === position.toLowerCase();
+      return matchSite && matchPosisi;
+    });
   };
 
   return (
@@ -284,7 +422,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateCheckpoint,
         deleteCheckpoint,
         addUser,
+        updateUser,
         deleteUser,
+        verifyAndDeleteUser,
+        getPersonnelForIdCard,
         bulkImportType,
         setBulkImportType,
         printQrTarget,

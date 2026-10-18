@@ -12,6 +12,7 @@ import { DriverModule } from './modules/driver/driver.module';
 import { SosModule } from './modules/sos/sos.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { BroadcastModule } from './modules/broadcast/broadcast.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { BroadcastModule } from './modules/broadcast/broadcast.module';
     DatabaseModule,
     GatewayModule,
     AuthModule,
+    UsersModule,
     SitesModule,
     CheckpointsModule,
     AttendanceModule,

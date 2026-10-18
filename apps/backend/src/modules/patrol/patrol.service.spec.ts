@@ -34,6 +34,10 @@ describe('PatrolService (QR Code Checkpoint Patrol & Incident Tracking)', () => 
           category: 'Security',
           location_detail: 'Gate A Pintu Barat',
         })
+        // 1.5 Mock user division check
+        .mockResolvedValueOnce({
+          division: 'Security',
+        })
         // 2. Mock patrol_logs insertion
         .mockResolvedValueOnce({
           id: 'patrol-log-01',
@@ -97,6 +101,10 @@ describe('PatrolService (QR Code Checkpoint Patrol & Incident Tracking)', () => 
           qr_code_token: 'QR-HQ-SERVER-03',
           category: 'Security',
           location_detail: 'Ruang 304 Khusus IT',
+        })
+        // 1.5 Mock user division check
+        .mockResolvedValueOnce({
+          division: 'Security',
         })
         // 2. Mock patrol_logs insertion
         .mockResolvedValueOnce({
