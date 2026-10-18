@@ -14,6 +14,7 @@ import {
   Download,
   Filter
 } from 'lucide-react';
+import { LaporanSecurityAnggotaView } from './LaporanSecurityAnggotaView';
 
 interface ReportsTabProps {
   selectedSiteId: string;
@@ -184,36 +185,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ selectedSiteId }) => {
       {/* Content Rendering based on reportType */}
       <div className="space-y-4">
         {reportType === 'ANGGOTA' && (
-          <div className="overflow-x-auto border border-slate-200 rounded-xl">
-            <table className="w-full text-xs text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-100 text-slate-700 font-bold uppercase border-b">
-                  <th className="py-2.5 px-3">Waktu</th>
-                  <th className="py-2.5 px-3">Petugas</th>
-                  <th className="py-2.5 px-3">Pos Checkpoint</th>
-                  <th className="py-2.5 px-3">Hasil Temuan</th>
-                  <th className="py-2.5 px-3">Catatan Petugas</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {sampleAnggota.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50">
-                    <td className="py-2.5 px-3 font-mono">{r.time}</td>
-                    <td className="py-2.5 px-3 font-semibold text-slate-900">{r.officerName}</td>
-                    <td className="py-2.5 px-3">{r.checkpoint}</td>
-                    <td className="py-2.5 px-3">
-                      <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
-                        r.isAbnormal ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'
-                      }`}>
-                        {r.status}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-slate-600">{r.notes}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <LaporanSecurityAnggotaView />
         )}
 
         {reportType === 'KOMANDAN' && (

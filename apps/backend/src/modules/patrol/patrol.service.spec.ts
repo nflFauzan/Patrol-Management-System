@@ -186,4 +186,72 @@ describe('PatrolService (QR Code Checkpoint Patrol & Incident Tracking)', () => 
       ).rejects.toThrow(BadRequestException);
     });
   });
+
+  describe('TC-PAT-04: Laporan Security Anggota Records & Detail Parity', () => {
+    it('should fetch paginated patrol records with formatted date and asset information', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({ total: 1 });
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([
+        {
+          id: '7545',
+          siteName: 'site proyek demo',
+          officerName: 'budi satpam test',
+          avatarUrl: 'foto/6acbcdd59a172.jpg',
+          position: 'anggota',
+          assetName: 'pos gerbang utama',
+          assetType: 'keamanan',
+          assetLocation: 'gerbang utama depan - site proyek demo',
+          taskDescription: 'pemeriksaan akses masuk tamu',
+          statusResult: 'Situasi Aman Terkendali',
+          notes: 'Situasi Aman Terkendali',
+          scannedAt: '2026-10-12T11:01:00.000Z',
+          latitude: -6.562732,
+          longitude: 106.856083,
+          photoKey: 'foto-patroli/6accbe1ba279e',
+          ticketStatus: null,
+          resolutionNotes: null,
+        },
+      ]);
+
+      const result = await service.getPatrolRecords({ page: 1, limit: 5 });
+
+      expect(result.recordsTotal).toBe(1);
+      expect(result.data.length).toBe(1);
+      expect(result.data[0].officerName).toBe('budi satpam test');
+      expect(result.data[0].assetName).toBe('pos gerbang utama');
+      expect(result.data[0].statusResult).toBe('Situasi Aman Terkendali');
+      expect(result.data[0].timeFormatted).toBe('18:01:00');
+    });
+
+    it('should fetch exact detail-patroli for a specific ID with map coordinate links', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({
+        id: '7545',
+        siteName: 'site proyek demo',
+        officerName: 'budi satpam test',
+        avatarUrl: 'foto/6acbcdd59a172.jpg',
+        position: 'anggota',
+        assetName: 'pos gerbang utama',
+        assetType: 'keamanan',
+        assetLocation: 'gerbang utama depan - site proyek demo',
+        taskDescription: 'pemeriksaan akses masuk tamu',
+        statusResult: 'Situasi Aman Terkendali',
+        notes: 'Situasi Aman Terkendali',
+        scannedAt: '2026-10-12T11:01:00.000Z',
+        latitude: -6.562732,
+        longitude: 106.856083,
+        photoKey: 'foto-patroli/6accbe1ba279e',
+        ticketStatus: null,
+        resolutionNotes: null,
+      });
+
+      const detail = await service.getPatrolDetail('7545');
+
+      expect(detail.id).toBe('7545');
+      expect(detail.officerName).toBe('budi satpam test');
+      expect(detail.patrolCode).toBe('#7545');
+      expect(detail.activityStatus).toBe('Selesai');
+      expect(detail.latitude).toBeCloseTo(-6.562732);
+      expect(detail.longitude).toBeCloseTo(106.856083);
+      expect(detail.googleMapsUrl).toContain('https://www.google.com/maps?q=-6.562732%2C106.856083');
+    });
+  });
 });

@@ -255,6 +255,56 @@ export interface PatrolLogDetail {
   createdAt: string;
 }
 
+export interface PatrolRecordItem {
+  id: string;
+  siteName: string;
+  officerName: string;
+  position?: string;
+  assetName: string;
+  assetType?: string;
+  assetLocation?: string;
+  taskDescription?: string;
+  statusResult: string;
+  notes?: string | null;
+  scannedAt: string;
+  dateFormatted: string;
+  timeFormatted: string;
+  dateTimeFull: string;
+  latitude: number;
+  longitude: number;
+  photoUrl?: string | null;
+  tindakLanjutStatus?: string | null;
+}
+
+export interface PatrolRecordsResponse {
+  draw?: number;
+  recordsTotal: number;
+  recordsFiltered: number;
+  data: PatrolRecordItem[];
+}
+
+export interface PatrolDetailResponse {
+  id: string;
+  officerName: string;
+  position: string;
+  siteName: string;
+  avatarUrl?: string | null;
+  activityStatus: string;
+  assetName: string;
+  assetType: string;
+  assetLocation: string;
+  dateFormatted: string;
+  timeFormatted: string;
+  patrolCode: string;
+  taskDescription: string;
+  patrolResult: string;
+  latitude: number;
+  longitude: number;
+  googleMapsUrl: string;
+  photoUrl?: string | null;
+  tindakLanjutStatus?: string | null;
+}
+
 export interface IncidentReport {
   id: string;
   siteId: string;

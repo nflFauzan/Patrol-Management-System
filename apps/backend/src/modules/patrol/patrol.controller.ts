@@ -38,6 +38,29 @@ export class PatrolController {
     return this.patrolService.getIncidentTickets(siteId);
   }
 
+  @Get('records')
+  async getRecords(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('siteName') siteName?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.patrolService.getPatrolRecords({ page, limit, siteName, search });
+  }
+
+  @Get(':id/detail')
+  async getDetail(@Param('id') id: string) {
+    return this.patrolService.getPatrolDetail(id);
+  }
+
+  @Post(':id/tl')
+  async updateTl(
+    @Param('id') id: string,
+    @Body('notes') notes?: string,
+  ) {
+    return this.patrolService.updateTindakLanjut(id, notes);
+  }
+
   @Patch('incidents/:id/resolve')
   async resolveIncident(
     @Param('id') ticketId: string,

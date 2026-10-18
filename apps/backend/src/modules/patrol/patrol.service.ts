@@ -1,7 +1,14 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { EventsGateway } from '../gateway/events.gateway';
-import { HourlyPatrolMatrixResponse, HourlyPatrolMatrixRow, Division } from '@patrol/types';
+import { 
+  HourlyPatrolMatrixResponse, 
+  HourlyPatrolMatrixRow, 
+  Division,
+  PatrolRecordsResponse,
+  PatrolDetailResponse,
+  PatrolRecordItem
+} from '@patrol/types';
 
 export interface RecordScanDto {
   siteId: string;
@@ -318,5 +325,238 @@ export class PatrolService {
       siteName,
       rows,
     };
+  }
+
+  async getPatrolRecords(query: {
+    page?: number;
+    limit?: number;
+    siteName?: string;
+    search?: string;
+  }): Promise<PatrolRecordsResponse> {
+    const page = Math.max(1, Number(query.page) || 1);
+    const limit = Math.max(1, Number(query.limit) || 5);
+    const offset = (page - 1) * limit;
+
+    let whereClause = ` WHERE 1=1 `;
+    const params: any[] = [];
+    let paramIdx = 1;
+
+    if (query.siteName && query.siteName.trim() !== '') {
+      whereClause += ` AND s.name ILIKE $${paramIdx++}`;
+      params.push(`%${query.siteName.trim()}%`);
+    }
+
+    if (query.search && query.search.trim() !== '') {
+      whereClause += ` AND (
+        u.full_name ILIKE $${paramIdx} OR 
+        s.name ILIKE $${paramIdx} OR 
+        c.name ILIKE $${paramIdx} OR 
+        p.status_result ILIKE $${paramIdx} OR 
+        p.notes ILIKE $${paramIdx}
+      )`;
+      params.push(`%${query.search.trim()}%`);
+      paramIdx++;
+    }
+
+    const countSql = `
+      SELECT COUNT(*)::int AS total
+      FROM patrol_logs p
+      JOIN users u ON p.user_id = u.id
+      JOIN checkpoints c ON p.checkpoint_id = c.id
+      JOIN sites s ON p.site_id = s.id
+      ${whereClause}
+    `;
+    const countResult = await this.db.queryOne<{ total: number }>(countSql, params);
+    const recordsTotal = countResult?.total || 0;
+
+    const dataSql = `
+      SELECT 
+        p.id,
+        s.name AS "siteName",
+        u.full_name AS "officerName",
+        u.avatar_url AS "avatarUrl",
+        COALESCE(u.role::text, 'anggota') AS "position",
+        c.name AS "assetName",
+        c.category AS "assetType",
+        c.location_detail AS "assetLocation",
+        c.task_description AS "taskDescription",
+        p.status_result AS "statusResult",
+        p.notes,
+        p.scanned_at AS "scannedAt",
+        ST_Y(p.coordinates::geometry) AS latitude,
+        ST_X(p.coordinates::geometry) AS longitude,
+        p.photo_key AS "photoKey",
+        it.ticket_status AS "ticketStatus",
+        it.resolution_notes AS "resolutionNotes"
+      FROM patrol_logs p
+      JOIN users u ON p.user_id = u.id
+      JOIN checkpoints c ON p.checkpoint_id = c.id
+      JOIN sites s ON p.site_id = s.id
+      LEFT JOIN incident_tickets it ON it.patrol_log_id = p.id
+      ${whereClause}
+      ORDER BY p.scanned_at DESC
+      LIMIT $${paramIdx++} OFFSET $${paramIdx++}
+    `;
+    const dataParams = [...params, limit, offset];
+    const rows = await this.db.query<any>(dataSql, dataParams);
+
+    const data: PatrolRecordItem[] = rows.map((r) => {
+      const { dateFormatted, timeFormatted, dateTimeFull } = this.formatWibDateTime(r.scannedAt);
+
+      return {
+        id: String(r.id),
+        siteName: r.siteName,
+        officerName: r.officerName,
+        position: 'anggota',
+        assetName: r.assetName,
+        assetType: r.assetType || 'keamanan',
+        assetLocation: r.assetLocation || `${r.assetName} - ${r.siteName}`,
+        taskDescription: r.taskDescription || r.notes || 'Pemeriksaan akses dan keamanan area',
+        statusResult: r.statusResult || 'Situasi Aman Terkendali',
+        notes: r.notes,
+        scannedAt: r.scannedAt,
+        dateFormatted,
+        timeFormatted,
+        dateTimeFull,
+        latitude: Number(r.latitude) || 0,
+        longitude: Number(r.longitude) || 0,
+        photoUrl: r.photoKey,
+        tindakLanjutStatus: r.ticketStatus === 'RESOLVED' ? 'Sudah di TL' : null,
+      };
+    });
+
+    return {
+      draw: query.page || 1,
+      recordsTotal,
+      recordsFiltered: recordsTotal,
+      data,
+    };
+  }
+
+  async getPatrolDetail(id: string): Promise<PatrolDetailResponse> {
+    const sql = `
+      SELECT 
+        p.id,
+        s.name AS "siteName",
+        u.full_name AS "officerName",
+        u.avatar_url AS "avatarUrl",
+        COALESCE(u.role::text, 'anggota') AS "position",
+        c.name AS "assetName",
+        c.category AS "assetType",
+        c.location_detail AS "assetLocation",
+        c.task_description AS "taskDescription",
+        p.status_result AS "statusResult",
+        p.notes,
+        p.scanned_at AS "scannedAt",
+        ST_Y(p.coordinates::geometry) AS latitude,
+        ST_X(p.coordinates::geometry) AS longitude,
+        p.photo_key AS "photoKey",
+        it.ticket_status AS "ticketStatus",
+        it.resolution_notes AS "resolutionNotes"
+      FROM patrol_logs p
+      JOIN users u ON p.user_id = u.id
+      JOIN checkpoints c ON p.checkpoint_id = c.id
+      JOIN sites s ON p.site_id = s.id
+      LEFT JOIN incident_tickets it ON it.patrol_log_id = p.id
+      WHERE p.id::text = $1
+    `;
+    const r = await this.db.queryOne<any>(sql, [id]);
+    if (!r) {
+      throw new NotFoundException(`Patrol detail with ID ${id} not found`);
+    }
+
+    const { dateFormatted, timeFormatted } = this.formatWibDateTime(r.scannedAt);
+    const shortCode = String(r.id).includes('-') ? String(r.id).substring(0, 4) : String(r.id);
+    const lat = Number(r.latitude) || 0;
+    const lng = Number(r.longitude) || 0;
+    const googleMapsUrl = `https://www.google.com/maps?q=${lat}%2C${lng}`;
+
+    return {
+      id: String(r.id),
+      officerName: r.officerName,
+      position: 'anggota',
+      siteName: r.siteName,
+      avatarUrl: r.avatarUrl,
+      activityStatus: 'Selesai',
+      assetName: r.assetName,
+      assetType: r.assetType || 'keamanan',
+      assetLocation: r.assetLocation || `${r.assetName} - ${r.siteName}`,
+      dateFormatted,
+      timeFormatted,
+      patrolCode: `#${shortCode}`,
+      taskDescription: r.taskDescription || 'Pemeriksaan akses dan keamanan area',
+      patrolResult: r.statusResult || 'Situasi Aman Terkendali',
+      latitude: lat,
+      longitude: lng,
+      googleMapsUrl,
+      photoUrl: r.photoKey,
+      tindakLanjutStatus: r.ticketStatus === 'RESOLVED' ? 'Sudah di TL' : null,
+    };
+  }
+
+  private formatWibDateTime(dateInput: string | Date) {
+    const d = new Date(dateInput);
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Jakarta',
+      weekday: 'long',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+
+    const parts = formatter.formatToParts(d);
+    const p: Record<string, string> = {};
+    for (const part of parts) {
+      p[part.type] = part.value;
+    }
+
+    const dayNameMap: Record<string, string> = {
+      Sunday: 'Minggu',
+      Monday: 'Senin',
+      Tuesday: 'Selasa',
+      Wednesday: 'Rabu',
+      Thursday: 'Kamis',
+      Friday: 'Jumat',
+      Saturday: 'Sabtu',
+    };
+    const indonesianDay = dayNameMap[p.weekday] || p.weekday;
+
+    const dateFormatted = `${indonesianDay}, ${p.day} ${p.month} ${p.year}`;
+    const timeFormatted = `${p.hour}:${p.minute}:${p.second}`;
+    const dateTimeFull = `${dateFormatted} | ${timeFormatted}`;
+
+    return { dateFormatted, timeFormatted, dateTimeFull };
+  }
+
+  async updateTindakLanjut(patrolLogId: string, notes = 'Ya sudah di TL') {
+    const existingTicket = await this.db.queryOne<any>(
+      'SELECT id FROM incident_tickets WHERE patrol_log_id = $1::uuid OR patrol_log_id::text = $1',
+      [patrolLogId]
+    );
+
+    if (existingTicket) {
+      return this.db.queryOne<any>(
+        `UPDATE incident_tickets 
+         SET ticket_status = 'RESOLVED', resolution_notes = $2, resolved_at = CURRENT_TIMESTAMP
+         WHERE id = $1 RETURNING *`,
+        [existingTicket.id, notes]
+      );
+    } else {
+      const patrol = await this.db.queryOne<any>(
+        'SELECT site_id, user_id FROM patrol_logs WHERE id::text = $1 OR id = $1::uuid',
+        [patrolLogId]
+      );
+      if (!patrol) throw new NotFoundException('Patrol log not found');
+      return this.db.queryOne<any>(
+        `INSERT INTO incident_tickets (site_id, patrol_log_id, ticket_status, reported_by, resolution_notes, resolved_at)
+         VALUES ($1, $2, 'RESOLVED', $3, $4, CURRENT_TIMESTAMP)
+         RETURNING *`,
+        [patrol.site_id, patrolLogId, patrol.user_id, notes]
+      );
+    }
   }
 }

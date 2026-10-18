@@ -301,23 +301,23 @@ export const Navbar: React.FC = () => {
                       {isSecuritySubmenuOpen && (
                         <div className="absolute left-full top-0 ml-1 patroli-dropdown-menu w-44 shadow-2xl animate-in fade-in duration-100">
                           <Link
-                            href="/laporan"
+                            href="/laporan/security/anggota"
                             onClick={handleLinkClick}
-                            className="patroli-dropdown-item"
+                            className={`patroli-dropdown-item ${pathname === '/laporan/security/anggota' ? 'active' : ''}`}
                           >
                             <span>Anggota</span>
                           </Link>
                           <Link
-                            href="/laporan"
+                            href="/laporan/security/komandan"
                             onClick={handleLinkClick}
-                            className="patroli-dropdown-item"
+                            className={`patroli-dropdown-item ${pathname === '/laporan/security/komandan' ? 'active' : ''}`}
                           >
                             <span>Komandan</span>
                           </Link>
                           <Link
-                            href="/laporan"
+                            href="/laporan/security/chief"
                             onClick={handleLinkClick}
-                            className="patroli-dropdown-item"
+                            className={`patroli-dropdown-item ${pathname === '/laporan/security/chief' ? 'active' : ''}`}
                           >
                             <span>Chief</span>
                           </Link>
@@ -326,27 +326,27 @@ export const Navbar: React.FC = () => {
                     </div>
 
                     <Link
-                      href="/laporan"
+                      href="/laporan/staff"
                       onClick={handleLinkClick}
-                      className="patroli-dropdown-item"
+                      className={`patroli-dropdown-item ${pathname === '/laporan/staff' ? 'active' : ''}`}
                     >
                       <Briefcase className="w-4 h-4 text-slate-400" />
                       <span>Staff Operasional</span>
                     </Link>
 
                     <Link
-                      href="/laporan"
+                      href="/laporan/cleaning-service"
                       onClick={handleLinkClick}
-                      className="patroli-dropdown-item"
+                      className={`patroli-dropdown-item ${pathname === '/laporan/cleaning-service' ? 'active' : ''}`}
                     >
                       <Leaf className="w-4 h-4 text-emerald-400" />
                       <span>Cleaning Service</span>
                     </Link>
 
                     <Link
-                      href="/laporan"
+                      href="/laporan/driver"
                       onClick={handleLinkClick}
-                      className="patroli-dropdown-item"
+                      className={`patroli-dropdown-item ${pathname === '/laporan/driver' ? 'active' : ''}`}
                     >
                       <Car className="w-4 h-4 text-amber-400" />
                       <span>Driver</span>
@@ -355,9 +355,9 @@ export const Navbar: React.FC = () => {
                     <div className="patroli-dropdown-divider" />
 
                     <Link
-                      href="/laporan"
+                      href="/laporan/tracking-patroli"
                       onClick={handleLinkClick}
-                      className="patroli-dropdown-item font-bold"
+                      className={`patroli-dropdown-item font-bold ${pathname === '/laporan/tracking-patroli' ? 'active' : ''}`}
                     >
                       <MapPin className="w-4 h-4 text-rose-400" />
                       <span>Tracking Patroli</span>
@@ -366,9 +366,9 @@ export const Navbar: React.FC = () => {
                     <div className="patroli-dropdown-divider" />
 
                     <Link
-                      href="/laporan"
+                      href="/laporan/rekap-kegiatan"
                       onClick={handleLinkClick}
-                      className="patroli-dropdown-item font-bold"
+                      className={`patroli-dropdown-item font-bold ${pathname === '/laporan/rekap-kegiatan' ? 'active' : ''}`}
                     >
                       <Calendar className="w-4 h-4 text-cyan-400" />
                       <span>Rekap Kegiatan</span>
@@ -377,9 +377,9 @@ export const Navbar: React.FC = () => {
                     <div className="patroli-dropdown-divider" />
 
                     <Link
-                      href="/laporan"
+                      href="/laporan/monitoring-kegiatan"
                       onClick={handleLinkClick}
-                      className="patroli-dropdown-item font-bold"
+                      className={`patroli-dropdown-item font-bold ${pathname === '/laporan/monitoring-kegiatan' ? 'active' : ''}`}
                     >
                       <Shield className="w-4 h-4 text-indigo-400" />
                       <span>Monitoring Kegiatan</span>
