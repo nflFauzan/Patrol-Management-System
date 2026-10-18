@@ -4,7 +4,7 @@ import React, { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { List, Monitor } from 'lucide-react';
 import { AttendanceSemuaDataView } from '../../components/AttendanceSemuaDataView';
-import { AttendanceMatrixTab } from '../../components/AttendanceMatrixTab';
+import { AttendanceMonitoringView } from '../../components/AttendanceMonitoringView';
 import { useData } from '../../lib/DataContext';
 
 function AbsensiPageContent() {
@@ -85,7 +85,7 @@ function AbsensiPageContent() {
       {activeTab === 'semua-data' ? (
         <AttendanceSemuaDataView />
       ) : (
-        <AttendanceMatrixTab selectedSiteId={defaultSiteId} />
+        <AttendanceMonitoringView />
       )}
     </div>
   );

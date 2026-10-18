@@ -376,6 +376,12 @@ export interface AttendanceMatrixDay {
   status: AttendanceMatrixStatusCode;
   clockInTime?: string | null;
   clockOutTime?: string | null;
+  shiftColor?: string | null;
+  logs?: Array<{
+    type: 'M' | 'P' | 'P+' | 'X';
+    time?: string | null;
+    shiftColor?: string | null;
+  }>;
 }
 
 export interface AttendanceMatrixRow {

@@ -390,14 +390,21 @@ export class AttendanceService {
     const userParams: any[] = [];
     let pIdx = 1;
 
-    if (query.siteId) {
-      usersSql += ` AND (usa.site_id = $${pIdx} OR u.site_id = $${pIdx})`;
-      userParams.push(query.siteId);
-      pIdx++;
+    if (query.siteId && query.siteId !== 'ALL') {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query.siteId);
+      if (isUuid) {
+        usersSql += ` AND (usa.site_id = $${pIdx} OR u.site_id = $${pIdx})`;
+        userParams.push(query.siteId);
+        pIdx++;
+      } else {
+        usersSql += ` AND s.name ILIKE $${pIdx}`;
+        userParams.push(`%${query.siteId}%`);
+        pIdx++;
+      }
     }
-    if (query.division) {
-      usersSql += ` AND u.division ILIKE $${pIdx}`;
-      userParams.push(query.division);
+    if (query.division && query.division !== 'ALL') {
+      usersSql += ` AND (u.division ILIKE $${pIdx} OR u.role ILIKE $${pIdx})`;
+      userParams.push(`%${query.division}%`);
       pIdx++;
     }
     usersSql += ` ORDER BY u.full_name ASC`;
@@ -443,19 +450,42 @@ export class AttendanceService {
           days[d] = { day: d, status: AttendanceMatrixStatusCode.OFF };
         } else if (rec.statusType === 2) {
           const isCrossMidnight = rec.clockOutTime && rec.clockInTime && rec.clockOutTime < rec.clockInTime;
+          const status = isCrossMidnight ? AttendanceMatrixStatusCode.PULANG_CROSS_MIDNIGHT : AttendanceMatrixStatusCode.PULANG;
           days[d] = {
             day: d,
-            status: isCrossMidnight ? AttendanceMatrixStatusCode.PULANG_CROSS_MIDNIGHT : AttendanceMatrixStatusCode.PULANG,
+            status,
             clockInTime: rec.clockInTime,
             clockOutTime: rec.clockOutTime,
+            shiftColor: '#4caf50',
+            logs: [
+              { type: 'M', time: rec.clockInTime, shiftColor: '#4caf50' },
+              { type: isCrossMidnight ? 'P+' : 'P', time: rec.clockOutTime, shiftColor: '#4caf50' },
+            ],
           };
           totalHadir++;
         } else if (rec.statusType === 1) {
           if (currentDayStr < todayStr) {
-            days[d] = { day: d, status: AttendanceMatrixStatusCode.LUPA_ABSEN, clockInTime: rec.clockInTime };
+            days[d] = {
+              day: d,
+              status: AttendanceMatrixStatusCode.LUPA_ABSEN,
+              clockInTime: rec.clockInTime,
+              shiftColor: '#607d8b',
+              logs: [
+                { type: 'M', time: rec.clockInTime, shiftColor: '#607d8b' },
+                { type: 'X', shiftColor: '#607d8b' },
+              ],
+            };
             totalLupaAbsen++;
           } else {
-            days[d] = { day: d, status: AttendanceMatrixStatusCode.MASUK, clockInTime: rec.clockInTime };
+            days[d] = {
+              day: d,
+              status: AttendanceMatrixStatusCode.MASUK,
+              clockInTime: rec.clockInTime,
+              shiftColor: '#03a9f4',
+              logs: [
+                { type: 'M', time: rec.clockInTime, shiftColor: '#03a9f4' },
+              ],
+            };
             totalHadir++;
           }
         } else if (rec.statusType === 3) {
