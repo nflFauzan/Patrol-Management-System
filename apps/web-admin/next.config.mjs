@@ -14,6 +14,22 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://127.0.0.1:3000/api/:path*',
+      },
+      {
+        source: '/socket.io/:path*',
+        destination: 'http://127.0.0.1:3000/socket.io/:path*',
+      },
+      {
+        source: '/pwa/:path*',
+        destination: 'http://127.0.0.1:5173/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

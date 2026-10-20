@@ -21,6 +21,7 @@ services:
       - patrol_network
 
   redis:
+    profiles: ["redis-full"]
     image: redis:7-alpine
     container_name: patrol_redis
     restart: unless-stopped

@@ -14,6 +14,8 @@
     "gateway": "node scripts/local-gateway.js",
     "dev:start": "start-dev.bat",
     "dev:stop": "stop-dev.bat",
+    "clean:ram": "scripts\\clean-node.bat",
+    "preview": "start-preview.bat",
     "dev": "npm run dev:backend",
     "build": "npm run build --workspaces",
     "typecheck:admin": "npm run typecheck --workspace=@patrol/web-admin",

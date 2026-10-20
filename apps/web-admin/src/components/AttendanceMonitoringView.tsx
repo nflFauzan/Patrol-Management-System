@@ -3,9 +3,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AttendanceMatrixResponse, AttendanceMatrixStatusCode, Division } from '@patrol/types';
 import { useData } from '../lib/DataContext';
-import XLSX from 'xlsx-js-style';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 interface AttendanceMonitoringViewProps {
   initialMonth?: string;
@@ -192,7 +189,8 @@ export const AttendanceMonitoringView: React.FC<AttendanceMonitoringViewProps> =
   /* ==========================================================================
      CETAK EXCEL (100% PARITY DENGAN patroli.site VIA xlsx-js-style)
   ========================================================================== */
-  const handleCetakExcel = () => {
+  const handleCetakExcel = async () => {
+    const XLSX = (await import('xlsx-js-style')).default;
     const wb = XLSX.utils.book_new();
 
     const namaPerusahaan = 'tes-pt';
@@ -438,7 +436,10 @@ export const AttendanceMonitoringView: React.FC<AttendanceMonitoringViewProps> =
   /* ==========================================================================
      CETAK PDF (100% PARITY DENGAN patroli.site VIA jsPDF & jspdf-autotable)
   ========================================================================== */
-  const handleCetakPDF = () => {
+  const handleCetakPDF = async () => {
+    const { default: jsPDF } = await import('jspdf');
+    const autoTableModule = (await import('jspdf-autotable')) as any;
+    const autoTable = autoTableModule.default || autoTableModule;
     const pdf = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
@@ -542,7 +543,7 @@ export const AttendanceMonitoringView: React.FC<AttendanceMonitoringViewProps> =
         1: { cellWidth: 45, halign: 'center', valign: 'middle' },
         2: { cellWidth: 38, halign: 'center', valign: 'middle' },
       },
-      didParseCell: (data) => {
+      didParseCell: (data: any) => {
         if (data.column.index >= 3) {
           data.cell.styles.cellWidth = 9;
           data.cell.styles.fontSize = 7.5;

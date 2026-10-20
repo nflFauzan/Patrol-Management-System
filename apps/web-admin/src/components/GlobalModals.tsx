@@ -1,11 +1,25 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { useData } from '../lib/DataContext';
-import { BulkImportModal } from './BulkImportModal';
-import { PrintQrModal } from './PrintQrModal';
-import { BatchPrintQrModal } from './BatchPrintQrModal';
-import { PrintIdCardModal } from './PrintIdCardModal';
+
+const BulkImportModal = dynamic(
+  () => import('./BulkImportModal').then((m) => m.BulkImportModal),
+  { ssr: false },
+);
+const PrintQrModal = dynamic(
+  () => import('./PrintQrModal').then((m) => m.PrintQrModal),
+  { ssr: false },
+);
+const BatchPrintQrModal = dynamic(
+  () => import('./BatchPrintQrModal').then((m) => m.BatchPrintQrModal),
+  { ssr: false },
+);
+const PrintIdCardModal = dynamic(
+  () => import('./PrintIdCardModal').then((m) => m.PrintIdCardModal),
+  { ssr: false },
+);
 
 export const GlobalModals: React.FC = () => {
   const {

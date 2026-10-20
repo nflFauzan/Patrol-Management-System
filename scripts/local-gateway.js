@@ -489,7 +489,7 @@ function renderPortalHtml() {
       }
     }
     updateStatus();
-    setInterval(updateStatus, 4000);
+    setInterval(updateStatus, 12000);
   </script>
 </body>
 </html>`;
@@ -598,7 +598,7 @@ const server = http.createServer(async (req, res) => {
       checkPort(ADMIN_PORT),
       checkPort(PWA_PORT),
       checkPort(DB_PORT),
-      checkPort(REDIS_PORT),
+      checkPort(REDIS_PORT, '127.0.0.1', 150),
     ]);
     res.writeHead(200, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({
@@ -607,7 +607,7 @@ const server = http.createServer(async (req, res) => {
       admin: { port: ADMIN_PORT, ...admin },
       pwa: { port: PWA_PORT, ...pwa },
       db: { port: DB_PORT, ...db },
-      redis: { port: REDIS_PORT, ...redis },
+      redis: { port: REDIS_PORT, active: redis.active, status: redis.active ? 'online' : 'optional_inactive' },
     }));
   }
 
