@@ -25,8 +25,7 @@ for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":3001 " ^| findstr "L
 for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":5173 " ^| findstr "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
 for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":8080 " ^| findstr "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
 
-taskkill /F /IM node.exe >nul 2>&1
-echo [OK] Port 3000, 3001, 5173, dan 8080 serta memori Node.js telah dibebaskan.
+echo [OK] Port 3000, 3001, 5173, dan 8080 telah dibebaskan secara aman.
 echo.
 
 echo [3/3] Mematikan container Docker (PostgreSQL PostGIS)...

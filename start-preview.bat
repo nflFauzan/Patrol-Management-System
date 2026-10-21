@@ -15,9 +15,8 @@ echo.
 
 cd /d "%~dp0"
 
-echo [1/5] Membersihkan port dan memori...
+echo [1/5] Membersihkan port dan proses latar belakang...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-NetTCPConnection -LocalPort 3000,3001,5173 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }" >nul 2>&1
-taskkill /F /IM node.exe >nul 2>&1
 echo [OK] Port bersih.
 echo.
 

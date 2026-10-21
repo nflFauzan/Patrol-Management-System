@@ -305,6 +305,51 @@ export interface PatrolDetailResponse {
   tindakLanjutStatus?: string | null;
 }
 
+export interface CleaningRecordItem {
+  id: string;
+  kodePatroli: string;
+  siteName: string;
+  personilName: string;
+  status: string;
+  taskDescription: string;
+  timeFormatted: string;
+  dateTimeFull?: string;
+  latitude?: number;
+  longitude?: number;
+  photoUrl?: string | null;
+  tindakLanjutStatus?: string | null;
+}
+
+export interface CleaningRecordsResponse {
+  draw?: number;
+  recordsTotal: number;
+  recordsFiltered: number;
+  data: CleaningRecordItem[];
+}
+
+export interface CleaningDetailResponse {
+  id: string;
+  kodePatroli: string;
+  officerName: string;
+  position: string;
+  siteName: string;
+  avatarUrl?: string | null;
+  activityStatus: string;
+  assetName: string;
+  assetType: string;
+  assetLocation: string;
+  dateFormatted: string;
+  timeFormatted: string;
+  cleaningCode: string;
+  taskDescription: string;
+  cleaningResult: string;
+  latitude: number;
+  longitude: number;
+  googleMapsUrl: string;
+  photoUrl?: string | null;
+  tindakLanjutStatus?: string | null;
+}
+
 export interface IncidentReport {
   id: string;
   siteId: string;

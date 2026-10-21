@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, UseGuards } from '@nestjs/common';
 import { CleaningService, SubmitCleaningChecklistDto } from './cleaning.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -24,4 +24,28 @@ export class CleaningController {
   ) {
     return this.cleaningService.submitChecklist(user.id, body);
   }
+
+  @Get('records')
+  async getCleaningRecords(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('siteName') siteName?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.cleaningService.getCleaningRecords({ page, limit, siteName, search });
+  }
+
+  @Get(':id/detail')
+  async getCleaningDetail(@Param('id') id: string) {
+    return this.cleaningService.getCleaningDetail(id);
+  }
+
+  @Post(':id/tl')
+  async updateTindakLanjut(
+    @Param('id') id: string,
+    @Body() body: { notes?: string },
+  ) {
+    return this.cleaningService.updateTindakLanjut(id, body?.notes);
+  }
 }
+

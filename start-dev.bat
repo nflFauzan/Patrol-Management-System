@@ -29,8 +29,7 @@ echo.
 
 echo [2/4] Membersihkan proses latar belakang dan port...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-NetTCPConnection -LocalPort 3000,3001,5173,8080 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }" >nul 2>&1
-taskkill /F /IM node.exe >nul 2>&1
-echo [OK] Port dan RAM telah dibebaskan.
+echo [OK] Port telah dibebaskan secara aman.
 echo.
 
 echo [3/4] Menjalankan database PostgreSQL PostGIS 17 via Docker...

@@ -17,15 +17,12 @@ echo.
 echo [1/3] Menghentikan proses terminal service...
 taskkill /F /FI "WINDOWTITLE eq Patrol-*" /T >nul 2>&1
 
-echo [2/3] Membebaskan port 3000, 3001, 5173, dan 8080...
+echo [2/2] Membebaskan port 3000, 3001, 5173, dan 8080...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-NetTCPConnection -LocalPort 3000,3001,5173,8080 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }" >nul 2>&1
 
-echo [3/3] Membersihkan proses latar belakang node.exe...
-taskkill /F /IM node.exe >nul 2>&1
-
 echo.
-echo [OK] Seluruh proses Node.js dan port dev berhasil dibersihkan!
-echo RAM sistem telah dipulihkan.
+echo [OK] Seluruh port dev berhasil dibersihkan dengan aman!
+echo RAM sistem telah dipulihkan tanpa mematikan Antigravity IDE.
 echo ===============================================================================
 `;
 
@@ -56,8 +53,7 @@ for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":3001 " ^| findstr "L
 for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":5173 " ^| findstr "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
 for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":8080 " ^| findstr "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
 
-taskkill /F /IM node.exe >nul 2>&1
-echo [OK] Port 3000, 3001, 5173, dan 8080 serta memori Node.js telah dibebaskan.
+echo [OK] Port 3000, 3001, 5173, dan 8080 telah dibebaskan secara aman.
 echo.
 
 echo [3/3] Mematikan container Docker (PostgreSQL PostGIS)...
@@ -108,8 +104,7 @@ echo.
 
 echo [2/4] Membersihkan proses latar belakang dan port...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-NetTCPConnection -LocalPort 3000,3001,5173,8080 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }" >nul 2>&1
-taskkill /F /IM node.exe >nul 2>&1
-echo [OK] Port dan RAM telah dibebaskan.
+echo [OK] Port telah dibebaskan secara aman.
 echo.
 
 echo [3/4] Menjalankan database PostgreSQL PostGIS 17 via Docker...
@@ -237,7 +232,6 @@ cd /d "%~dp0"
 
 echo [1/5] Membersihkan port dan memori...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-NetTCPConnection -LocalPort 3000,3001,5173 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }" >nul 2>&1
-taskkill /F /IM node.exe >nul 2>&1
 echo [OK] Port bersih.
 echo.
 
