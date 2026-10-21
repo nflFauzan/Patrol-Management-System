@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../lib/DataContext';
+import { ChiefEvaluationItem } from '@patrol/types';
+import { ChiefDetailModal } from './ChiefDetailModal';
 
 export const LaporanSecurityChiefView: React.FC = () => {
   const { sites } = useData();
@@ -10,28 +12,66 @@ export const LaporanSecurityChiefView: React.FC = () => {
   const [pageLength, setPageLength] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const demoRecords = [
-    {
-      id: 'chf-1',
-      siteName: 'SITE PROYEK DEMO',
-      namaKomandan: 'DANDAN KOMANDAN',
-      kedisiplinan: 'BAIK',
-      koordinasi: 'BAIK',
-      kehadiran: 'LENGKAP',
-      insiden: 'TIDAK ADA',
-    },
-  ];
+  // Detail Modal State
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedRecord, setSelectedRecord] = useState<ChiefEvaluationItem | null>(null);
 
-  const filtered = demoRecords.filter((r) => {
+  // Records state from backend with fallback
+  const [records, setRecords] = useState<ChiefEvaluationItem[]>([
+    {
+      id: '6',
+      siteId: '11111111-1111-1111-1111-111111111111',
+      siteName: 'site proyek demo',
+      namaKomandan: 'DANDAN KOMANDAN',
+      komandanPosition: 'Komandan Regu',
+      komandanRole: 'Laporan Komandan',
+      kedisiplinan: 'Baik',
+      koordinasi: 'Baik',
+      kehadiran: 'Lengkap',
+      reguHadir: 'Lengkap',
+      reguIzin: 'Lengkap',
+      insiden: 'Tidak Ada',
+      detailInsiden: 'Tidak ada kejadian menonjol atau insiden keamanan.',
+      catatan: 'Evaluasi pengawasan apel dan serah terima regu berjalan tertib dan sesuai SOP. Personil sigap.',
+      statusLaporan: 'Selesai',
+      tanggalLapor: '2026-10-18 21:11:40',
+    },
+  ]);
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') || localStorage.getItem('patrol_auth_token') || '' : '';
+    fetch('http://localhost:3000/api/v1/reports/chief-evaluations', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Network error');
+        return res.json();
+      })
+      .then((data: ChiefEvaluationItem[]) => {
+        if (data && data.length > 0) {
+          setRecords(data);
+        }
+      })
+      .catch(() => {
+        // Keeps fallback demo data matching patroli.site
+      });
+  }, []);
+
+  const filtered = records.filter((r) => {
     if (selectedSiteName && !r.siteName.toLowerCase().includes(selectedSiteName.toLowerCase())) return false;
     if (searchTerm) {
       const match =
         r.namaKomandan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.siteName.toLowerCase().includes(searchTerm.toLowerCase());
+        r.siteName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (r.kedisiplinan && r.kedisiplinan.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (r.insiden && r.insiden.toLowerCase().includes(searchTerm.toLowerCase()));
       if (!match) return false;
     }
     return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageLength));
+  const displayedRows = filtered.slice((currentPage - 1) * pageLength, currentPage * pageLength);
 
   return (
     <div className="w-full">
@@ -42,6 +82,7 @@ export const LaporanSecurityChiefView: React.FC = () => {
 
       <div className="row">
         <div className="col-12" style={{ marginTop: '10px' }}>
+          {/* Card Header Alert */}
           <div
             className="card-header alert bg-dark text-light flex items-center gap-2 shadow-xs"
             style={{
@@ -59,6 +100,7 @@ export const LaporanSecurityChiefView: React.FC = () => {
             </small>
           </div>
 
+          {/* Card Body Border */}
           <div
             className="card-body border border-dark rounded shadow-xs"
             style={{
@@ -108,7 +150,10 @@ export const LaporanSecurityChiefView: React.FC = () => {
                     <input
                       type="search"
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1);
+                      }}
                       style={{
                         border: '1px solid #cbd5e1',
                         borderRadius: '4px',
@@ -121,15 +166,20 @@ export const LaporanSecurityChiefView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Table */}
+              {/* Data Table */}
               <div style={{ overflowX: 'auto', width: '100%' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#343a40', color: '#fff' }}>
-                      <th style={{ width: '180px', padding: '10px', textAlign: 'center', border: '1px solid #343a40' }}>
+                      <th style={{ width: '220px', padding: '10px', textAlign: 'center', border: '1px solid #343a40' }}>
                         <select
+                          id="filterAreaChief"
                           value={selectedSiteName}
-                          onChange={(e) => setSelectedSiteName(e.target.value)}
+                          onChange={(e) => {
+                            setSelectedSiteName(e.target.value);
+                            setCurrentPage(1);
+                          }}
+                          className="custom-select border border-danger text-uppercase"
                           style={{
                             borderColor: '#dc3545',
                             borderWidth: '1.5px',
@@ -152,24 +202,24 @@ export const LaporanSecurityChiefView: React.FC = () => {
                             </option>
                           ))}
                           {!sites.some((s) => s.name.toLowerCase().includes('demo')) && (
-                            <option value="SITE PROYEK DEMO">SITE PROYEK DEMO</option>
+                            <option value="site proyek demo">SITE PROYEK DEMO</option>
                           )}
                         </select>
                       </th>
-                      <th style={{ width: '200px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
-                        NAMA KOMANDAN
+                      <th style={{ width: '220px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
+                        Nama Komandan
                       </th>
                       <th style={{ width: '140px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
-                        KEDISIPLINAN
+                        Kedisiplinan
                       </th>
                       <th style={{ width: '140px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
-                        KOORDINASI
+                        Koordinasi
                       </th>
                       <th style={{ width: '140px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
-                        KEHADIRAN
+                        Kehadiran
                       </th>
                       <th style={{ width: '140px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
-                        INSIDEN
+                        Insiden
                       </th>
                       <th style={{ width: '100px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
                         AKSI
@@ -177,153 +227,203 @@ export const LaporanSecurityChiefView: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((row, idx) => (
-                      <tr
-                        key={row.id}
-                        style={{
-                          backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
-                          borderBottom: '1px solid #e2e8f0',
-                        }}
-                      >
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <span
-                            style={{
-                              backgroundColor: '#0dcaf0',
-                              color: '#fff',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              display: 'inline-block',
-                            }}
-                          >
-                            {row.siteName}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <span
-                            style={{
-                              backgroundColor: '#6c757d',
-                              color: '#fff',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              display: 'inline-block',
-                            }}
-                          >
-                            {row.namaKomandan}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <span
-                            style={{
-                              backgroundColor: '#28a745',
-                              color: '#fff',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              display: 'inline-block',
-                            }}
-                          >
-                            {row.kedisiplinan}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <span
-                            style={{
-                              backgroundColor: '#28a745',
-                              color: '#fff',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              display: 'inline-block',
-                            }}
-                          >
-                            {row.koordinasi}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <span
-                            style={{
-                              backgroundColor: '#0d6efd',
-                              color: '#fff',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              display: 'inline-block',
-                            }}
-                          >
-                            {row.kehadiran}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <span
-                            style={{
-                              backgroundColor: '#28a745',
-                              color: '#fff',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              display: 'inline-block',
-                            }}
-                          >
-                            {row.insiden}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <a
-                            href="#"
-                            onClick={(e) => e.preventDefault()}
-                            style={{
-                              backgroundColor: '#0dcaf0',
-                              borderColor: '#0dcaf0',
-                              color: '#fff',
-                              padding: '4px 10px',
-                              fontSize: '11px',
-                              borderRadius: '4px',
-                              textDecoration: 'none',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              fontWeight: 600,
-                            }}
-                          >
-                            <i className="fa fa-search-plus" aria-hidden="true"></i>
-                            <small>DETAIL</small>
-                          </a>
+                    {displayedRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} style={{ textAlign: 'center', padding: '24px', color: '#64748b', fontSize: '13px' }}>
+                          Tidak ada data kegiatan chief yang sesuai
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      displayedRows.map((row, idx) => (
+                        <tr
+                          key={row.id || idx}
+                          style={{
+                            backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
+                            borderBottom: '1px solid #e2e8f0',
+                          }}
+                        >
+                          {/* Lokasi */}
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <span
+                                className="badge badge-info"
+                                style={{
+                                  backgroundColor: '#0dcaf0',
+                                  color: '#fff',
+                                  padding: '4px 9px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  display: 'inline-block',
+                                }}
+                              >
+                                {row.siteName}
+                              </span>
+                            </small>
+                          </td>
+
+                          {/* Nama Komandan */}
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <span
+                                className="badge badge-secondary"
+                                style={{
+                                  backgroundColor: '#6c757d',
+                                  color: '#fff',
+                                  padding: '4px 9px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  display: 'inline-block',
+                                }}
+                              >
+                                {row.namaKomandan}
+                              </span>
+                            </small>
+                          </td>
+
+                          {/* Kedisiplinan */}
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <span
+                                className="badge badge-success"
+                                style={{
+                                  backgroundColor: '#28a745',
+                                  color: '#fff',
+                                  padding: '4px 9px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  display: 'inline-block',
+                                }}
+                              >
+                                {row.kedisiplinan}
+                              </span>
+                            </small>
+                          </td>
+
+                          {/* Koordinasi */}
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <span
+                                className="badge badge-success"
+                                style={{
+                                  backgroundColor: '#28a745',
+                                  color: '#fff',
+                                  padding: '4px 9px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  display: 'inline-block',
+                                }}
+                              >
+                                {row.koordinasi}
+                              </span>
+                            </small>
+                          </td>
+
+                          {/* Kehadiran */}
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <span
+                                className="badge badge-primary"
+                                style={{
+                                  backgroundColor: '#0d6efd',
+                                  color: '#fff',
+                                  padding: '4px 9px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  display: 'inline-block',
+                                }}
+                              >
+                                {row.kehadiran}
+                              </span>
+                            </small>
+                          </td>
+
+                          {/* Insiden */}
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <span
+                                className="badge badge-success"
+                                style={{
+                                  backgroundColor: '#28a745',
+                                  color: '#fff',
+                                  padding: '4px 9px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  display: 'inline-block',
+                                }}
+                              >
+                                {row.insiden}
+                              </span>
+                            </small>
+                          </td>
+
+                          {/* AKSI Button */}
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <center>
+                              <a
+                                href="#"
+                                className="btn btn-info btn-sm detail-record"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setSelectedRecord(row);
+                                  setIsModalOpen(true);
+                                }}
+                                style={{
+                                  backgroundColor: '#0dcaf0',
+                                  borderColor: '#0dcaf0',
+                                  color: '#fff',
+                                  padding: '4px 10px',
+                                  fontSize: '11px',
+                                  borderRadius: '4px',
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                <i className="fa fa-search" aria-hidden="true"></i>
+                                <small>Detail</small>
+                              </a>
+                            </center>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
 
-              {/* Footer */}
+              {/* DataTables Info & Pagination Footer */}
               <div
                 className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 style={{ marginTop: '16px', fontSize: '13px', color: '#64748b' }}
               >
                 <div style={{ textTransform: 'uppercase', fontSize: '13px', fontWeight: 500 }}>
-                  SHOWING 1 TO {filtered.length} OF {filtered.length} ENTRIES
+                  SHOWING {filtered.length === 0 ? 0 : (currentPage - 1) * pageLength + 1} TO{' '}
+                  {Math.min(currentPage * pageLength, filtered.length)} OF {filtered.length} ENTRIES
                 </div>
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
-                    disabled
+                    disabled={currentPage <= 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     style={{
                       padding: '4px 12px',
                       borderRadius: '4px',
                       border: '1px solid #cbd5e1',
-                      backgroundColor: '#f8fafc',
-                      color: '#94a3b8',
+                      backgroundColor: currentPage <= 1 ? '#f8fafc' : '#fff',
+                      color: currentPage <= 1 ? '#94a3b8' : '#334155',
                       fontSize: '12px',
                       fontWeight: 600,
                       textTransform: 'uppercase',
+                      cursor: currentPage <= 1 ? 'not-allowed' : 'pointer',
                     }}
                   >
                     PREVIOUS
@@ -340,20 +440,22 @@ export const LaporanSecurityChiefView: React.FC = () => {
                       fontWeight: 700,
                     }}
                   >
-                    1
+                    {currentPage}
                   </button>
                   <button
                     type="button"
-                    disabled
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     style={{
                       padding: '4px 12px',
                       borderRadius: '4px',
                       border: '1px solid #cbd5e1',
-                      backgroundColor: '#f8fafc',
-                      color: '#94a3b8',
+                      backgroundColor: currentPage >= totalPages ? '#f8fafc' : '#fff',
+                      color: currentPage >= totalPages ? '#94a3b8' : '#334155',
                       fontSize: '12px',
                       fontWeight: 600,
                       textTransform: 'uppercase',
+                      cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer',
                     }}
                   >
                     NEXT
@@ -364,6 +466,14 @@ export const LaporanSecurityChiefView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Chief Detail Modal */}
+      <ChiefDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        chiefId={selectedRecord ? selectedRecord.id : null}
+        detailData={selectedRecord}
+      />
     </div>
   );
 };

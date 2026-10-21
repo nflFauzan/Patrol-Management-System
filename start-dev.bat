@@ -5,15 +5,13 @@ chcp 65001 >nul
 color 0B
 
 echo ===============================================================================
-echo     PATROL ^& FACILITY MANAGEMENT SYSTEM (ENTERPRISE IN-HOUSE)
+echo     PATROL AND FACILITY MANAGEMENT SYSTEM (ENTERPRISE IN-HOUSE)
 echo                    OPTIMIZED DEV LAUNCHER
 echo ===============================================================================
 echo.
 
-:: 1. Berpindah ke direktori root project
 cd /d "%~dp0"
 
-:: 2. Periksa ketersediaan Node.js & npm
 echo [1/4] Memeriksa environment Node.js...
 where node >nul 2>&1
 if %errorlevel% neq 0 (
@@ -29,14 +27,12 @@ if not exist "node_modules\" (
 echo [OK] Runtime Node.js siap digunakan.
 echo.
 
-:: 3. Bersihkan sisa proses port dan zombie node.exe dari sesi sebelumnya
 echo [2/4] Membersihkan proses latar belakang dan port...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-NetTCPConnection -LocalPort 3000,3001,5173,8080 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }" >nul 2>&1
 taskkill /F /IM node.exe >nul 2>&1
-echo [OK] Port dan RAM telah dibebaskan sepenuhnya.
+echo [OK] Port dan RAM telah dibebaskan.
 echo.
 
-:: 4. Periksa status Docker & jalankan PostgreSQL PostGIS (Redis di-profile opsional)
 echo [3/4] Menjalankan database PostgreSQL PostGIS 17 via Docker...
 docker info >nul 2>&1
 if %errorlevel% neq 0 (
@@ -53,7 +49,6 @@ if %errorlevel% neq 0 (
     echo.
 )
 
-:: 5. Kompilasi TypeScript Shared Types (@patrol/types)
 echo [4/4] Mengompilasi TypeScript shared types @patrol/types...
 call npm run build --workspace=@patrol/types
 if %errorlevel% neq 0 (
@@ -64,7 +59,6 @@ if %errorlevel% neq 0 (
 echo [OK] Shared types @patrol/types siap.
 echo.
 
-:: Menu Pilihan Mode Layanan
 echo ===============================================================================
 echo                PILIH MODE LAYANAN YANG INGIN DIJALANKAN
 echo ===============================================================================
@@ -77,7 +71,7 @@ echo.
 echo   [3] FULL STACK LENGKAP (Semua Service via Gateway :8080)
 echo       Menjalankan Backend (:3000) + Admin (:3001) + PWA (:5173) + Gateway (:8080).
 echo.
-echo   [4] STOP ^& BERSIHKAN SEMUA (Bebaskan Port ^& RAM)
+echo   [4] STOP AND BERSIHKAN SEMUA (Bebaskan Port and RAM)
 echo ===============================================================================
 set /p MODE="Ketik angka pilihan [1-4] lalu tekan Enter (Default: 1): "
 
@@ -132,7 +126,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "$port = %TARGET_PORT%; f
 
 echo.
 echo ===============================================================================
-echo 🚀 APLIKASI TELAH SIAP DIGUNAKAN!
+echo [OK] APLIKASI TELAH SIAP DIGUNAKAN!
 echo Membuka %TARGET_URL% di browser Anda...
 echo ===============================================================================
 start %TARGET_URL%

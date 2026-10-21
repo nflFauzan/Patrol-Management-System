@@ -1,0 +1,449 @@
+<!DOCTYPE html><html translate="no"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="google" content="notranslate">
+  <link rel="icon" href="img/logo-anda.png">
+  <title>PATROLI SITE</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer" type="text/javascript"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/jquery.dataTables.min.css" integrity="sha512-1k7mWiTNoyx2XtmI96o+hdjP8nn0f3Z2N4oF/9ZZRgijyV4omsKOXEnqL1gKQNPy2MTSP9rIEWGcH/CInulptA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-responsive-dt/2.0.1/responsive.dataTables.min.css" integrity="sha512-el485x6bNPCMWHXua3df13Wa85a5Kev8TKNzU8KvubziIgtqkCeyV0zznZOFWBOGtmWF3McRh3UZonOM8TrIXg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link type="text/css" href="https://patroli.site/css/header.css" rel="stylesheet">
+ 
+<style type="text/css">
+
+@media (min-width:992px){
+
+.dropdown-menu .dropdown-toggle:after{
+border-top:.3em solid transparent;
+border-right:0;
+border-bottom:.3em solid transparent;
+border-left:.3em solid;
+}
+
+.dropdown-menu .dropdown-menu{
+margin-left:0;
+margin-right:0;
+}
+
+.dropdown-menu li{
+position:relative;
+}
+
+.nav-item .submenu{
+display:none;
+position:absolute;
+left:100%;
+top:-7px;
+}
+
+.nav-item .submenu-left{
+right:100%;
+left:auto;
+}
+
+.dropdown-menu>li:hover>.submenu{
+display:block;
+}
+}
+
+/* ===== NAVBAR ===== */
+
+.navbar{
+background:#151c2f!important;
+box-shadow:0 4px 18px rgba(0,0,0,.25);
+}
+
+.navbar-brand img{
+border-radius:10px;
+box-shadow:0 0 10px rgba(13,110,253,.25);
+}
+
+/* ===== MENU ===== */
+
+.navbar-nav .nav-link{
+display:flex;
+align-items:center;
+gap:6px;
+
+color:rgba(255,255,255,.88)!important;
+
+font-size:14px;
+
+border-radius:8px;
+
+padding-left:10px!important;
+padding-right:10px!important;
+
+transition:.2s ease;
+}
+
+/* ICON */
+
+.navbar-nav .nav-link i{
+width:18px;
+text-align:center;
+font-size:14px;
+}
+
+/* HOVER */
+
+.navbar-nav .nav-link:hover{
+background:rgba(255,255,255,.08);
+color:#fff!important;
+}
+
+/* ACTIVE */
+
+.navbar-nav .active .nav-link{
+background:linear-gradient(135deg,#0d6efd,#2563eb);
+color:#fff!important;
+box-shadow:0 4px 12px rgba(13,110,253,.30);
+}
+
+/* ===== DROPDOWN ===== */
+
+.dropdown-menu{
+background:#151c2f;
+border:none;
+border-radius:12px;
+padding:8px;
+box-shadow:0 10px 25px rgba(0,0,0,.30);
+}
+
+.dropdown-item{
+color:#dbe4ff;
+font-size:14px;
+border-radius:8px;
+transition:.2s;
+}
+
+.dropdown-item:hover{
+background:rgba(13,110,253,.15);
+color:#fff;
+}
+
+.dropdown-divider{
+border-top:1px solid rgba(255,255,255,.06);
+}
+
+.brand-text{
+    display: inline-block;
+    max-width: 213px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+</style>
+ </head>
+
+<body class="hold-transition layout-top-nav text-uppercase modal-open">
+  <div class="wrapper">
+    <nav class="navbar navbar-icon-top navbar-expand-lg navbar-dark fixed-top bg-dark">
+        <a href="#" class="navbar-brand">
+          <img src="img/logo-anda.png" alt="Logo" class="brand-image img elevation-3" height="50" width="50">
+          <span class="brand-text font-weight"><small>tes-pt</small></span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <i class="fa fa-bars" aria-hidden="true"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="xxxxxxxxxxxxxxxxxxxxxxxxxx">
+                    <i class="fa fa-home"></i>
+                    <small>Home</small></a>
+            </li>
+            
+            
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
+                    <i class="fa fa-database"></i>
+                    <small>Data Induk</small>
+                </a>
+            
+                <ul class="dropdown-menu">
+            
+                                            <a class="dropdown-item" href="xxxx_xxxxxxx">
+                            <i class="fa fa-globe"></i> Area
+                        </a>
+                                
+                    <div class="dropdown-divider"></div>
+            
+                    <a class="dropdown-item" href="xxxx_xxxxxxxxxx">
+                        <i class="fa fa-building"></i> Checkpoint
+                    </a>
+            
+                    <div class="dropdown-divider"></div>
+            
+                    <a class="dropdown-item" href="xxxx_xxxxxxxx">
+                        <i class="fa fa-users"></i> Personil
+                    </a>
+            
+                </ul>
+            </li>
+          	
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
+                <i class="fa fa-calendar-check-o"></i>
+                <small>Absensi</small>
+              </a>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="xxxx_xxxxxxxxx">
+                  <i class="fa fa-list"></i> Semua Data
+                </a>
+                <a class="dropdown-item" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                  <i class="fa fa-desktop"></i> Monitoring
+                </a>
+              </div>
+            </li>
+            
+            <li class="nav-item dropdown">
+        		<a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">  
+                    <i class="fa fa-file-text-o"></i>
+                    <small>Laporan</small>  
+                </a>
+        	    <ul class="dropdown-menu">
+        		  <li><a class="dropdown-item dropdown-toggle" href="#"><i class="fa fa-user"></i> Security </a>
+        		  	 <ul class="submenu dropdown-menu">
+        			    <li><a class="dropdown-item" href="xxxx_xxxxxxxxxxx">Anggota</a></li>
+        			    <li><a class="dropdown-item" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">Komandan</a></li>
+        			    <li><a class="dropdown-item" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">Chief</a></li>
+        			 </ul>
+        		  </li>
+
+       		       	<a class="dropdown-item" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                      <i class="fa fa-briefcase"></i> Staff Operasional
+                    </a>
+                    <a class="dropdown-item" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                      <i class="fa fa-tint"></i> Cleaning Service
+                    </a>
+                    <a class="dropdown-item" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                      <i class="fa fa-car"></i> Driver
+                    </a>
+                    <div class="dropdown-divider"></div> <!-- Garis pembatas -->
+                    <a class="dropdown-item" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                      <i class="fa fa-map-marker"></i> <strong>Tracking Patroli</strong>
+                    </a>
+                    <div class="dropdown-divider"></div> <!-- Garis pembatas -->
+                    <a class="dropdown-item" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                      <i class="fa fa-calendar-check-o"></i> <strong>Rekap Kegiatan</strong>
+                    </a>
+                    <div class="dropdown-divider"></div> <!-- Garis pembatas -->
+                    <a class="dropdown-item" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                      <i class="fa fa-shield"></i> <strong>Monitoring Kegiatan</strong>
+                    </a>
+          	    </ul>
+          	</li>
+
+
+            <!--<li class="nav-item">-->
+            <!--  <a class="nav-link" href="xxxxx_xxxxxxxxxxxxxxxxxxxxx">-->
+            <!--    <i class="fa fa-exclamation">-->
+            <!--      <span class="badge badge-danger"></span> -->
+            <!--    </i>-->
+            <!--    <small>Peristiwa</small>-->
+            <!--  </a>-->
+            <!--</li>-->
+ 
+            <li class="nav-item">
+                    <a class="nav-link" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                        <i class="fa fa-money"></i><small>Gaji</small>
+                    </a>
+                </li>                  
+            <li class="nav-item">
+                <a class="nav-link" href="xxxxx_xxxxxxxxxxxxxxx">
+                    <i class="fa fa-bullhorn"></i>
+                    <small>Pesan Siaran</small>
+                </a>
+            </li>
+            <!--<li class="nav-item">-->
+            <!--  <a class="nav-link" href="xxxxx_xxxxxxxxxxxxxx">-->
+            <!--    <i class="fa fa-bar-chart"></i>-->
+            <!--    <small>Grafik</small>-->
+            <!--  </a>-->
+            <!--</li>-->
+            <!--<li class="nav-item">-->
+            <!--  <a class="nav-link" href="xxxxx_xxxxxxxxxxxxxxxxxxxxxxx">-->
+            <!--    <i class="fa fa-user-times" aria-hidden="true"> </i>-->
+            <!--    <small>Supervisi</small>-->
+            <!--  </a>-->
+            <!--</li>-->
+            <li class="nav-item">
+              <a class="nav-link" href="xxxxx_xxxxxxxxxxxxxxxxxxx">
+                <i class="fa fa-exclamation-circle"></i>
+                <small>Emergency</small>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="xxxxx_xxxxxxxxxxxx">
+                <i class="fa fa-print"></i>
+                <small>Export Laporan</small>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-toggle="modal" data-target="#ubahpassword">
+                <i class="fa fa-key"></i>
+               <small>Ubah Password</small> 
+              </a>
+            </li>
+          </ul>
+          <ul class="navbar-nav ">
+            <li class="nav-item">
+              <a class="nav-link" href="logout.php">
+                <i class="fa fa-sign-out"></i>
+                <small>Logout</small>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+  </div>
+  
+  <div class="modal fade" id="ubahpassword" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">Form ubah password</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="ganti-pass.php" enctype="multipart/form-data" method="post">
+          <input type="hidden" name="kode_anggota" value="1421" style="">  
+        <div class="form-group">
+           <label for="nama">Username</label>
+           <span class="tip" data-toggle="tooltip" data-placement="left" title="Silahkan Input Username"> <input type="text" name="username" value="testi" span="4" class="form-control" required="" id="username" placeholder="Input Username" style=""></span>
+        </div>
+       <div class="form-group">
+         <label for="nama">Password Baru</label>
+         <span class="tip" data-toggle="tooltip" data-placement="left" title="Silahkan Input password"> <input type="text" name="password" span="4" class="form-control" required="" id="password" placeholder="Input password baru" style=""></span>
+        </div>
+        <div class="form-group">
+         <label for="nama">Konfirmasi Password Baru</label>
+         <span class="tip" data-toggle="tooltip" data-placement="left" title="Silahkan Input password"> <input type="text" name="kfpassword" span="4" class="form-control" required="" id="password" placeholder="Input konfirmasi password baru" style=""></span>
+        </div>
+      </form></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-ban" aria-hidden="true"></i> Batal</button>
+          <button type="submit" class="btn btn-primary"><i class="fa fa-hdd-o" aria-hidden="true"></i> Simpan</button>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  
+<script type="text/javascript">
+$(document).ready(function() {
+    $(document).on('click', '.dropdown-menu', function (e) {
+      e.stopPropagation();
+    });
+
+    if ($(window).width() < 992) {
+      $('.dropdown-menu a').click(function(e){
+        const $next = $(this).next('.submenu');
+        if($next.length){
+          e.preventDefault();
+          $next.toggle();
+        }
+        $('.dropdown').on('hide.bs.dropdown', function () {
+          $(this).find('.submenu').hide();
+        });
+      });
+    }
+}); // jquery end
+</script>
+  
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12" style="margin-top: 100px">
+                <div class="card-header alert bg-dark text-light">
+                    <i class="fa fa-user"></i> <small>Kegiatan Chief</small>
+                </div>
+                                <div class="card-body border border-dark rounded">
+                    <div id="dataTableChief_wrapper" class="dataTables_wrapper no-footer"><div class="dataTables_length" id="dataTableChief_length"><label>Show <select name="dataTableChief_length" aria-controls="dataTableChief" class=""><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select> entries</label></div><div id="dataTableChief_filter" class="dataTables_filter"><label>Search:<input type="search" class="" placeholder="" aria-controls="dataTableChief" style=""></label></div><div id="dataTableChief_processing" class="dataTables_processing" style="display: none;">Processing...</div><table id="dataTableChief" class="table table-dark table-striped table-hover display responsive wrap dataTable no-footer dtr-inline" style="width: 100%;" role="grid" aria-describedby="dataTableChief_info">
+                        <thead>
+                            <tr class="text-center text-light" role="row"><th class="sorting_disabled" rowspan="1" colspan="1" style="width: 260px;">
+                                    <!-- Filter lokasi -->
+                                                                            <select id="filterAreaChief" class="custom-select border border-danger text-uppercase" style="width:100%">
+                                            <option value="" selected="">SEMUA LOKASI</option>
+                                            <option value="site proyek demo">site proyek demo</option>                                        </select>
+                                                                                                        </th><th class="sorting_disabled" rowspan="1" colspan="1" style="width: 217px;">Nama Komandan</th><th class="sorting_disabled" rowspan="1" colspan="1" style="width: 160px;">Kedisiplinan</th><th class="sorting_disabled" rowspan="1" colspan="1" style="width: 147px;">Koordinasi</th><th class="sorting_disabled" rowspan="1" colspan="1" style="width: 139px;">Kehadiran</th><th class="sorting_disabled" rowspan="1" colspan="1" style="width: 100px;">Insiden</th><th class="sorting_disabled" rowspan="1" colspan="1" style="width: 96px;">AKSI</th></tr>
+                        </thead>
+                        <tbody><tr role="row" class="odd"><td tabindex="0"><small><span class="badge badge-info">site proyek demo</span></small></td><td><small><span class="badge badge-secondary">DANDAN KOMANDAN</span></small></td><td><small><span class="badge badge-success">Baik</span></small></td><td><small><span class="badge badge-success">Baik</span></small></td><td><small><span class="badge badge-primary">Lengkap</span></small></td><td><small><span class="badge badge-success">Tidak Ada</span></small></td><td><center><a href="#" class="btn btn-info btn-sm detail-record" data-id="6">
+                 <i class="fa fa-search"></i> Detail
+             </a></center></td></tr></tbody>
+                    </table><div class="dataTables_info" id="dataTableChief_info" role="status" aria-live="polite">Showing 1 to 1 of 1 entries</div><div class="dataTables_paginate paging_simple_numbers" id="dataTableChief_paginate"><a class="paginate_button previous disabled" aria-controls="dataTableChief" data-dt-idx="0" tabindex="0" id="dataTableChief_previous">Previous</a><span><a class="paginate_button current" aria-controls="dataTableChief" data-dt-idx="1" tabindex="0">1</a></span><a class="paginate_button next disabled" aria-controls="dataTableChief" data-dt-idx="2" tabindex="0" id="dataTableChief_next">Next</a></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail -->
+<div class="modal show" id="myModalChief" aria-modal="true" role="dialog" style="display: block;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header alert bg-dark text-light">
+                <h6 class="modal-title">DETAIL KEGIATAN CHIEF</h6>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>×</span>
+                </button>
+            </div>
+            <div class="modal-body-chief"><style>
+.komandan-detail{width:100%;max-width:1100px;margin:0 auto;padding:10px 4px 30px;font-family:Arial,Helvetica,sans-serif;color:#172033}.komandan-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}.komandan-header-icon{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#4f46e5,#3730a3);color:#fff;display:flex;align-items:center;justify-content:center;font-size:21px;box-shadow:0 7px 18px rgba(79,70,229,.22)}.komandan-header h2{margin:0;font-size:21px;font-weight:800;color:#172033}.komandan-header p{margin:3px 0 0;color:#7b8496;font-size:12px}.komandan-profile{background:#fff;border-radius:20px;padding:22px;box-shadow:0 8px 30px rgba(15,23,42,.07);border:1px solid #edf0f5;margin-bottom:16px;position:relative;overflow:hidden}.komandan-profile:before{content:"";position:absolute;left:0;top:0;width:100%;height:5px;background:linear-gradient(90deg,#4f46e5,#818cf8)}.komandan-profile-inner{display:flex;align-items:center;gap:18px}.komandan-avatar{width:82px;height:82px;border-radius:50%;object-fit:cover;border:4px solid #fff;box-shadow:0 5px 18px rgba(15,23,42,.15);flex-shrink:0;background:#f2f4f7}.komandan-profile-info{min-width:0}.komandan-profile-info h3{margin:0 0 5px;font-size:16px;font-weight:800;color:#172033}.komandan-position{margin:0 0 5px;font-size:13px;color:#667085}.komandan-role{margin:0;font-size:12px;color:#8a93a3;display:flex;align-items:center;gap:5px}.komandan-status{margin-top:18px;padding-top:16px;border-top:1px solid #edf0f5;display:flex;align-items:center;justify-content:space-between;gap:10px}.komandan-status-label{color:#7b8496;font-size:11px}.komandan-status-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:30px;background:#eef2ff;color:#4338ca;font-size:11px;font-weight:800}.komandan-status-dot{width:7px;height:7px;border-radius:50%;background:#6366f1}.komandan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.komandan-card{background:#fff;border-radius:18px;border:1px solid #edf0f5;box-shadow:0 7px 25px rgba(15,23,42,.055);overflow:hidden;margin-bottom:16px}.komandan-card-full{grid-column:1/-1}.komandan-card-header{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid #edf0f5}.komandan-card-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#eef2ff;color:#4f46e5;font-size:15px}.komandan-card-header h4{margin:0;font-size:13px;font-weight:800;color:#172033}.komandan-card-header span{display:block;margin-top:2px;font-size:10px;color:#98a0ae}.komandan-card-body{padding:17px 18px}.komandan-item{display:flex;gap:13px;padding:13px 0;border-bottom:1px solid #f0f2f6}.komandan-item:first-child{padding-top:0}.komandan-item:last-child{padding-bottom:0;border-bottom:0}.komandan-item-icon{width:34px;height:34px;min-width:34px;border-radius:10px;background:#f5f7fa;color:#667085;display:flex;align-items:center;justify-content:center;font-size:13px}.komandan-item-content{min-width:0;flex:1}.komandan-item-label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#98a0ae;font-weight:700;margin-bottom:3px}.komandan-item-value{font-size:13px;line-height:1.5;color:#273246;font-weight:600;word-break:break-word}.komandan-value-badge{display:inline-flex;align-items:center;padding:5px 10px;border-radius:8px;background:#f2f4f7;color:#4b5565;font-size:12px;font-weight:700}.komandan-regu{display:flex;align-items:center;gap:12px}.komandan-regu-icon{width:42px;height:42px;min-width:42px;border-radius:12px;background:#eef2ff;color:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:17px}.komandan-regu-text small{display:block;color:#98a0ae;font-size:11px;margin-bottom:3px}.komandan-regu-text strong{font-size:15px;color:#172033}.komandan-note{background:#f8fafc;border-radius:13px;padding:14px;border-left:4px solid #4f46e5;color:#4b5565;font-size:13px;line-height:1.6;min-height:20px}.komandan-empty{text-align:center;padding:45px 20px;background:#fff;border-radius:18px}.komandan-empty .empty-icon{width:60px;height:60px;border-radius:50%;background:#fff1f2;color:#dc3545;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;font-size:25px}.komandan-empty h3{margin:0 0 5px;font-size:16px}.komandan-empty p{margin:0;color:#8a93a3;font-size:12px}@media(max-width:767px){.komandan-detail{padding:5px 0 25px}.komandan-header{padding:0 4px}.komandan-header h2{font-size:18px}.komandan-header-icon{width:40px;height:40px;border-radius:12px;font-size:18px}.komandan-profile{border-radius:16px;padding:18px}.komandan-profile-inner{gap:13px}.komandan-avatar{width:72px;height:72px}.komandan-profile-info h3{font-size:15px}.komandan-position{font-size:12px}.komandan-role{font-size:11px}.komandan-status-label{font-size:10px}.komandan-status-badge{font-size:10px}.komandan-grid{grid-template-columns:1fr;gap:0}.komandan-card-full{grid-column:auto}.komandan-card{border-radius:15px}.komandan-card-header h4{font-size:12px}.komandan-card-header span{font-size:10px}.komandan-item-label{font-size:10px}.komandan-item-value{font-size:12px}.komandan-value-badge{font-size:11px}.komandan-regu-text small{font-size:10px}.komandan-regu-text strong{font-size:15px}.komandan-note{font-size:12px}.komandan-empty h3{font-size:15px}.komandan-empty p{font-size:11px}}@media(max-width:420px){.komandan-profile-inner{align-items:flex-start}.komandan-avatar{width:64px;height:64px}.komandan-profile-info h3{font-size:15px}.komandan-position{font-size:11px}}
+</style>
+<div class="komandan-detail"><div class="komandan-header"><div class="komandan-header-icon"><i class="fa fa-user-secret"></i></div><div><h2>Detail Komandan</h2><p>Informasi laporan dan evaluasi komandan regu</p></div></div><div class="komandan-profile"><div class="komandan-profile-inner"><div class="komandan-avatar"><i class="fa fa-user" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;color:#667085;background:#f2f4f7;border-radius:50%"></i></div><div class="komandan-profile-info"><h3>DANDAN KOMANDAN</h3><p class="komandan-position">Komandan Regu</p><p class="komandan-role"><i class="fa fa-shield"></i>Laporan Komandan</p></div></div><div class="komandan-status"><span class="komandan-status-label">Status Laporan</span><span class="komandan-status-badge"><span class="komandan-status-dot"></span>Selesai</span></div></div><div class="komandan-grid"><div class="komandan-card"><div class="komandan-card-header"><div class="komandan-card-icon"><i class="fa fa-bar-chart"></i></div><div><h4>Penilaian Komandan</h4><span>Hasil evaluasi pelaksanaan tugas</span></div></div><div class="komandan-card-body"><div class="komandan-item"><div class="komandan-item-icon"><i class="fa fa-check-square-o"></i></div><div class="komandan-item-content"><span class="komandan-item-label">Kedisiplinan</span><div class="komandan-item-value">Baik</div></div></div><div class="komandan-item"><div class="komandan-item-icon"><i class="fa fa-random"></i></div><div class="komandan-item-content"><span class="komandan-item-label">Koordinasi</span><div class="komandan-item-value">Baik</div></div></div><div class="komandan-item"><div class="komandan-item-icon"><i class="fa fa-users"></i></div><div class="komandan-item-content"><span class="komandan-item-label">Kehadiran Regu</span><div class="komandan-item-value">Lengkap</div></div></div><div class="komandan-item"><div class="komandan-item-icon"><i class="fa fa-warning"></i></div><div class="komandan-item-content"><span class="komandan-item-label">Insiden</span><div class="komandan-item-value">Tidak Ada</div></div></div></div></div><div class="komandan-card"><div class="komandan-card-header"><div class="komandan-card-icon"><i class="fa fa-users"></i></div><div><h4>Kehadiran Regu</h4><span>Rekap personil pada saat bertugas</span></div></div><div class="komandan-card-body"><div class="komandan-item"><div class="komandan-regu-icon"><i class="fa fa-user-plus"></i></div><div class="komandan-regu-text"><small>Regu Hadir</small><strong>Lengkap</strong></div></div><div class="komandan-item"><div class="komandan-regu-icon"><i class="fa fa-user-times"></i></div><div class="komandan-regu-text"><small>Regu Izin</small><strong>Lengkap</strong></div></div></div></div><div class="komandan-card"><div class="komandan-card-header"><div class="komandan-card-icon"><i class="fa fa-warning"></i></div><div><h4>Detail Insiden</h4><span>Informasi kejadian yang dilaporkan</span></div></div><div class="komandan-card-body"><div class="komandan-note">Tidak ada kejadian menonjol atau insiden keamanan.</div></div></div><div class="komandan-card"><div class="komandan-card-header"><div class="komandan-card-icon"><i class="fa fa-sticky-note"></i></div><div><h4>Catatan</h4><span>Catatan tambahan dari komandan</span></div></div><div class="komandan-card-body"><div class="komandan-note">Evaluasi pengawasan apel dan serah terima regu berjalan tertib dan sesuai SOP. Personil sigap.</div></div></div></div><div class="komandan-card komandan-card-full"><div class="komandan-card-header"><div class="komandan-card-icon"><i class="fa fa-calendar"></i></div><div><h4>Informasi Laporan</h4><span>Waktu laporan dibuat oleh komandan</span></div></div><div class="komandan-card-body"><div class="komandan-item"><div class="komandan-item-icon"><i class="fa fa-calendar"></i></div><div class="komandan-item-content"><span class="komandan-item-label">Tanggal Lapor</span><div class="komandan-item-value">2026-10-18 21:11:40</div></div></div></div></div></div></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    var tableChief = $('#dataTableChief').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "serverside-chief.php",
+            type: "POST",
+            data: function(d){
+                d.filter_area = $('#filterAreaChief').val();
+            }
+        },
+        ordering: false  // matikan sorting manual client
+    });
+
+    // Reload tabel kalau filter lokasi berubah
+    $('#filterAreaChief').on('change', function(){
+        tableChief.ajax.reload();
+    });
+
+    // Modal detail
+    $(document).on('click','.detail-record', function(e){
+        e.preventDefault();
+        $("#myModalChief").modal('show');
+        $.post('detail-chief.php',{id:$(this).data('id')}, function(html){
+            $(".modal-body-chief").html(html);
+        });
+    });
+});
+</script>
+
+
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/js/bootstrap.min.js" integrity="sha512-8qmis31OQi6hIRgvkht0s6mCOittjMa9GMqtK9hes5iEQBQE/Ca6yGE5FsW36vyipGoWQswBj/QBm2JR086Rkw==" crossorigin="anonymous" referrerpolicy="no-referrer" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.16/js/jquery.dataTables.min.js" integrity="sha512-yCkOYsxpzPSpcbHspsH6A28Z0cgsfjJhlR78nPAfLLZSSV40tVN4VQ6ES/miqI/1z8a5FWVYwCF145+eyJx9Tw==" crossorigin="anonymous" referrerpolicy="no-referrer" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables-responsive/2.2.3/dataTables.responsive.min.js" integrity="sha512-naOcVQyv76gYEkC4g/L6b9qFZJimq0gkU4SdxbXbhDDDlXMJn2ipgGzEQRdSWwwq2sh3FO7HA+d6Rh+HfWRXyQ==" crossorigin="anonymous" referrerpolicy="no-referrer" type="text/javascript"></script>
+<script type="text/javascript">
+            $(document).ready(function(){setTimeout(function(){$(".pesan").fadeIn('slow');}, 500);});
+            setTimeout(function(){$(".pesan").fadeOut('slow');}, 15000);
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;108f19ab97d546c3adda3fbf979b8068&quot;,&quot;r&quot;:1,&quot;spa&quot;:2}" crossorigin="anonymous"></script>
+
+
+<div class="modal-backdrop show"></div></body></html>

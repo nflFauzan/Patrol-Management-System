@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, Res, UseGuards } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -59,6 +59,12 @@ export class ReportsController {
   @Roles(UserRole.ADMIN_SUPER, UserRole.OPS_MANAGER, UserRole.SITE_SUPERVISOR)
   async getChiefEvaluations(@Query('siteId') siteId?: string) {
     return this.reportsService.getChiefEvaluations(siteId);
+  }
+
+  @Get('chief-evaluations/:id')
+  @Roles(UserRole.ADMIN_SUPER, UserRole.OPS_MANAGER, UserRole.SITE_SUPERVISOR)
+  async getChiefEvaluationDetail(@Param('id') id: string) {
+    return this.reportsService.getChiefEvaluationDetail(id);
   }
 
   @Post('chief-evaluations')

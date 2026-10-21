@@ -788,3 +788,35 @@ export interface ClientToServerEvents {
   'leave:site_room': (siteId: string) => void;
   'gps:broadcast': (payload: { siteId: number | string; latitude: number; longitude: number }) => void;
 }
+
+// ----------------------------------------------------------------------------
+// CHIEF EVALUATIONS & REPORTS (PATROLI.SITE PARITY)
+// ----------------------------------------------------------------------------
+
+export interface ChiefEvaluationItem {
+  id: string;
+  siteId: string;
+  siteName: string;
+  chiefId?: string;
+  chiefName?: string;
+  komandanId?: string;
+  namaKomandan: string;
+  komandanPosition?: string;
+  komandanRole?: string;
+  kedisiplinan: string;
+  koordinasi: string;
+  kehadiran: string;
+  reguHadir?: string | number;
+  reguIzin?: string | number;
+  insiden: string;
+  detailInsiden?: string;
+  catatan?: string;
+  statusLaporan?: string;
+  tanggalLapor?: string;
+  createdAt?: string;
+}
+
+export interface ChiefEvaluationDetailResponse {
+  data: ChiefEvaluationItem;
+}
+
