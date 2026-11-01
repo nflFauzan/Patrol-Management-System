@@ -38,7 +38,7 @@ export default defineConfig({
     },
     {
       name: 'Desktop Chrome (Web Admin)',
-      testMatch: '**/*{admin,personil,chief}*.spec.ts',
+      testMatch: '**/*{admin,personil,chief,export}*.spec.ts',
       use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:3001' },
     },
   ],

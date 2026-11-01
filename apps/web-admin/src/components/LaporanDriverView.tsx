@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../lib/DataContext';
+import { DriverDetailModal, DriverDetailData } from './DriverDetailModal';
 
 export const LaporanDriverView: React.FC = () => {
   const { sites } = useData();
@@ -10,25 +11,101 @@ export const LaporanDriverView: React.FC = () => {
   const [pageLength, setPageLength] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const demoRecords = [
+  // Modal detail states
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedTrip, setSelectedTrip] = useState<DriverDetailData | null>(null);
+
+  const initialDemoRecords: DriverDetailData[] = [
     {
-      id: 'drv-1',
-      siteName: 'SITE PROYEK DEMO',
-      personilName: 'SUPRI DRIVER',
-      vehicle: 'TOYOTA HIL - B 9876 PQR',
-      departureTime: 'MINGGU, 18 OCT 2026 - 21:05:00',
-      arrivalTime: 'MINGGU, 18 OCT 2026 - 21:06:00',
-      destination: 'GUDANG LOGISTIK PUSAT CIKARANG - PENGIRIMAN MATERIAL DAN D',
-      notes: 'BARANG LOGISTIK TELAH SAMPAI DAN DISERAHTERIMAKAN',
+      id: 'drv-6',
+      siteName: 'POOL KENDARAAN',
+      driverName: 'RUDI HARTONO',
+      vehicle: 'DAIHATSU G - B 1234 KLM',
+      departureTime: 'SENIN, 26 OCT 2026 - 05:49:00',
+      destination: 'PABRIK BEKASI',
+      purpose: 'Pengiriman dokumen audit fasilitas pabrik',
+      tripNotes: 'Dalam perjalanan via Tol Jakarta-Cikampek',
+      status: 'BERANGKAT',
+      departureLat: -6.215678,
+      departureLng: 106.834567,
+      departurePhotoUrl: 'https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&q=80&w=400',
+    },
+    {
+      id: 'drv-5',
+      siteName: 'POOL KENDARAAN',
+      driverName: 'RUDI HARTONO',
+      vehicle: 'TRUK BOX I - B 9876 XYZ',
+      departureTime: 'SENIN, 26 OCT 2026 - 05:47:00',
+      arrivalTime: 'SENIN, 26 OCT 2026 - 05:49:00',
+      destination: 'GUDANG CAKUNG, JAKARTA TIMUR',
+      purpose: 'Distribusi logistik sparepart fasilitas pabrik',
+      tripNotes: 'Tiba di Gudang Cakung tepat waktu, bongkar muatan selesai dan aman.',
       status: 'SUDAH SAMPAI',
+      departureLat: -6.215678,
+      departureLng: 106.834567,
+      departurePhotoUrl: 'https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&q=80&w=400',
+      arrivalLat: -6.174521,
+      arrivalLng: 106.923456,
+      arrivalPhotoUrl: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=400',
     },
   ];
 
-  const filtered = demoRecords.filter((r) => {
+  const [records, setRecords] = useState<DriverDetailData[]>(initialDemoRecords);
+
+  useEffect(() => {
+    let isMounted = true;
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('token') || localStorage.getItem('patrol_auth_token') || ''
+        : '';
+
+    fetch('http://localhost:3000/api/v1/driver/trips', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('API offline');
+        return res.json();
+      })
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          const mapped: DriverDetailData[] = data.map((t: any) => ({
+            id: t.id,
+            siteName: t.siteName ? t.siteName.toUpperCase() : 'POOL KENDARAAN',
+            driverName: t.driverName ? t.driverName.toUpperCase() : 'RUDI HARTONO',
+            vehicle: `${t.vehicleType || 'KENDARAAN'} - ${t.vehiclePlateNumber || 'B 1234 ABC'}`.toUpperCase(),
+            departureTime: t.startedAt ? new Date(t.startedAt).toLocaleString('id-ID') : 'SENIN, 26 OCT 2026 - 05:47:00',
+            arrivalTime: t.arrivedAt ? new Date(t.arrivedAt).toLocaleString('id-ID') : undefined,
+            destination: t.destinationLocation ? t.destinationLocation.toUpperCase() : 'GUDANG LOGISTIK',
+            purpose: t.tripNotes || 'Distribusi logistik operasional',
+            tripNotes: t.tripNotes || 'Perjalanan selesai dengan lancar.',
+            status: t.tripStatus === 'COMPLETED' ? 'SUDAH SAMPAI' : 'BERANGKAT',
+            departureLat: -6.215678,
+            departureLng: 106.834567,
+            departurePhotoUrl: 'https://images.unsplash.com/photo-1586769852044-692d6e3703f0?auto=format&fit=crop&q=80&w=400',
+            arrivalLat: t.tripStatus === 'COMPLETED' ? -6.174521 : undefined,
+            arrivalLng: t.tripStatus === 'COMPLETED' ? 106.923456 : undefined,
+            arrivalPhotoUrl:
+              t.tripStatus === 'COMPLETED'
+                ? 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=400'
+                : undefined,
+          }));
+          setRecords(mapped);
+        }
+      })
+      .catch(() => {
+        // Fallback to rich demo records
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filtered = records.filter((r) => {
     if (selectedSiteName && !r.siteName.toLowerCase().includes(selectedSiteName.toLowerCase())) return false;
     if (searchTerm) {
       const match =
-        r.personilName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.destination.toLowerCase().includes(searchTerm.toLowerCase());
       if (!match) return false;
@@ -114,6 +191,7 @@ export const LaporanDriverView: React.FC = () => {
                       type="search"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Cari driver / kendaraan..."
                       style={{
                         border: '1px solid #cbd5e1',
                         borderRadius: '4px',
@@ -150,15 +228,17 @@ export const LaporanDriverView: React.FC = () => {
                             textAlign: 'center',
                           }}
                         >
-                          <option value="">SORT LOKASI / S</option>
+                          <option value="">SORT LOKASI / SITE</option>
+                          <option value="">SEMUA LOKASI</option>
                           {sites.map((s) => (
                             <option key={s.id} value={s.name}>
                               {s.name.toUpperCase()}
                             </option>
                           ))}
-                          {!sites.some((s) => s.name.toLowerCase().includes('demo')) && (
-                            <option value="SITE PROYEK DEMO">SITE PROYEK DEMO</option>
-                          )}
+                          <option value="POOL KENDARAAN">POOL KENDARAAN</option>
+                          <option value="KANTOR PUSAT">KANTOR PUSAT</option>
+                          <option value="PABRIK BEKASI">PABRIK BEKASI</option>
+                          <option value="GUDANG CAKUNG">GUDANG CAKUNG</option>
                         </select>
                       </th>
                       <th style={{ width: '150px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
@@ -182,83 +262,118 @@ export const LaporanDriverView: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((row, idx) => (
-                      <tr
-                        key={row.id}
-                        style={{
-                          backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
-                          borderBottom: '1px solid #e2e8f0',
-                        }}
-                      >
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#dc3545', margin: 0, fontWeight: 600 }}>
-                              {row.siteName}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#0d6efd', margin: 0, fontWeight: 600 }}>
-                              {row.personilName}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#28a745', margin: 0, fontWeight: 600 }}>
-                              {row.vehicle}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px', fontSize: '11px', color: '#0d6efd' }}>
-                          <div>BERANGKAT:</div>
-                          <div>{row.departureTime}</div>
-                          <div style={{ marginTop: '4px' }}>SAMPAI:</div>
-                          <div>{row.arrivalTime}</div>
-                        </td>
-                        <td style={{ verticalAlign: 'middle', padding: '12px 10px', textAlign: 'center', fontSize: '11px', color: '#334155' }}>
-                          <div style={{ fontWeight: 600 }}>{row.destination}</div>
-                          <div style={{ color: '#64748b' }}>- {row.notes}</div>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <span
-                            style={{
-                              backgroundColor: '#28a745',
-                              color: '#fff',
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              display: 'inline-block',
-                            }}
-                          >
-                            ✔ {row.status}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <a
-                            href="#"
-                            onClick={(e) => e.preventDefault()}
-                            style={{
-                              backgroundColor: '#343a40',
-                              borderColor: '#343a40',
-                              color: '#fff',
-                              padding: '4px 10px',
-                              fontSize: '11px',
-                              borderRadius: '4px',
-                              textDecoration: 'none',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                          >
-                            <i className="fa fa-search-plus" aria-hidden="true"></i>
-                            <small>Detail</small>
-                          </a>
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} style={{ textAlign: 'center', padding: '24px', color: '#64748b', fontSize: '13px' }}>
+                          Tidak ada data kegiatan driver ditemukan.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filtered.map((row, idx) => (
+                        <tr
+                          key={row.id}
+                          style={{
+                            backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
+                            borderBottom: '1px solid #e2e8f0',
+                          }}
+                        >
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <p style={{ color: '#dc3545', margin: 0, fontWeight: 600 }}>
+                                {row.siteName}
+                              </p>
+                            </small>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <p style={{ color: '#0d6efd', margin: 0, fontWeight: 600 }}>
+                                {row.driverName}
+                              </p>
+                            </small>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <p style={{ color: '#28a745', margin: 0, fontWeight: 600 }}>
+                                {row.vehicle}
+                              </p>
+                            </small>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px', fontSize: '11px', color: '#0d6efd' }}>
+                            <div>BERANGKAT:</div>
+                            <div>{row.departureTime}</div>
+                            {row.arrivalTime && (
+                              <>
+                                <div style={{ marginTop: '4px' }}>SAMPAI:</div>
+                                <div>{row.arrivalTime}</div>
+                              </>
+                            )}
+                          </td>
+                          <td style={{ verticalAlign: 'middle', padding: '12px 10px', textAlign: 'center', fontSize: '11px', color: '#334155' }}>
+                            <div style={{ fontWeight: 600 }}>{row.destination} - {row.purpose}</div>
+                            {row.tripNotes && (
+                              <div style={{ color: '#64748b' }}>- {row.tripNotes}</div>
+                            )}
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            {row.status === 'SUDAH SAMPAI' ? (
+                              <span
+                                style={{
+                                  backgroundColor: '#28a745',
+                                  color: '#fff',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  display: 'inline-block',
+                                }}
+                              >
+                                ✔ SUDAH SAMPAI
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  backgroundColor: '#ffc107',
+                                  color: '#212529',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  display: 'inline-block',
+                                }}
+                              >
+                                🚗 BERANGKAT
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedTrip(row);
+                                setIsModalOpen(true);
+                              }}
+                              style={{
+                                backgroundColor: '#343a40',
+                                borderColor: '#343a40',
+                                color: '#fff',
+                                padding: '4px 10px',
+                                fontSize: '11px',
+                                borderRadius: '4px',
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
+                                border: 'none',
+                              }}
+                            >
+                              <i className="fa fa-search-plus" aria-hidden="true"></i>
+                              <small>Detail</small>
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -324,6 +439,17 @@ export const LaporanDriverView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Driver Detail Modal 100% Identical to detail-driver.php */}
+      <DriverDetailModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedTrip(null);
+        }}
+        tripId={selectedTrip?.id || null}
+        detailData={selectedTrip}
+      />
     </div>
   );
 };

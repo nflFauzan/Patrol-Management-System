@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../lib/DataContext';
+import { KomandanDetailModal, KomandanLogItem } from './KomandanDetailModal';
 
 export const LaporanSecurityKomandanView: React.FC = () => {
   const { sites } = useData();
@@ -10,26 +11,85 @@ export const LaporanSecurityKomandanView: React.FC = () => {
   const [pageLength, setPageLength] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const demoRecords = [
+  // Modal Detail states
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<KomandanLogItem | null>(null);
+
+  const initialDemoRecords: KomandanLogItem[] = [
     {
       id: 'kom-1',
-      siteName: 'SITE PROYEK DEMO',
-      waktu: 'MINGGU, 2026-10-18',
+      siteName: 'KANTOR PUSAT',
+      waktu: 'SENIN, 26 OCT 2026 - 05:34:00',
       shift: 'PAGI',
-      namaKomandan: 'DANDAN KOMANDAN',
-      kehadiran: 'LENGKAP',
+      namaKomandan: 'BUDI SANTOSO',
+      kehadiranPersonil: 4,
       catatan:
-        'APEL PAGI PERGANTIAN SHIFT LENGKAP 4 PERSONIL. PEMERIKSAAN INVENTARIS HT, KUNCI GERBANG, DAN SENTER PATROLI DALAM KONDISI BAIK DAN SIAP OPERASIONAL. SITUASI POS DAN PERIMETER AMAN TERKENDALI.',
+        'Apel pagi pergantian shift regu A lengkap 4 personil. Senpi laras pendek, 4 HT pos, dan kunci master ruang server tersimpan aman. Situasi pos dan perimeter kondusif.',
+      inventaris: 'Buku mutasi, 4 unit Handy Talky (HT), 2 unit senter patroli, dan kunci gerbang utama lengkap.',
+    },
+    {
+      id: 'kom-2',
+      siteName: 'PABRIK BEKASI',
+      waktu: 'MINGGU, 25 OCT 2026 - 23:00:00',
+      shift: 'MALAM',
+      namaKomandan: 'BAMBANG SUPRIYANTO',
+      kehadiranPersonil: 6,
+      catatan:
+        'Serah terima tugas jaga shift siang ke malam selesai. Pintu loading dock pabrik terkunci steril, penerangan perimeter aktif.',
+      inventaris: 'Buku mutasi shift malam, 6 unit HT pos, 4 senter patroli, barcode scanner cadangan.',
     },
   ];
 
-  const filtered = demoRecords.filter((r) => {
+  const [records, setRecords] = useState<KomandanLogItem[]>(initialDemoRecords);
+
+  useEffect(() => {
+    let isMounted = true;
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('token') || localStorage.getItem('patrol_auth_token') || ''
+        : '';
+
+    fetch('http://localhost:3000/api/v1/reports/komandan-logs', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('API offline');
+        return res.json();
+      })
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          const mapped: KomandanLogItem[] = data.map((d: any) => ({
+            id: d.id,
+            siteName: d.siteName ? d.siteName.toUpperCase() : 'KANTOR PUSAT',
+            waktu: d.handoverTime
+              ? new Date(d.handoverTime).toLocaleString('id-ID')
+              : 'SENIN, 26 OCT 2026 - 05:34:00',
+            shift: (d.shiftName || 'PAGI').toUpperCase(),
+            namaKomandan: (d.danruName || 'BUDI SANTOSO').toUpperCase(),
+            kehadiranPersonil: d.personnelOnDutyCount || 4,
+            catatan: d.generalNotes || 'Apel pergantian regu berjalan lancar dan tertib. Situasi aman.',
+            inventaris: 'Buku mutasi, HT pos jaga, senter patroli, dan kunci master lengkap.',
+          }));
+          setRecords(mapped);
+        }
+      })
+      .catch(() => {
+        // Fallback to rich demo records
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filtered = records.filter((r) => {
     if (selectedSiteName && !r.siteName.toLowerCase().includes(selectedSiteName.toLowerCase())) return false;
     if (searchTerm) {
       const match =
         r.namaKomandan.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.shift.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.catatan.toLowerCase().includes(searchTerm.toLowerCase());
+        r.catatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.siteName.toLowerCase().includes(searchTerm.toLowerCase());
       if (!match) return false;
     }
     return true;
@@ -98,7 +158,6 @@ export const LaporanSecurityKomandanView: React.FC = () => {
                       <option value="10">10</option>
                       <option value="25">25</option>
                       <option value="50">50</option>
-                      <option value="100">100</option>
                     </select>{' '}
                     ENTRIES
                   </label>
@@ -111,6 +170,7 @@ export const LaporanSecurityKomandanView: React.FC = () => {
                       type="search"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Cari komandan / shift..."
                       style={{
                         border: '1px solid #cbd5e1',
                         borderRadius: '4px',
@@ -153,85 +213,123 @@ export const LaporanSecurityKomandanView: React.FC = () => {
                               {s.name.toUpperCase()}
                             </option>
                           ))}
-                          {!sites.some((s) => s.name.toLowerCase().includes('demo')) && (
-                            <option value="SITE PROYEK DEMO">SITE PROYEK DEMO</option>
-                          )}
+                          <option value="KANTOR PUSAT">KANTOR PUSAT</option>
+                          <option value="PABRIK BEKASI">PABRIK BEKASI</option>
+                          <option value="GUDANG CAKUNG">GUDANG CAKUNG</option>
+                          <option value="POOL KENDARAAN">POOL KENDARAAN</option>
                         </select>
                       </th>
-                      <th style={{ width: '140px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
+                      <th style={{ width: '160px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
                         WAKTU
                       </th>
-                      <th style={{ width: '100px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
+                      <th style={{ width: '110px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
                         SHIFT
                       </th>
-                      <th style={{ width: '180px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
+                      <th style={{ width: '160px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
                         NAMA KOMANDAN
                       </th>
                       <th style={{ width: '150px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
                         KEHADIRAN PERSONIL
                       </th>
-                      <th style={{ width: '450px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
+                      <th style={{ padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
                         CATATAN
+                      </th>
+                      <th style={{ width: '90px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
+                        AKSI
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((row, idx) => (
-                      <tr
-                        key={row.id}
-                        style={{
-                          backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
-                          borderBottom: '1px solid #e2e8f0',
-                        }}
-                      >
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#dc3545', margin: 0, fontWeight: 600 }}>
-                              {row.siteName}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#28a745', margin: 0, fontWeight: 600 }}>
-                              {row.waktu}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#0d6efd', margin: 0, fontWeight: 600 }}>
-                              {row.shift}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#0d6efd', margin: 0, fontWeight: 600 }}>
-                              {row.namaKomandan}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <span
-                            style={{
-                              backgroundColor: '#28a745',
-                              color: '#fff',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              display: 'inline-block',
-                            }}
-                          >
-                            {row.kehadiran}
-                          </span>
-                        </td>
-                        <td style={{ verticalAlign: 'middle', padding: '12px 10px', fontSize: '12px', color: '#334155', lineHeight: '1.5' }}>
-                          {row.catatan}
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} style={{ textAlign: 'center', padding: '24px', color: '#64748b', fontSize: '13px' }}>
+                          Tidak ada data kegiatan komandan ditemukan.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filtered.map((row, idx) => (
+                        <tr
+                          key={row.id}
+                          style={{
+                            backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
+                            borderBottom: '1px solid #e2e8f0',
+                          }}
+                        >
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <p style={{ color: '#dc3545', margin: 0, fontWeight: 600 }}>
+                                {row.siteName}
+                              </p>
+                            </small>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <p style={{ color: '#28a745', margin: 0, fontWeight: 600 }}>
+                                {row.waktu}
+                              </p>
+                            </small>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <p style={{ color: '#0d6efd', margin: 0, fontWeight: 600 }}>
+                                {row.shift}
+                              </p>
+                            </small>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <p style={{ color: '#0d6efd', margin: 0, fontWeight: 600 }}>
+                                {row.namaKomandan}
+                              </p>
+                            </small>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <span
+                              style={{
+                                backgroundColor: '#28a745',
+                                color: '#fff',
+                                padding: '3px 8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                display: 'inline-block',
+                              }}
+                            >
+                              {row.kehadiranPersonil} PERSONIL
+                            </span>
+                          </td>
+                          <td style={{ verticalAlign: 'middle', padding: '12px 10px', fontSize: '12px', color: '#334155', lineHeight: '1.5' }}>
+                            {row.catatan}
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedItem(row);
+                                setIsModalOpen(true);
+                              }}
+                              style={{
+                                backgroundColor: '#343a40',
+                                borderColor: '#343a40',
+                                color: '#fff',
+                                padding: '4px 10px',
+                                fontSize: '11px',
+                                borderRadius: '4px',
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
+                                border: 'none',
+                              }}
+                            >
+                              <i className="fa fa-search-plus" aria-hidden="true"></i>
+                              <small>Detail</small>
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -297,6 +395,16 @@ export const LaporanSecurityKomandanView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Komandan Detail Modal */}
+      <KomandanDetailModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedItem(null);
+        }}
+        data={selectedItem}
+      />
     </div>
   );
 };

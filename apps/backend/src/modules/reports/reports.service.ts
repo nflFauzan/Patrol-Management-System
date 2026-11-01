@@ -187,16 +187,27 @@ export class ReportsService {
         }
       }
 
-      const gajiPokok = Number(u.gajiPokok);
-      const tunjangan = Number(u.tunjangan);
-      const lemburNominal = Math.round(totalOvertimeHours * Number(u.lemburPerJam));
-      const potonganLupa = lupaAbsenCount * Number(u.potonganLupaAbsen);
-      const potonganBpjs = Number(u.potonganBpjs);
-      const totalPotongan = potonganLupa + potonganBpjs;
-      const gajiDiterima = Math.max(0, gajiPokok + tunjangan + lemburNominal - totalPotongan);
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      const bulanStr = monthNames[targetMonth - 1] || String(targetMonth);
+
+      const gajiPokok = Number(u.gajiPokok || 0);
+      const tunjangan = Number(u.tunjangan || 0);
+      const lemburRate = Number(u.lemburPerJam || 0);
+      const lemburNominal = Math.round(totalOvertimeHours * lemburRate);
+      const potonganLupa = lupaAbsenCount * Number(u.potonganLupaAbsen || 0);
+      const potonganBpjs = Number(u.potonganBpjs || 0);
+      const potonganIzin = izinCount * Number(u.potonganAlpa || 0);
+      const totalPotongan = potonganLupa + potonganBpjs + potonganIzin;
+      const gajiKotor = gajiPokok + tunjangan + lemburNominal;
+      const gajiDiterima = Math.max(0, gajiKotor - totalPotongan);
+      const lemburDisplay = Math.round(totalOvertimeHours * 10) / 10;
 
       return {
         userId: u.id,
+        nik: u.nik || `NIK-${String(u.id).slice(0, 8).toUpperCase()}`,
         fullName: u.fullName,
         division: u.division,
         role: u.role,
@@ -206,11 +217,42 @@ export class ReportsService {
         hadirCount,
         lupaAbsenCount,
         izinCount,
+        alpaCount: 0,
+        lemburHours: lemburDisplay,
+        totalLembur: lemburDisplay,
         gajiPokok,
         tunjangan,
         lemburNominal,
+        totalGajiLembur: lemburNominal,
+        potonganBpjs,
+        potonganAlpa: potonganIzin,
+        potonganIzin,
+        potonganLupaAbsen: potonganLupa,
+        totalPotLupa: potonganLupa,
+        totalPotIzin: potonganIzin,
         totalPotongan,
+        gajiKotor,
         gajiDiterima,
+
+        // 100% Parity with patroli.site fetch_absensi.php
+        nama_anggota: u.fullName,
+        posisi: u.division,
+        lokasi_site: u.siteName,
+        gapok: String(gajiPokok),
+        lembur: String(lemburRate),
+        pot_bpjs: String(potonganBpjs),
+        pot_izin: String(Number(u.potonganAlpa || 0)),
+        pot_lupa: String(Number(u.potonganLupaAbsen || 0)),
+        bulan: bulanStr,
+        tahun: String(targetYear),
+        total_hadir: String(hadirCount),
+        total_lupa_absen: String(lupaAbsenCount),
+        total_izin: String(izinCount),
+        total_lembur: String(lemburDisplay),
+        total_pot_lupa: potonganLupa,
+        total_pot_izin: potonganIzin,
+        total_gaji_lembur: lemburNominal,
+        total_gaji: gajiDiterima,
       };
     });
   }
@@ -380,5 +422,511 @@ export class ReportsService {
       dto.status || 'COMPLETED',
     ]);
   }
+
+  // ============================================================================
+  // EXPORT LAPORAN METHODS (100% PARITY DENGAN PATROLI.SITE)
+  // ============================================================================
+
+  async getCategoriesForExport(siteIdOrName?: string): Promise<string[]> {
+    if (!siteIdOrName) {
+      return ['Security', 'Staf', 'Cleaning Service', 'Driver'];
+    }
+
+    try {
+      const sql = `
+        SELECT DISTINCT u.division
+        FROM users u
+        LEFT JOIN user_site_assignments usa ON u.id = usa.user_id
+        LEFT JOIN sites s ON usa.site_id = s.id
+        WHERE s.id::text = $1 OR s.name ILIKE $2
+      `;
+      const rows = await this.db.query(sql, [siteIdOrName, `%${siteIdOrName}%`]);
+      if (rows && rows.length > 0) {
+        return rows.map((r: any) => r.division).filter(Boolean);
+      }
+    } catch {
+      // fallback
+    }
+
+    return ['Security', 'Staf', 'Cleaning Service', 'Driver'];
+  }
+
+  async getPersonnelForExport(siteIdOrName?: string, category?: string): Promise<any[]> {
+    let sql = `
+      SELECT DISTINCT 
+        u.id, 
+        u.full_name as "fullName", 
+        u.division, 
+        u.nik, 
+        u.role,
+        s.name as "siteName"
+      FROM users u
+      LEFT JOIN user_site_assignments usa ON u.id = usa.user_id
+      LEFT JOIN sites s ON usa.site_id = s.id
+      WHERE u.is_active = true
+    `;
+    const params: any[] = [];
+    let idx = 1;
+
+    if (siteIdOrName && siteIdOrName.trim() !== '') {
+      sql += ` AND (s.id::text = $${idx} OR s.name ILIKE $${idx + 1} OR usa.site_id IS NULL)`;
+      params.push(siteIdOrName, `%${siteIdOrName}%`);
+      idx += 2;
+    }
+
+    if (category && category.trim() !== '' && !category.includes('-- PILIH')) {
+      sql += ` AND (
+        u.division ILIKE $${idx}
+        OR ($${idx} ILIKE '%security%' AND u.division ILIKE '%security%')
+        OR ($${idx} ILIKE '%clean%' AND u.division ILIKE '%clean%')
+        OR ($${idx} ILIKE '%driver%' AND u.division ILIKE '%driver%')
+        OR ($${idx} ILIKE '%staf%' AND (u.division ILIKE '%staff%' OR u.division ILIKE '%staf%'))
+      )`;
+      params.push(`%${category}%`);
+      idx++;
+    }
+
+    sql += ` ORDER BY u.full_name ASC`;
+    return this.db.query(sql, params);
+  }
+
+  async getExportAttendancePersonnel(query: {
+    siteId?: string;
+    areaName?: string;
+    category?: string;
+    userId?: string;
+    personnelName?: string;
+    fromDate?: string;
+    toDate?: string;
+  }) {
+    const siteParam = query.siteId || query.areaName || '';
+    const nameParam = query.personnelName || '';
+    const userIdParam = query.userId || '';
+    const fromDate = query.fromDate || '2026-10-01';
+    const toDate = query.toDate || '2026-10-31';
+
+    let userSql = `SELECT id, full_name, division, nik FROM users WHERE 1=1`;
+    const userParams: any[] = [];
+    if (userIdParam) {
+      userSql += ` AND id = $1`;
+      userParams.push(userIdParam);
+    } else if (nameParam) {
+      userSql += ` AND full_name ILIKE $1`;
+      userParams.push(`%${nameParam}%`);
+    } else {
+      userSql += ` LIMIT 1`;
+    }
+    const user = await this.db.queryOne<any>(userSql, userParams);
+
+    let siteName = 'Kantor Pusat';
+    if (siteParam) {
+      const site = await this.db.queryOne<any>(
+        `SELECT name FROM sites WHERE id::text = $1 OR name ILIKE $2`,
+        [siteParam, `%${siteParam}%`],
+      );
+      if (site) siteName = site.name;
+    }
+
+    let attSql = `
+      SELECT 
+        a.id,
+        a.attendance_date,
+        to_char(a.attendance_date, 'YYYY-MM-DD') as date_str,
+        a.status_type,
+        a.shift_name,
+        a.clock_in_at,
+        to_char(a.clock_in_at, 'HH24:MI:SS') as clock_in_time,
+        a.clock_in_photo_key,
+        a.clock_in_distance_meters,
+        a.is_late,
+        a.late_minutes,
+        a.clock_out_at,
+        to_char(a.clock_out_at, 'HH24:MI:SS') as clock_out_time,
+        a.clock_out_photo_key,
+        a.work_duration_minutes,
+        a.notes,
+        s.name as site_name,
+        s.geofence_radius_meters
+      FROM attendances a
+      JOIN sites s ON a.site_id = s.id
+      WHERE a.attendance_date >= $1 AND a.attendance_date <= $2
+    `;
+    const attParams: any[] = [fromDate, toDate];
+
+    if (user?.id) {
+      attSql += ` AND a.user_id = $3`;
+      attParams.push(user.id);
+    }
+
+    attSql += ` ORDER BY a.attendance_date ASC`;
+    const rows = await this.db.query<any>(attSql, attParams);
+
+    let kehadiranCount = 0;
+    let lupaPulangCount = 0;
+    let izinSakitCount = 0;
+    let terlambatCount = 0;
+    let terlambatMenit = 0;
+    let pulangAwalCount = 0;
+    let pulangAwalMenit = 0;
+
+    const daysId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const monthsId = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const records = rows.map((r, idx) => {
+      const attDate = new Date(r.attendance_date);
+      const dayName = daysId[attDate.getDay()] || 'Senin';
+      const formattedDateStr = `${dayName}, ${attDate.getDate().toString().padStart(2, '0')} ${monthsId[attDate.getMonth()]} ${attDate.getFullYear()}`;
+
+      const hasClockIn = Boolean(r.clock_in_at);
+      const hasClockOut = Boolean(r.clock_out_at);
+
+      if (hasClockIn) kehadiranCount++;
+      if (hasClockIn && !hasClockOut) lupaPulangCount++;
+      if (r.status_type === 3) izinSakitCount++;
+      if (r.is_late) {
+        terlambatCount++;
+        terlambatMenit += (r.late_minutes || 0);
+      }
+
+      let absenMasuk = '-';
+      if (r.clock_in_at) {
+        const radiusText = (r.clock_in_distance_meters || 0) <= (r.geofence_radius_meters || 100)
+          ? 'Dalam Radius Area'
+          : 'Luar Radius Area';
+        const waktuText = r.is_late ? `Terlambat ${r.late_minutes} menit` : 'Tepat Waktu';
+        absenMasuk = `${formattedDateStr} | ${r.clock_in_time}\n${radiusText}\n${waktuText}`;
+      }
+
+      let absenPulang = 'Belum Absen Pulang';
+      if (r.clock_out_at) {
+        const outDate = new Date(r.clock_out_at);
+        const outDay = daysId[outDate.getDay()];
+        absenPulang = `${outDay}, ${outDate.getDate().toString().padStart(2, '0')} ${monthsId[outDate.getMonth()]} ${outDate.getFullYear()} | ${r.clock_out_time}`;
+      }
+
+      let totalJamEfektif = '-';
+      if (r.work_duration_minutes && r.work_duration_minutes > 0) {
+        const hrs = Math.floor(r.work_duration_minutes / 60);
+        const mins = r.work_duration_minutes % 60;
+        totalJamEfektif = `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+      }
+
+      return {
+        no: idx + 1,
+        tanggal: r.date_str,
+        hari: dayName,
+        absenMasuk,
+        absenPulang,
+        fotoMasuk: r.clock_in_photo_key || null,
+        fotoPulang: r.clock_out_photo_key || null,
+        keterangan: r.notes || '-',
+        totalJamEfektif,
+        statusRadius: (r.clock_in_distance_meters || 0) <= (r.geofence_radius_meters || 100) ? 'Dalam Radius Area' : 'Luar Radius',
+        statusWaktu: r.is_late ? 'Terlambat' : 'Tepat Waktu',
+      };
+    });
+
+    return {
+      namaPersonil: (user?.full_name || query.personnelName || 'BUDI SANTOSO').toUpperCase(),
+      posisi: (user?.division || query.category || 'Security').toUpperCase(),
+      siteName: siteName.toUpperCase(),
+      summary: {
+        kehadiranCount,
+        lupaPulangCount,
+        izinSakitCount,
+        terlambatCount,
+        terlambatMenit,
+        pulangAwalCount,
+        pulangAwalMenit,
+      },
+      records,
+    };
+  }
+
+  async getExportAttendanceArea(query: {
+    siteId?: string;
+    areaName?: string;
+    category?: string;
+    fromDate?: string;
+    toDate?: string;
+  }) {
+    const siteParam = query.siteId || query.areaName || '';
+    const fromDate = query.fromDate || '2026-10-01';
+    const toDate = query.toDate || '2026-10-31';
+
+    let sql = `
+      SELECT 
+        a.id,
+        u.full_name as "fullName",
+        u.division,
+        a.attendance_date,
+        to_char(a.attendance_date, 'YYYY-MM-DD') as date_str,
+        to_char(a.clock_in_at, 'HH24:MI:SS') as clock_in_time,
+        a.clock_in_at,
+        a.clock_in_photo_key,
+        a.clock_in_distance_meters,
+        a.is_late,
+        a.late_minutes,
+        to_char(a.clock_out_at, 'HH24:MI:SS') as clock_out_time,
+        a.clock_out_at,
+        a.clock_out_photo_key,
+        a.work_duration_minutes,
+        a.notes,
+        s.name as site_name,
+        s.geofence_radius_meters
+      FROM attendances a
+      JOIN users u ON a.user_id = u.id
+      JOIN sites s ON a.site_id = s.id
+      WHERE a.attendance_date >= $1 AND a.attendance_date <= $2
+    `;
+    const params: any[] = [fromDate, toDate];
+    let idx = 3;
+
+    if (siteParam) {
+      sql += ` AND (s.id::text = $${idx} OR s.name ILIKE $${idx + 1})`;
+      params.push(siteParam, `%${siteParam}%`);
+      idx += 2;
+    }
+
+    if (query.category && !query.category.includes('-- PILIH')) {
+      sql += ` AND (
+        u.division ILIKE $${idx}
+        OR ($${idx} ILIKE '%security%' AND u.division ILIKE '%security%')
+        OR ($${idx} ILIKE '%clean%' AND u.division ILIKE '%clean%')
+        OR ($${idx} ILIKE '%driver%' AND u.division ILIKE '%driver%')
+        OR ($${idx} ILIKE '%staf%' AND (u.division ILIKE '%staff%' OR u.division ILIKE '%staf%'))
+      )`;
+      params.push(`%${query.category}%`);
+      idx++;
+    }
+
+    sql += ` ORDER BY a.attendance_date DESC, u.full_name ASC`;
+    const rows = await this.db.query<any>(sql, params);
+
+    const daysId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const monthsId = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const records = rows.map((r, index) => {
+      const attDate = new Date(r.attendance_date);
+      const dayName = daysId[attDate.getDay()] || 'Senin';
+      const formattedDateStr = `${dayName}, ${attDate.getDate().toString().padStart(2, '0')} ${monthsId[attDate.getMonth()]} ${attDate.getFullYear()}`;
+
+      let absenMasuk = '-';
+      if (r.clock_in_at) {
+        const radiusText = (r.clock_in_distance_meters || 0) <= (r.geofence_radius_meters || 100)
+          ? 'Dalam Radius Area'
+          : 'Luar Radius Area';
+        const waktuText = r.is_late ? `Terlambat ${r.late_minutes} menit` : 'Tepat Waktu';
+        absenMasuk = `${formattedDateStr} | ${r.clock_in_time}\n${radiusText}\n${waktuText}`;
+      }
+
+      let absenPulang = 'Belum Absen Pulang';
+      if (r.clock_out_at) {
+        const outDate = new Date(r.clock_out_at);
+        const outDay = daysId[outDate.getDay()];
+        absenPulang = `${outDay}, ${outDate.getDate().toString().padStart(2, '0')} ${monthsId[outDate.getMonth()]} ${outDate.getFullYear()} | ${r.clock_out_time}`;
+      }
+
+      let totalJamEfektif = '-';
+      if (r.work_duration_minutes && r.work_duration_minutes > 0) {
+        const hrs = Math.floor(r.work_duration_minutes / 60);
+        const mins = r.work_duration_minutes % 60;
+        totalJamEfektif = `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+      }
+
+      return {
+        no: index + 1,
+        namaPersonil: r.fullName.toUpperCase(),
+        divisi: r.division.toUpperCase(),
+        absenMasuk,
+        absenPulang,
+        fotoMasuk: r.clock_in_photo_key || null,
+        fotoPulang: r.clock_out_photo_key || null,
+        keterangan: r.notes || '-',
+        totalJamEfektif,
+      };
+    });
+
+    return {
+      siteName: (siteParam || 'SEMUA LOKASI').toUpperCase(),
+      kategori: (query.category || 'SEMUA KATEGORI').toUpperCase(),
+      records,
+    };
+  }
+
+  async getExportActivityPersonnel(query: {
+    siteId?: string;
+    areaName?: string;
+    category?: string;
+    userId?: string;
+    personnelName?: string;
+    fromDate?: string;
+    toDate?: string;
+  }) {
+    const siteParam = query.siteId || query.areaName || '';
+    const nameParam = query.personnelName || '';
+    const userIdParam = query.userId || '';
+    const fromDate = query.fromDate || '2026-10-01';
+    const toDate = query.toDate || '2026-10-31';
+
+    let userSql = `SELECT id, full_name, division FROM users WHERE 1=1`;
+    const userParams: any[] = [];
+    if (userIdParam) {
+      userSql += ` AND id = $1`;
+      userParams.push(userIdParam);
+    } else if (nameParam) {
+      userSql += ` AND full_name ILIKE $1`;
+      userParams.push(`%${nameParam}%`);
+    } else {
+      userSql += ` LIMIT 1`;
+    }
+    const user = await this.db.queryOne<any>(userSql, userParams);
+
+    let sql = `
+      SELECT 
+        pl.id,
+        pl.scanned_at,
+        to_char(pl.scanned_at, 'YYYY-MM-DD') as date_str,
+        to_char(pl.scanned_at, 'HH24:MI:SS') as time_str,
+        pl.status_result,
+        pl.notes,
+        pl.photo_key,
+        c.name as checkpoint_name,
+        c.location_detail,
+        c.task_description,
+        s.name as site_name
+      FROM patrol_logs pl
+      JOIN checkpoints c ON pl.checkpoint_id = c.id
+      JOIN sites s ON pl.site_id = s.id
+      WHERE pl.scanned_at >= $1::timestamp AND pl.scanned_at <= ($2::date + interval '1 day')
+    `;
+    const params: any[] = [fromDate, toDate];
+
+    if (user?.id) {
+      sql += ` AND pl.user_id = $3`;
+      params.push(user.id);
+    }
+
+    sql += ` ORDER BY pl.scanned_at DESC`;
+    const rows = await this.db.query<any>(sql, params);
+
+    const daysId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const monthsId = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const records = rows.map((r, index) => {
+      const scanDate = new Date(r.scanned_at);
+      const dayName = daysId[scanDate.getDay()] || 'Senin';
+      const formattedDate = `${scanDate.getDate().toString().padStart(2, '0')} ${monthsId[scanDate.getMonth()]} ${scanDate.getFullYear()}`;
+
+      const deskripsi = r.notes || r.task_description || `${r.checkpoint_name} - ${r.location_detail}`;
+
+      return {
+        no: index + 1,
+        hari: dayName,
+        tanggal: formattedDate,
+        jam: r.time_str,
+        deskripsiTugas: deskripsi,
+        fotoKegiatan: r.photo_key || null,
+        lokasiAset: `${r.checkpoint_name} (${r.location_detail})`,
+      };
+    });
+
+    return {
+      namaPersonil: (user?.full_name || query.personnelName || 'BUDI SANTOSO').toUpperCase(),
+      posisi: (user?.division || query.category || 'Security').toUpperCase(),
+      siteName: (siteParam || 'KANTOR PUSAT').toUpperCase(),
+      records,
+    };
+  }
+
+  async getExportActivityArea(query: {
+    siteId?: string;
+    areaName?: string;
+    category?: string;
+    fromDate?: string;
+    toDate?: string;
+  }) {
+    const siteParam = query.siteId || query.areaName || '';
+    const fromDate = query.fromDate || '2026-10-01';
+    const toDate = query.toDate || '2026-10-31';
+
+    let sql = `
+      SELECT 
+        pl.id,
+        u.full_name as "officerName",
+        u.division,
+        pl.scanned_at,
+        to_char(pl.scanned_at, 'HH24:MI:SS') as time_str,
+        pl.status_result,
+        pl.notes,
+        pl.photo_key,
+        c.name as checkpoint_name,
+        c.location_detail,
+        c.task_description,
+        s.name as site_name
+      FROM patrol_logs pl
+      JOIN users u ON pl.user_id = u.id
+      JOIN checkpoints c ON pl.checkpoint_id = c.id
+      JOIN sites s ON pl.site_id = s.id
+      WHERE pl.scanned_at >= $1::timestamp AND pl.scanned_at <= ($2::date + interval '1 day')
+    `;
+    const params: any[] = [fromDate, toDate];
+    let idx = 3;
+
+    if (siteParam) {
+      sql += ` AND (s.id::text = $${idx} OR s.name ILIKE $${idx + 1})`;
+      params.push(siteParam, `%${siteParam}%`);
+      idx += 2;
+    }
+
+    if (query.category && !query.category.includes('-- PILIH')) {
+      sql += ` AND (
+        u.division ILIKE $${idx}
+        OR ($${idx} ILIKE '%security%' AND u.division ILIKE '%security%')
+        OR ($${idx} ILIKE '%clean%' AND u.division ILIKE '%clean%')
+        OR ($${idx} ILIKE '%driver%' AND u.division ILIKE '%driver%')
+        OR ($${idx} ILIKE '%staf%' AND (u.division ILIKE '%staff%' OR u.division ILIKE '%staf%'))
+      )`;
+      params.push(`%${query.category}%`);
+      idx++;
+    }
+
+    sql += ` ORDER BY pl.scanned_at DESC`;
+    const rows = await this.db.query<any>(sql, params);
+
+    const daysId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const monthsId = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const records = rows.map((r, index) => {
+      const scanDate = new Date(r.scanned_at);
+      const dayName = daysId[scanDate.getDay()] || 'Senin';
+      const formattedDate = `${scanDate.getDate().toString().padStart(2, '0')} ${monthsId[scanDate.getMonth()]} ${scanDate.getFullYear()}`;
+
+      const isAbnormal = r.status_result === 'ABNORMAL' || r.status_result === 'TEMUAN' || (r.notes && r.notes.toLowerCase().includes('temuan'));
+      const statusTemuan = isAbnormal ? 'BELUM DITINDAKLANJUTI' : 'AMAN';
+      const temuanDilaporkan = isAbnormal ? (r.notes || 'Temuan abnormalitas saat patroli') : '-';
+      const catatanTindakLanjut = isAbnormal ? 'Menunggu verifikasi supervisor area' : '-';
+
+      return {
+        no: index + 1,
+        namaPersonel: r.officerName.toUpperCase(),
+        hari: dayName,
+        tanggal: formattedDate,
+        jam: r.time_str,
+        deskripsiTugas: r.task_description || `${r.checkpoint_name} (${r.location_detail})`,
+        fotoKegiatan: r.photo_key || null,
+        temuanDilaporkan,
+        statusTemuan,
+        catatanTindakLanjut,
+      };
+    });
+
+    return {
+      siteName: (siteParam || 'SEMUA LOKASI').toUpperCase(),
+      kategori: (query.category || 'SEMUA KATEGORI').toUpperCase(),
+      records,
+    };
+  }
 }
+
 

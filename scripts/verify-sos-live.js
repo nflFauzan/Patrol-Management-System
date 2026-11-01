@@ -107,6 +107,29 @@ async function runLiveSosVerification() {
     const activeRes = await client.query(`SELECT COUNT(*) FROM emergency_alerts WHERE alert_status = 'ACTIVE'`);
     console.log(`\n5. Current Active SOS Alerts Count: ${activeRes.rows[0].count}`);
 
+    // 7. Verify Log Data Emergency Table Query (patroli.site #panic DataTable)
+    console.log('\n6. Testing Log Data Emergency Query (patroli.site #panic table format)...');
+    const logsRes = await client.query(`
+      SELECT 
+        e.id, 
+        s.name AS "siteName",
+        u.full_name AS "officerName", 
+        u.division,
+        ST_Y(e.coordinates::geometry) AS latitude,
+        ST_X(e.coordinates::geometry) AS longitude,
+        e.triggered_at AS "triggeredAt", 
+        e.alert_status AS "alertStatus"
+      FROM emergency_alerts e
+      JOIN users u ON e.user_id = u.id
+      JOIN sites s ON e.site_id = s.id
+      ORDER BY e.triggered_at DESC
+      LIMIT 5
+    `);
+    console.log(`   ✅ Fetched ${logsRes.rows.length} rows from emergency_alerts:`);
+    logsRes.rows.forEach((r, idx) => {
+      console.log(`      [#${idx + 1}] ${r.officerName} (${r.division}) | Site: ${r.siteName} | Coords: ${r.latitude}, ${r.longitude} | Status: ${r.alertStatus}`);
+    });
+
     console.log('\n===============================================================');
     console.log('🎉 ALL LIVE SOS & POSTGIS INTEGRATION TESTS PASSED 100%!');
     console.log('===============================================================\n');

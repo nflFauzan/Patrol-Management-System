@@ -135,4 +135,80 @@ describe('SosService (Panic Button SOS & WhatsApp Gateway Integration)', () => {
       await expect(service.acknowledgeAlert('invalid-id', 'sup-001')).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('TC-SOS-03: Log Data Emergency Query (patroli.site #panic table)', () => {
+    it('should query paginated emergency logs with formatted Indonesian datetime', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({ total: 1 });
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([
+        {
+          id: 'sos-alert-001',
+          siteId: 'site-001',
+          siteName: 'kantor pusat',
+          userId: 'user-001',
+          officerName: 'budi santoso',
+          officerPhone: '0812-1111-2222',
+          division: 'Security',
+          photoUrl: null,
+          latitude: -6.20912,
+          longitude: 106.84621,
+          triggeredAt: '2026-11-02T00:11:00Z',
+          alertStatus: 'ACTIVE',
+          isWhatsappDispatched: true,
+          acknowledgedBy: null,
+          acknowledgedAt: null,
+          resolutionNotes: null,
+        },
+      ]);
+
+      const result = await service.getEmergencyLogs({ page: 1, limit: 10, search: 'budi' });
+
+      expect(result).toBeDefined();
+      expect(result.total).toBe(1);
+      expect(result.data.length).toBe(1);
+      expect(result.data[0].officerName).toBe('budi santoso');
+      expect(result.data[0].siteName).toBe('kantor pusat');
+      expect(result.data[0].mapsUrl).toContain('-6.20912,106.84621');
+      expect(result.data[0].formattedTime).toBeDefined();
+    });
+  });
+
+  describe('TC-SOS-04: Detail Log Emergency (patroli.site modal detail)', () => {
+    it('should return complete emergency detail for Leaflet map & profile card', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({
+        id: 'sos-alert-001',
+        siteId: 'site-001',
+        siteName: 'kantor pusat',
+        siteAddress: 'Jl. Sudirman Kav. 1',
+        userId: 'user-001',
+        officerName: 'budi santoso',
+        officerPhone: '0812-1111-2222',
+        division: 'Security',
+        role: 'DANRU',
+        photoUrl: null,
+        latitude: -6.20912,
+        longitude: 106.84621,
+        triggeredAt: '2026-11-02T00:11:00Z',
+        alertStatus: 'ACTIVE',
+        isWhatsappDispatched: true,
+        whatsappDispatchResponse: 'OK',
+        acknowledgedBy: null,
+        acknowledgedAt: null,
+        resolutionNotes: null,
+      });
+
+      const detail = await service.getSosDetail('sos-alert-001');
+
+      expect(detail).toBeDefined();
+      expect(detail.officerName).toBe('budi santoso');
+      expect(detail.latitude).toBe(-6.20912);
+      expect(detail.longitude).toBe(106.84621);
+      expect(detail.dayName).toBeDefined();
+      expect(detail.timeOnly).toBeDefined();
+    });
+
+    it('should throw NotFoundException if detail id not found', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce(null);
+      await expect(service.getSosDetail('invalid-id')).rejects.toThrow(NotFoundException);
+    });
+  });
 });

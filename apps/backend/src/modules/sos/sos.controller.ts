@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { SosService } from './sos.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -24,6 +24,26 @@ export class SosController {
   @Roles(UserRole.ADMIN_SUPER, UserRole.OPS_MANAGER, UserRole.SITE_SUPERVISOR)
   async getActive() {
     return this.sosService.getActiveAlerts();
+  }
+
+  @Get('logs')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN_SUPER, UserRole.OPS_MANAGER, UserRole.SITE_SUPERVISOR)
+  async getLogs(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('siteId') siteId?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.sosService.getEmergencyLogs({ page, limit, search, siteId, status });
+  }
+
+  @Get('logs/:id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN_SUPER, UserRole.OPS_MANAGER, UserRole.SITE_SUPERVISOR)
+  async getDetail(@Param('id') id: string) {
+    return this.sosService.getSosDetail(id);
   }
 
   @Post(':id/acknowledge')

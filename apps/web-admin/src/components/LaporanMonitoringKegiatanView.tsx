@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { useData } from '../lib/DataContext';
 
 interface MonitoringRow {
-  id: string;
   no: number;
   namaAset: string;
+  waktu: string;
   hours: {
     [hourIndex: number]: {
       scanned: boolean;
@@ -18,72 +18,139 @@ interface MonitoringRow {
 export const LaporanMonitoringKegiatanView: React.FC = () => {
   const { sites, checkpoints, users } = useData();
 
-  const [tanggal, setTanggal] = useState<string>('2026-10-12');
-  const [selectedSite, setSelectedSite] = useState<string>('Site Proyek Demo');
-  const [selectedPetugas, setSelectedPetugas] = useState<string>('Budi Satpam Test');
+  const [tanggal, setTanggal] = useState<string>('2026-10-26');
+  const [selectedSite, setSelectedSite] = useState<string>('KANTOR PUSAT');
+  const [selectedPetugas, setSelectedPetugas] = useState<string>('ANDI RAHMAN');
 
-  // Hourly slots (24 hours)
+  // Hourly slots (24 hours: 00:00 S/D 01:00 ... 23:00 S/D 00:00)
   const hourlySlots = Array.from({ length: 24 }, (_, i) => {
     const start = String(i).padStart(2, '0') + ':00';
     const end = String((i + 1) % 24).padStart(2, '0') + ':00';
-    return `${start} S/D ${end}`;
+    return {
+      index: i,
+      label: `${start}\nS/D\n${end}`,
+      headerText: `${start} S/D ${end}`,
+    };
   });
 
-  // Demo seed matching patroli_site_monitoring_kegiatan.png 100%
+  // Seed data matching patroli.site live capture (Andi Rahman on 26 Oct 2026) 100%
   const demoRows: MonitoringRow[] = [
     {
-      id: 'ast-1',
       no: 1,
-      namaAset: 'POS GERBANG UTAMA',
+      namaAset: 'PARKIR BASEMENT',
+      waktu: '05:33:00',
       hours: {
-        18: { scanned: true, timeFormatted: '18:01' },
+        5: { scanned: true, timeFormatted: '05:33' },
       },
     },
     {
-      id: 'ast-2',
       no: 2,
-      namaAset: 'LOBBY & RESEPSIONIS',
+      namaAset: 'POS BELAKANG',
+      waktu: '05:33:00',
       hours: {
-        8: { scanned: true, timeFormatted: '08:15' },
-        12: { scanned: true, timeFormatted: '12:05' },
+        5: { scanned: true, timeFormatted: '05:33' },
       },
     },
     {
-      id: 'ast-3',
       no: 3,
-      namaAset: 'RUANG SERVER IT LT 3',
+      namaAset: 'POS UTAMA LOBBY',
+      waktu: '05:32:00',
       hours: {
-        10: { scanned: true, timeFormatted: '10:12' },
-        14: { scanned: true, timeFormatted: '14:20' },
+        5: { scanned: true, timeFormatted: '05:32' },
       },
     },
   ];
 
   const handleReset = () => {
-    setTanggal('2026-10-12');
-    setSelectedSite('Site Proyek Demo');
-    setSelectedPetugas('Budi Satpam Test');
+    setTanggal('');
+    setSelectedSite('');
+    setSelectedPetugas('');
   };
 
   const handleExportExcel = () => {
-    // Generate CSV export
-    const headers = ['NO', 'NAMA ASET', ...hourlySlots];
-    const rows = demoRows.map((r) => [
-      r.no,
-      r.namaAset,
-      ...Array.from({ length: 24 }, (_, i) => (r.hours[i]?.scanned ? r.hours[i]?.timeFormatted : '-')),
-    ]);
-    const csvContent =
-      'data:text/csv;charset=utf-8,' +
-      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    if (!tanggal || !selectedSite || !selectedPetugas) {
+      alert('⚠️ Silakan pilih tanggal, lokasi, dan petugas terlebih dahulu.');
+      return;
+    }
+
+    const info = `
+      <div class="info-bar-modern" style="margin-bottom: 15px;">
+        <span style="margin-right: 20px;"><b>Tanggal:</b> ${tanggal}</span>
+        <span style="margin-right: 20px;"><b>Lokasi:</b> ${selectedSite}</span>
+        <span><b>Petugas:</b> ${selectedPetugas}</span>
+      </div>
+    `;
+
+    const tableHeadersHtml = `
+      <thead>
+        <tr>
+          <th>NO</th>
+          <th>NAMA ASET</th>
+          <th>WAKTU</th>
+          ${hourlySlots.map((s) => `<th>${s.headerText}</th>`).join('')}
+        </tr>
+      </thead>
+    `;
+
+    const tableRowsHtml = demoRows
+      .map(
+        (r) => `
+        <tr>
+          <td>${r.no}</td>
+          <td>${r.namaAset}</td>
+          <td>${r.waktu}</td>
+          ${hourlySlots
+            .map((s) => {
+              const h = r.hours[s.index];
+              return h?.scanned
+                ? `<td style="color: green; font-weight: bold;">✓<br/>${h.timeFormatted}</td>`
+                : `<td>-</td>`;
+            })
+            .join('')}
+        </tr>
+      `
+      )
+      .join('');
+
+    const html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; }
+          table { border-collapse: collapse; width: 100%; }
+          th, td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; font-size: 11px; }
+          th { background-color: #1e3a8a; color: #fff; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <h3 style="text-align: center;">MONITORING PATROLI PERSONIL</h3>
+        ${info}
+        <table border="1">
+          ${tableHeadersHtml}
+          <tbody>
+            ${tableRowsHtml}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + html], {
+      type: 'application/vnd.ms-excel;charset=utf-8;',
+    });
+
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `monitoring-patroli-${tanggal}.csv`);
+    link.href = url;
+    link.download = `laporan_patroli_${selectedPetugas.replace(/\s+/g, '_')}_${tanggal}.xls`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
+
+  const isFormComplete = Boolean(tanggal && selectedSite && selectedPetugas);
 
   return (
     <div className="w-full">
@@ -92,33 +159,79 @@ export const LaporanMonitoringKegiatanView: React.FC = () => {
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
       />
 
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .monitoring-patroli-container {
           width: 100%;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
-        .monitoring-table {
+        .info-bar-modern {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 12px 18px;
+          margin-bottom: 16px;
+          display: flex;
+          gap: 24px;
+          align-items: center;
+          box-shadow: 0 4px 12px rgba(15,23,42,.04);
+        }
+        .info-item {
+          display: flex;
+          flex-direction: column;
+        }
+        .info-item .label {
+          font-size: 10px;
+          text-transform: uppercase;
+          font-weight: 700;
+          color: #64748b;
+          letter-spacing: .5px;
+        }
+        .info-item .value {
+          font-size: 14px;
+          font-weight: 700;
+          color: #0f172a;
+        }
+        .laporan-table {
           width: 100%;
           border-collapse: collapse;
           font-size: 11px;
         }
-        .monitoring-table thead th {
-          background-color: #1a56db;
+        .laporan-table thead th {
+          background-color: #1e3a8a;
           color: #ffffff;
-          padding: 8px 6px;
-          border: 1px solid #2563eb;
+          padding: 8px 4px;
+          border: 1px solid #1e40af;
           text-align: center;
           font-weight: 700;
-          white-space: nowrap;
+          font-size: 10px;
+          line-height: 1.3;
+          white-space: pre-line;
         }
-        .monitoring-table tbody td {
-          border: 1px solid #e2e8f0;
-          padding: 8px 6px;
+        .laporan-table tbody td {
+          border: 1px solid #cbd5e1;
+          padding: 8px 4px;
           text-align: center;
           vertical-align: middle;
-          white-space: nowrap;
+          font-size: 11px;
         }
-      `}</style>
+        .laporan-table tbody tr:nth-child(even) {
+          background-color: #f8fafc;
+        }
+        .laporan-table tbody tr:hover {
+          background-color: #f1f5f9;
+        }
+        .cell-check {
+          color: #16a34a;
+          font-weight: 800;
+          font-size: 14px;
+        }
+        .cell-time {
+          font-size: 10px;
+          font-weight: 600;
+          color: #1e293b;
+          display: block;
+        }
+      `}} />
 
       <div className="monitoring-patroli-container space-y-5">
         {/* Centered Page Title */}
@@ -154,9 +267,13 @@ export const LaporanMonitoringKegiatanView: React.FC = () => {
                 onChange={(e) => setSelectedSite(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 outline-none focus:border-blue-600 bg-white"
               >
-                <option value="Site Proyek Demo">Site Proyek Demo</option>
+                <option value="">-- Semua Lokasi --</option>
+                <option value="KANTOR PUSAT">Kantor Pusat</option>
+                <option value="PABRIK BEKASI">Pabrik Bekasi</option>
+                <option value="GUDANG CAKUNG">Gudang Cakung</option>
+                <option value="POOL KENDARAAN">Pool Kendaraan</option>
                 {sites.map((s) => (
-                  <option key={s.id} value={s.name}>
+                  <option key={s.id} value={s.name.toUpperCase()}>
                     {s.name}
                   </option>
                 ))}
@@ -173,107 +290,116 @@ export const LaporanMonitoringKegiatanView: React.FC = () => {
                 onChange={(e) => setSelectedPetugas(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 outline-none focus:border-blue-600 bg-white"
               >
-                <option value="Budi Satpam Test">Budi Satpam Test</option>
-                <option value="Dandan Komandan">Dandan Komandan</option>
-                <option value="Akmal">Akmal</option>
-                <option value="Supri Driver">Supri Driver</option>
+                <option value="">-- Pilih Petugas --</option>
+                <option value="ANDI RAHMAN">Andi Rahman (Security)</option>
+                <option value="BUDI SANTOSO">Budi Santoso (Komandan)</option>
+                <option value="SITI RAHAYU">Siti Rahayu (Cleaning)</option>
+                <option value="RUDI HARTONO">Rudi Hartono (Driver)</option>
+                <option value="HENDRA GUNAWAN">Hendra Gunawan (Staff)</option>
                 {users.map((u) => (
-                  <option key={u.id} value={u.fullName}>
+                  <option key={u.id} value={u.fullName.toUpperCase()}>
                     {u.fullName}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Action Buttons */}
+            {/* Actions */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleReset}
-                className="bg-[#f59e0b] hover:bg-[#d97706] text-slate-900 font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 transition shadow-xs"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-600 text-xs font-bold transition"
               >
-                <i className="fa fa-refresh"></i>
-                <span>Reset</span>
+                ↻ Reset
               </button>
-
               <button
                 type="button"
                 onClick={handleExportExcel}
-                className="bg-[#10b981] hover:bg-[#059669] text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 transition shadow-xs"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#16a34a] hover:bg-[#15803d] text-white text-xs font-bold transition shadow-xs"
               >
-                <i className="fa fa-file-excel-o"></i>
-                <span>Cetak Excel</span>
+                📊 Cetak Excel
               </button>
             </div>
           </div>
-
-          {/* Meta Summary Row */}
-          <div className="flex flex-wrap items-center gap-8 mt-6 pt-4 border-t border-slate-100 text-xs">
-            <div>
-              <span className="text-slate-400 font-semibold block text-[11px]">TANGGAL</span>
-              <span className="font-extrabold text-slate-800 text-sm">{tanggal}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 font-semibold block text-[11px]">LOKASI</span>
-              <span className="font-extrabold text-slate-800 text-sm uppercase">{selectedSite}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 font-semibold block text-[11px]">PETUGAS</span>
-              <span className="font-extrabold text-slate-800 text-sm uppercase">{selectedPetugas}</span>
-            </div>
-          </div>
         </div>
 
-        {/* Hourly Matrix Table Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="monitoring-table">
-              <thead>
-                <tr>
-                  <th rowSpan={2} style={{ width: '40px' }}>
-                    NO
-                  </th>
-                  <th rowSpan={2} style={{ minWidth: '180px', textAlign: 'left', paddingLeft: '12px' }}>
-                    NAMA ASET
-                  </th>
-                  <th colSpan={24}>WAKTU</th>
-                </tr>
-                <tr>
-                  {hourlySlots.map((slot, idx) => (
-                    <th key={idx} style={{ fontSize: '10px', padding: '6px 4px', minWidth: '70px' }}>
-                      {slot}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {demoRows.map((row) => (
-                  <tr key={row.id} className="hover:bg-slate-50">
-                    <td className="font-bold text-slate-700">{row.no}</td>
-                    <td className="font-bold text-slate-800 text-left pl-3">{row.namaAset}</td>
-                    {Array.from({ length: 24 }, (_, i) => {
-                      const hourData = row.hours[i];
-                      return (
-                        <td key={i} className="h-12">
-                          {hourData?.scanned ? (
-                            <div className="flex flex-col items-center justify-center">
-                              <span className="text-emerald-600 font-extrabold text-sm">✓</span>
-                              <span className="text-[10px] font-bold text-rose-600">
-                                {hourData.timeFormatted}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-slate-200">-</span>
-                          )}
+        {/* Monitoring Result */}
+        {!isFormComplete ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-xs">
+            <i className="fa fa-info-circle text-3xl text-slate-300 mb-2"></i>
+            <p className="text-slate-500 font-semibold text-sm">
+              TIDAK ADA DATA PATROLI UNTUK FILTER YANG DIPILIH.
+            </p>
+            <p className="text-slate-400 text-xs">
+              Silakan pilih tanggal, lokasi, dan petugas terlebih dahulu untuk menampilkan matriks patroli 24 jam.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Info Bar Modern */}
+            <div className="info-bar-modern">
+              <div className="info-item">
+                <span className="label">Tanggal</span>
+                <span className="value">{tanggal}</span>
+              </div>
+              <div className="info-item">
+                <span className="label">Lokasi</span>
+                <span className="value">{selectedSite}</span>
+              </div>
+              <div className="info-item">
+                <span className="label">Petugas</span>
+                <span className="value">{selectedPetugas}</span>
+              </div>
+            </div>
+
+            {/* Matrix Table */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="laporan-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '40px' }}>NO</th>
+                      <th style={{ width: '180px', textAlign: 'left', paddingLeft: '10px' }}>NAMA ASET</th>
+                      <th style={{ width: '70px' }}>WAKTU</th>
+                      {hourlySlots.map((slot) => (
+                        <th key={slot.index} style={{ width: '55px' }}>
+                          {slot.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {demoRows.map((row) => (
+                      <tr key={row.no}>
+                        <td>{row.no}</td>
+                        <td style={{ textAlign: 'left', paddingLeft: '10px', fontWeight: 600 }}>
+                          {row.namaAset}
                         </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        <td style={{ color: '#0d6efd', fontWeight: 600 }}>{row.waktu}</td>
+                        {hourlySlots.map((slot) => {
+                          const hourData = row.hours[slot.index];
+                          return (
+                            <td key={slot.index}>
+                              {hourData?.scanned ? (
+                                <div>
+                                  <span className="cell-check">✓</span>
+                                  <span className="cell-time">{hourData.timeFormatted}</span>
+                                </div>
+                              ) : (
+                                <span className="text-slate-300">-</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

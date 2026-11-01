@@ -392,8 +392,11 @@ export interface EmergencyAlert {
 export interface BroadcastMessage {
   id: string;
   siteId?: string | null;
+  siteName?: string | null;
+  title?: string;
   content: string;
   message?: string;
+  priority?: string;
   senderId: string;
   senderName: string;
   isActive: boolean;
@@ -602,10 +605,35 @@ export interface PayrollReportRow extends PayrollSummaryRow {
   nik?: string;
   alpaCount?: number;
   lemburHours?: number;
+  totalLembur?: number;
   potonganBpjs?: number;
   potonganAlpa?: number;
+  potonganIzin?: number;
   potonganLupaAbsen?: number;
+  totalPotLupa?: number;
+  totalPotIzin?: number;
+  totalGajiLembur?: number;
   gajiKotor?: number;
+
+  // 100% Parity aliases with patroli.site fetch_absensi.php
+  nama_anggota?: string;
+  posisi?: string;
+  lokasi_site?: string;
+  gapok?: number | string;
+  lembur?: number | string;
+  pot_bpjs?: number | string;
+  pot_izin?: number | string;
+  pot_lupa?: number | string;
+  bulan?: string;
+  tahun?: string;
+  total_hadir?: number | string;
+  total_lupa_absen?: number | string;
+  total_izin?: number | string;
+  total_lembur?: number | string;
+  total_pot_lupa?: number;
+  total_pot_izin?: number;
+  total_gaji_lembur?: number;
+  total_gaji?: number;
 }
 
 export interface PayrollSummaryRow {
@@ -624,6 +652,9 @@ export interface PayrollSummaryRow {
   lemburNominal: number;
   totalPotongan: number;
   gajiDiterima: number;
+  potonganBpjs?: number;
+  potonganIzin?: number;
+  potonganLupaAbsen?: number;
 }
 
 // ----------------------------------------------------------------------------
@@ -763,6 +794,45 @@ export interface ResolveSosRequestDto {
   isFalseAlarm?: boolean;
 }
 
+export interface EmergencyLogQueryDto {
+  page?: number;
+  limit?: number;
+  search?: string;
+  siteId?: string;
+  status?: string;
+}
+
+export interface EmergencyLogItem {
+  id: string;
+  siteId: string;
+  siteName: string;
+  userId: string;
+  officerName: string;
+  officerPhone?: string;
+  division: string;
+  photoUrl?: string | null;
+  latitude: number;
+  longitude: number;
+  mapsUrl: string;
+  triggeredAt: string;
+  formattedTime: string;
+  dayName: string;
+  timeOnly: string;
+  alertStatus: string;
+  isWhatsappDispatched: boolean;
+  acknowledgedBy?: string | null;
+  acknowledgedAt?: string | null;
+  resolutionNotes?: string | null;
+}
+
+export interface PaginatedEmergencyLogs {
+  data: EmergencyLogItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 // Export Center DTOs
 export interface ExportReportRequestDto {
   type: 'ABSENSI_PERSONIL' | 'ABSENSI_AREA' | 'PATROLI_PERSONIL' | 'PATROLI_AREA';
@@ -823,6 +893,8 @@ export interface ServerToClientEvents {
 
   // Broadcast Message Announcement
   'broadcast:new': (message: BroadcastMessage) => void;
+  'broadcast:updated': (message: BroadcastMessage) => void;
+  'broadcast:deleted': (payload: { id: string }) => void;
 
   // Real-time GPS Tracking
   'gps:update': (payload: { userId: string; fullName: string; division: Division; siteId: string; latitude: number; longitude: number; updatedAt: string }) => void;
@@ -863,5 +935,95 @@ export interface ChiefEvaluationItem {
 
 export interface ChiefEvaluationDetailResponse {
   data: ChiefEvaluationItem;
+}
+
+// ----------------------------------------------------------------------------
+// EXPORT LAPORAN TYPES & PARITY (PATROLI.SITE PARITY)
+// ----------------------------------------------------------------------------
+
+export interface ExportPersonnelAttendanceSummary {
+  kehadiranCount: number;
+  lupaPulangCount: number;
+  izinSakitCount: number;
+  terlambatCount: number;
+  terlambatMenit: number;
+  pulangAwalCount: number;
+  pulangAwalMenit: number;
+}
+
+export interface ExportPersonnelAttendanceItem {
+  no: number;
+  tanggal: string;
+  hari: string;
+  absenMasuk: string;
+  absenPulang: string;
+  fotoMasuk?: string | null;
+  fotoPulang?: string | null;
+  keterangan: string;
+  totalJamEfektif: string;
+  statusRadius?: string;
+  statusWaktu?: string;
+}
+
+export interface ExportPersonnelAttendanceResponse {
+  namaPersonil: string;
+  posisi: string;
+  siteName: string;
+  summary: ExportPersonnelAttendanceSummary;
+  records: ExportPersonnelAttendanceItem[];
+}
+
+export interface ExportAreaAttendanceItem {
+  no: number;
+  namaPersonil: string;
+  divisi: string;
+  absenMasuk: string;
+  absenPulang: string;
+  fotoMasuk?: string | null;
+  fotoPulang?: string | null;
+  keterangan: string;
+  totalJamEfektif: string;
+}
+
+export interface ExportAreaAttendanceResponse {
+  siteName: string;
+  kategori: string;
+  records: ExportAreaAttendanceItem[];
+}
+
+export interface ExportPersonnelActivityItem {
+  no: number;
+  hari: string;
+  tanggal: string;
+  jam: string;
+  deskripsiTugas: string;
+  fotoKegiatan?: string | null;
+  lokasiAset?: string;
+}
+
+export interface ExportPersonnelActivityResponse {
+  namaPersonil: string;
+  posisi: string;
+  siteName: string;
+  records: ExportPersonnelActivityItem[];
+}
+
+export interface ExportAreaActivityItem {
+  no: number;
+  namaPersonel: string;
+  hari: string;
+  tanggal: string;
+  jam: string;
+  deskripsiTugas: string;
+  fotoKegiatan?: string | null;
+  temuanDilaporkan?: string;
+  statusTemuan?: string;
+  catatanTindakLanjut?: string;
+}
+
+export interface ExportAreaActivityResponse {
+  siteName: string;
+  kategori: string;
+  records: ExportAreaActivityItem[];
 }
 

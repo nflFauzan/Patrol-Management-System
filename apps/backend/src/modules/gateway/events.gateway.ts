@@ -79,5 +79,19 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     this.server.emit('broadcast:new', message);
   }
+
+  broadcastAnnouncementUpdated(siteId: string | null, message: any) {
+    if (siteId) {
+      this.server.to(`site_${siteId}`).emit('broadcast:updated', message);
+    }
+    this.server.emit('broadcast:updated', message);
+  }
+
+  broadcastAnnouncementDeleted(siteId: string | null, payload: { id: string }) {
+    if (siteId) {
+      this.server.to(`site_${siteId}`).emit('broadcast:deleted', payload);
+    }
+    this.server.emit('broadcast:deleted', payload);
+  }
 }
 

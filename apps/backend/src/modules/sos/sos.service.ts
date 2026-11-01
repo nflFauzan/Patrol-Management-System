@@ -161,6 +161,174 @@ export class SosService {
     `);
   }
 
+  /**
+   * Log Data Emergency: Historical & Paginated Records for Admin Command Center
+   * Recreates patroli.site Log Data Emergency table behavior
+   */
+  async getEmergencyLogs(query: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    siteId?: string;
+    status?: string;
+  }) {
+    const page = Math.max(1, Number(query.page) || 1);
+    const limit = Math.max(1, Math.min(100, Number(query.limit) || 10));
+    const offset = (page - 1) * limit;
+
+    const conditions: string[] = ['1=1'];
+    const params: any[] = [];
+    let paramIdx = 1;
+
+    if (query.search && query.search.trim() !== '') {
+      conditions.push(`(u.full_name ILIKE $${paramIdx} OR s.name ILIKE $${paramIdx} OR u.division ILIKE $${paramIdx})`);
+      params.push(`%${query.search.trim()}%`);
+      paramIdx++;
+    }
+
+    if (query.siteId && query.siteId !== '__ALL__' && query.siteId !== '') {
+      conditions.push(`e.site_id = $${paramIdx}`);
+      params.push(query.siteId);
+      paramIdx++;
+    }
+
+    if (query.status && query.status !== '__ALL__' && query.status !== '') {
+      conditions.push(`e.alert_status = $${paramIdx}`);
+      params.push(query.status);
+      paramIdx++;
+    }
+
+    const whereClause = conditions.join(' AND ');
+
+    const countRow = await this.db.queryOne<any>(
+      `SELECT COUNT(*)::int AS total FROM emergency_alerts e JOIN users u ON e.user_id = u.id JOIN sites s ON e.site_id = s.id WHERE ${whereClause}`,
+      params,
+    );
+    const total = countRow?.total || 0;
+
+    const sql = `
+      SELECT 
+        e.id, 
+        e.site_id AS "siteId", 
+        s.name AS "siteName",
+        e.user_id AS "userId",
+        u.full_name AS "officerName", 
+        u.phone_number AS "officerPhone", 
+        u.division,
+        u.photo_key AS "photoUrl",
+        ST_Y(e.coordinates::geometry) AS latitude,
+        ST_X(e.coordinates::geometry) AS longitude,
+        e.triggered_at AS "triggeredAt", 
+        e.alert_status AS "alertStatus",
+        e.is_whatsapp_dispatched AS "isWhatsappDispatched",
+        e.acknowledged_by AS "acknowledgedBy",
+        e.acknowledged_at AS "acknowledgedAt",
+        e.resolution_notes AS "resolutionNotes"
+      FROM emergency_alerts e
+      JOIN users u ON e.user_id = u.id
+      JOIN sites s ON e.site_id = s.id
+      WHERE ${whereClause}
+      ORDER BY e.triggered_at DESC
+      LIMIT $${paramIdx} OFFSET $${paramIdx + 1}
+    `;
+
+    params.push(limit, offset);
+    const rows = await this.db.query<any>(sql, params);
+
+    const data = rows.map((row) => {
+      const d = new Date(row.triggeredAt);
+      const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const dayName = dayNames[d.getDay()] || '';
+      const dateNum = String(d.getDate()).padStart(2, '0');
+      const monthName = monthNames[d.getMonth()] || '';
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const seconds = String(d.getSeconds()).padStart(2, '0');
+      const timeOnly = `${hours}:${minutes}:${seconds}`;
+      const formattedDate = `${dayName}, ${dateNum} ${monthName} ${year}`;
+      const formattedTime = `${formattedDate} | ${timeOnly}`;
+
+      return {
+        ...row,
+        mapsUrl: `https://www.google.com/maps?q=${row.latitude},${row.longitude}`,
+        dayName: formattedDate,
+        timeOnly,
+        formattedTime,
+      };
+    });
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 1,
+    };
+  }
+
+  /**
+   * Detail Log Emergency: Fetch single record for detail modal & Leaflet Map
+   */
+  async getSosDetail(alertId: string) {
+    const row = await this.db.queryOne<any>(
+      `
+      SELECT 
+        e.id, 
+        e.site_id AS "siteId", 
+        s.name AS "siteName",
+        s.address AS "siteAddress",
+        e.user_id AS "userId",
+        u.full_name AS "officerName", 
+        u.phone_number AS "officerPhone", 
+        u.division,
+        u.role,
+        u.photo_key AS "photoUrl",
+        ST_Y(e.coordinates::geometry) AS latitude,
+        ST_X(e.coordinates::geometry) AS longitude,
+        e.triggered_at AS "triggeredAt", 
+        e.alert_status AS "alertStatus",
+        e.is_whatsapp_dispatched AS "isWhatsappDispatched",
+        e.whatsapp_dispatch_response AS "whatsappDispatchResponse",
+        e.acknowledged_by AS "acknowledgedBy",
+        e.acknowledged_at AS "acknowledgedAt",
+        e.resolution_notes AS "resolutionNotes"
+      FROM emergency_alerts e
+      JOIN users u ON e.user_id = u.id
+      JOIN sites s ON e.site_id = s.id
+      WHERE e.id = $1
+      `,
+      [alertId],
+    );
+
+    if (!row) {
+      throw new NotFoundException(`Emergency Alert ${alertId} not found`);
+    }
+
+    const d = new Date(row.triggeredAt);
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const dayName = dayNames[d.getDay()] || '';
+    const dateNum = String(d.getDate()).padStart(2, '0');
+    const monthName = monthNames[d.getMonth()] || '';
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    const timeOnly = `${hours}:${minutes}:${seconds}`;
+    const formattedDate = `${dayName}, ${dateNum} ${monthName} ${year}`;
+    const formattedTime = `${formattedDate} | ${timeOnly}`;
+
+    return {
+      ...row,
+      mapsUrl: `https://www.google.com/maps?q=${row.latitude},${row.longitude}`,
+      dayName: formattedDate,
+      timeOnly,
+      formattedTime,
+    };
+  }
+
   async acknowledgeAlert(alertId: string, supervisorUserId: string) {
     const row = await this.db.queryOne(
       `

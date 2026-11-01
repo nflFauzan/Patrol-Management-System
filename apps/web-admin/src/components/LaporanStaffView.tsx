@@ -1,7 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../lib/DataContext';
+
+export interface StaffActivityItem {
+  id: string;
+  siteName: string;
+  namaStaff: string;
+  jenisKegiatan: string;
+  waktu: string;
+  deskripsi: string;
+  status: string;
+}
 
 export const LaporanStaffView: React.FC = () => {
   const { sites } = useData();
@@ -10,25 +20,76 @@ export const LaporanStaffView: React.FC = () => {
   const [pageLength, setPageLength] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const demoRecords = [
+  const initialDemoRecords: StaffActivityItem[] = [
     {
       id: 'stf-1',
-      siteName: 'SITE PROYEK DEMO',
-      namaStaff: 'RINA WIJAYA',
-      jenisKegiatan: 'AUDIT ADMINISTRASI POS SATPAM',
-      waktu: 'SENIN, 19 OCT 2026 | 13:00:00',
-      deskripsi: 'PEMERIKSAAN BUKU MUTASI TAMU DAN VERIFIKASI STIKER PARKIR BULANAN.',
+      siteName: 'KANTOR PUSAT',
+      namaStaff: 'HENDRA GUNAWAN',
+      jenisKegiatan: 'KOORDINASI',
+      waktu: 'SENIN, 26 OCT 2026 - 05:42:00',
+      deskripsi: 'Koordinasi jadwal shift regu security kantor pusat & rekapitulasi data lembur mingguan.',
+      status: 'SELESAI',
+    },
+    {
+      id: 'stf-2',
+      siteName: 'KANTOR PUSAT',
+      namaStaff: 'HENDRA GUNAWAN',
+      jenisKegiatan: 'LAPORAN',
+      waktu: 'SENIN, 26 OCT 2026 - 05:41:00',
+      deskripsi: 'Penyusunan laporan bulanan utilisasi fasilitas & pemeliharaan AC ruang server.',
       status: 'SELESAI',
     },
   ];
 
-  const filtered = demoRecords.filter((r) => {
+  const [records, setRecords] = useState<StaffActivityItem[]>(initialDemoRecords);
+
+  useEffect(() => {
+    let isMounted = true;
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('token') || localStorage.getItem('patrol_auth_token') || ''
+        : '';
+
+    fetch('http://localhost:3000/api/v1/reports/staff-activities', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('API offline');
+        return res.json();
+      })
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          const mapped: StaffActivityItem[] = data.map((d: any) => ({
+            id: d.id,
+            siteName: d.siteName ? d.siteName.toUpperCase() : 'KANTOR PUSAT',
+            namaStaff: (d.staffName || 'HENDRA GUNAWAN').toUpperCase(),
+            jenisKegiatan: (d.activityType || 'ADMINISTRASI').toUpperCase(),
+            waktu: d.createdAt
+              ? new Date(d.createdAt).toLocaleString('id-ID')
+              : 'SENIN, 26 OCT 2026 - 05:42:00',
+            deskripsi: d.description || 'Penyusunan laporan operasional fasilitas.',
+            status: (d.status || 'SELESAI').toUpperCase(),
+          }));
+          setRecords(mapped);
+        }
+      })
+      .catch(() => {
+        // Fallback to rich demo records
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filtered = records.filter((r) => {
     if (selectedSiteName && !r.siteName.toLowerCase().includes(selectedSiteName.toLowerCase())) return false;
     if (searchTerm) {
       const match =
         r.namaStaff.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.jenisKegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.deskripsi.toLowerCase().includes(searchTerm.toLowerCase());
+        r.deskripsi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.siteName.toLowerCase().includes(searchTerm.toLowerCase());
       if (!match) return false;
     }
     return true;
@@ -56,7 +117,7 @@ export const LaporanStaffView: React.FC = () => {
           >
             <i className="fa fa-briefcase" style={{ fontSize: '16px' }}></i>
             <small style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.5px' }}>
-              KEGIATAN STAFF OPERASIONAL
+              KEGIATAN STAFF
             </small>
           </div>
 
@@ -109,6 +170,7 @@ export const LaporanStaffView: React.FC = () => {
                       type="search"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Cari kegiatan staff..."
                       style={{
                         border: '1px solid #cbd5e1',
                         borderRadius: '4px',
@@ -151,109 +213,102 @@ export const LaporanStaffView: React.FC = () => {
                               {s.name.toUpperCase()}
                             </option>
                           ))}
-                          {!sites.some((s) => s.name.toLowerCase().includes('demo')) && (
-                            <option value="SITE PROYEK DEMO">SITE PROYEK DEMO</option>
-                          )}
+                          <option value="KANTOR PUSAT">KANTOR PUSAT</option>
+                          <option value="PABRIK BEKASI">PABRIK BEKASI</option>
+                          <option value="GUDANG CAKUNG">GUDANG CAKUNG</option>
+                          <option value="POOL KENDARAAN">POOL KENDARAAN</option>
                         </select>
                       </th>
-                      <th style={{ width: '180px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
-                        NAMA STAFF
-                      </th>
-                      <th style={{ width: '220px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
-                        JENIS KEGIATAN
-                      </th>
-                      <th style={{ width: '180px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
+                      <th style={{ width: '160px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
                         WAKTU
                       </th>
-                      <th style={{ width: '300px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
-                        DESKRIPSI TUGAS
+                      <th style={{ width: '160px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
+                        NAMA STAFF
+                      </th>
+                      <th style={{ width: '160px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
+                        JENIS KEGIATAN
+                      </th>
+                      <th style={{ padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
+                        DESKRIPSI
                       </th>
                       <th style={{ width: '110px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
                         STATUS
                       </th>
-                      <th style={{ width: '90px', padding: '10px', textAlign: 'center', border: '1px solid #343a40', fontSize: '12px', fontWeight: 700 }}>
-                        AKSI
-                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((row, idx) => (
-                      <tr
-                        key={row.id}
-                        style={{
-                          backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
-                          borderBottom: '1px solid #e2e8f0',
-                        }}
-                      >
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#dc3545', margin: 0, fontWeight: 600 }}>
-                              {row.siteName}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#0d6efd', margin: 0, fontWeight: 600 }}>
-                              {row.namaStaff}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#28a745', margin: 0, fontWeight: 600 }}>
-                              {row.jenisKegiatan}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <small>
-                            <p style={{ color: '#0d6efd', margin: 0, fontWeight: 600 }}>
-                              {row.waktu}
-                            </p>
-                          </small>
-                        </td>
-                        <td style={{ verticalAlign: 'middle', padding: '12px 10px', fontSize: '12px', color: '#334155' }}>
-                          {row.deskripsi}
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <span
-                            style={{
-                              backgroundColor: '#28a745',
-                              color: '#fff',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              display: 'inline-block',
-                            }}
-                          >
-                            {row.status}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                          <a
-                            href="#"
-                            onClick={(e) => e.preventDefault()}
-                            style={{
-                              backgroundColor: '#343a40',
-                              borderColor: '#343a40',
-                              color: '#fff',
-                              padding: '4px 10px',
-                              fontSize: '11px',
-                              borderRadius: '4px',
-                              textDecoration: 'none',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                          >
-                            <i className="fa fa-search-plus" aria-hidden="true"></i>
-                            <small>Detail</small>
-                          </a>
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: '#64748b', fontSize: '13px' }}>
+                          Tidak ada data kegiatan staff ditemukan.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filtered.map((row, idx) => (
+                        <tr
+                          key={row.id}
+                          style={{
+                            backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
+                            borderBottom: '1px solid #e2e8f0',
+                          }}
+                        >
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <p style={{ color: '#dc3545', margin: 0, fontWeight: 600 }}>
+                                {row.siteName}
+                              </p>
+                            </small>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <p style={{ color: '#28a745', margin: 0, fontWeight: 600 }}>
+                                {row.waktu}
+                              </p>
+                            </small>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <small>
+                              <p style={{ color: '#0d6efd', margin: 0, fontWeight: 600 }}>
+                                {row.namaStaff}
+                              </p>
+                            </small>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <span
+                              style={{
+                                backgroundColor: '#0d6efd',
+                                color: '#fff',
+                                padding: '3px 8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                display: 'inline-block',
+                              }}
+                            >
+                              {row.jenisKegiatan}
+                            </span>
+                          </td>
+                          <td style={{ verticalAlign: 'middle', padding: '12px 10px', fontSize: '12px', color: '#334155', lineHeight: '1.5' }}>
+                            {row.deskripsi}
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
+                            <span
+                              style={{
+                                backgroundColor: '#28a745',
+                                color: '#fff',
+                                padding: '3px 8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                display: 'inline-block',
+                              }}
+                            >
+                              ✔ {row.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

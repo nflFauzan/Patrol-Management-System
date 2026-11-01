@@ -59,6 +59,7 @@ export default function App() {
 
   // Broadcast Message State
   const [broadcastAlert, setBroadcastAlert] = useState<BroadcastMessage | null>(null);
+  const [isBroadcastDetailOpen, setIsBroadcastDetailOpen] = useState<boolean>(false);
 
   // Modals
   const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
@@ -355,13 +356,18 @@ export default function App() {
 
         {/* Broadcast Announcement Bar (if active) */}
         {broadcastAlert && (
-          <div className="p-2.5 bg-blue-950/80 border border-blue-600/50 rounded-xl text-xs text-blue-200 flex items-center space-x-2 shadow-lg">
+          <button
+            type="button"
+            onClick={() => setIsBroadcastDetailOpen(true)}
+            className="w-full text-left p-2.5 bg-blue-950/80 hover:bg-blue-900/80 border border-blue-600/50 rounded-xl text-xs text-blue-200 flex items-center space-x-2 shadow-lg transition active:scale-[0.99]"
+          >
             <Bell className="w-4 h-4 shrink-0 text-amber-400 animate-bounce" />
-            <div className="truncate">
+            <div className="truncate flex-1">
               <span className="font-bold text-amber-400">INFO PUSAT: </span>
               <span>{broadcastAlert.content || broadcastAlert.message}</span>
             </div>
-          </div>
+            <span className="text-[10px] text-blue-400 font-bold uppercase shrink-0">Lihat</span>
+          </button>
         )}
 
         {/* Dynamic Toast Feedback */}
@@ -657,6 +663,48 @@ export default function App() {
           setStatusMessage({ type: 'success', text: msg });
         }}
       />
+
+      {/* Broadcast Announcement Detail Modal */}
+      {isBroadcastDetailOpen && broadcastAlert && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-blue-500/50 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center space-x-3 text-amber-400 border-b border-slate-800 pb-3">
+              <div className="p-2.5 bg-amber-500/20 rounded-xl">
+                <Bell className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-slate-100">Pesan Siaran & Arahan</h4>
+                <p className="text-[11px] text-slate-400">Pusat Komando Operasional</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-bold bg-blue-900/60 text-blue-300 border border-blue-500/30 uppercase">
+                  {broadcastAlert.siteName || 'Semua Lokasi / Korporat'}
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {new Date(broadcastAlert.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
+                </span>
+              </div>
+              <p className="text-xs text-slate-200 leading-relaxed font-medium bg-slate-950/70 p-3.5 rounded-xl border border-slate-800">
+                {broadcastAlert.content || broadcastAlert.message}
+              </p>
+              <p className="text-[10px] text-slate-400">
+                Pengirim: <span className="text-slate-200 font-semibold">{broadcastAlert.senderName}</span>
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsBroadcastDetailOpen(false)}
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition active:scale-95"
+            >
+              Tutup Informasi
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
