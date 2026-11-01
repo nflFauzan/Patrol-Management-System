@@ -15,6 +15,7 @@ dist/
 build/
 .next/
 out/
+*.tsbuildinfo
 
 # Logs & Test reports
 logs
@@ -29,9 +30,15 @@ playwright-report/
 .playwright-mcp/
 coverage/
 
+# AI Agent & Skill Workspaces
+.superpowers/
+.agents/
+docs/superpowers/
+
 # Temporary and unpacked files
 *.zip
 template_unzipped/
+/*.png
 
 # Docker data volumes (if mounted locally)
 postgres_data/
