@@ -30,6 +30,9 @@ playwright-report/
 .playwright-mcp/
 coverage/
 
+# Audit artifacts & local snapshots
+docs/audit/
+
 # AI Agent & Skill Workspaces
 .superpowers/
 .agents/

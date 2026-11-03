@@ -16,20 +16,8 @@ export default defineConfig({
       args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
     },
   },
-  webServer: [
-    {
-      command: 'npm run preview --workspace=@patrol/pwa-field -- --port 5173',
-      port: 5173,
-      reuseExistingServer: !process.env.CI,
-      timeout: 30000,
-    },
-    {
-      command: 'npm run start --workspace=@patrol/web-admin',
-      port: 3001,
-      reuseExistingServer: !process.env.CI,
-      timeout: 30000,
-    },
-  ],
+  // webServer disabled when dev servers are already running locally
+  webServer: undefined,
   projects: [
     {
       name: 'Mobile Chrome (PWA)',
@@ -38,7 +26,7 @@ export default defineConfig({
     },
     {
       name: 'Desktop Chrome (Web Admin)',
-      testMatch: '**/*{admin,personil,chief,export}*.spec.ts',
+      testMatch: '**/*{admin,personil,chief,export,security,audit,phase}*.spec.ts',
       use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:3001' },
     },
   ],
