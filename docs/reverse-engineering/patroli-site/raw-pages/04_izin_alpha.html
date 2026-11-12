@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html translate="no">
+<head>
+<link rel="icon"  href="../img/logo-qng.png">  
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="google" content="notranslate">
+<title>PATROLI SITE</title>
+<meta name="viewport" content="width=device-width, user-scalable=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="container mt-2">
+        <div style="background: #8B0000; color: #fff; height: 35px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+         IZIN TIDAK MASUK
+        </div>
+        <form action="../insert-presensi.php" method="post" enctype="multipart/form-data">
+            <input type="hidden" value="1447" required="required" name="kode_anggota">
+            <input type="hidden" value="kantor pusat" required="required" name="absen_site">
+            <input type="hidden" value="3" required="required" name="status_absen">
+     
+            <div class="form-group">
+                <label for="alasan">Alasan Izin:</label>
+                <select class="form-control" id="alasan" name="alasan" required>
+                    <option value="" selected disabled>Pilih alasan izin</option>
+                    <option value="Sakit">Sakit</option>
+                    <option value="Keperluan Keluarga">Keperluan Keluarga</option>
+                    <option value="Keperluan Pribadi">Keperluan Pribadi</option>
+                </select>
+            </div>
+
+            <!-- Textarea untuk Keterangan -->
+            <div class="form-group">
+                <label for="keterangan">Keterangan:</label>
+                <input type="hidden" name="csrf_token" value="d0cbd266532c9a2e17c855a6d99656c0079b92556483c2290c74ac2b4b4d13b8">
+                <textarea class="form-control" id="keterangan" required name="keterangan" rows="4" maxlength="50" placeholder="Berikan keterangan singkat lebih lanjut (opsional)"></textarea>
+            </div>
+
+            <!-- Tombol Submit -->
+            <button type="submit" class="btn btn-primary">Kirim</button>
+            <button type="button" class="btn btn-secondary" onclick="if (!window.__cfRLUnblockHandlers) return false; window.history.back();" data-cf-modified-a399a1f10ae13a123a8f13e9-="">Batal</button>
+        </form>
+    </div>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="a399a1f10ae13a123a8f13e9-|49" defer></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d114efddbe0a4',t:'MTc5Mzg5NDM4Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d114efddbe0a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

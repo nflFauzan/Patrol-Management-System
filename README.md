@@ -105,3 +105,5 @@ Dokumentasi teknis lengkap tersedia di direktori `docs/`:
 - [`docs/03_SYSTEM_ARCHITECTURE.md`](docs/03_SYSTEM_ARCHITECTURE.md) — Arsitektur Monorepo & Pipeline Media
 - [`docs/04_DATABASE_SCHEMA_POSTGIS.md`](docs/04_DATABASE_SCHEMA_POSTGIS.md) — Skema 14 Tabel PostgreSQL & PostGIS
 - [`docs/05_API_AND_WEBSOCKET_SPEC.md`](docs/05_API_AND_WEBSOCKET_SPEC.md) — Spesifikasi REST API & Socket.io
+- [`docs/06_TESTING_AND_QA_WORKFLOW.md`](docs/06_TESTING_AND_QA_WORKFLOW.md) — Testing & QA Workflow
+- [`docs/07_HANDOVER_AND_MIGRATION.md`](docs/07_HANDOVER_AND_MIGRATION.md) — **Panduan Migrasi ke Laptop Baru & Ringkasan Progress**

@@ -31,8 +31,21 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Global API Prefix
-  app.setGlobalPrefix('api/v1');
+  // Global API Prefix with Legacy PHP Compatibility Exclusions
+  app.setGlobalPrefix('api/v1', {
+    exclude: [
+      'insert-presensi.php',
+      'update-presensi.php',
+      'insert_chief.php',
+      'insert_komandan.php',
+      'insert_driver.php',
+      'insert_staf.php',
+      'insert-panic.php',
+      'cek.php',
+      'serverside-presensi.php',
+      'serverside-chief.php',
+    ],
+  });
 
   const port = process.env.BACKEND_PORT ? parseInt(process.env.BACKEND_PORT, 10) : 3000;
   await app.listen(port, '0.0.0.0');

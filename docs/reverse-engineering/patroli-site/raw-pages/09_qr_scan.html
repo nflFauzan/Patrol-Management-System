@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html translate="no">
+<head>
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<title>PATROLI SITE</title>
+
+<link rel="icon" href="../img/logo-qng.png">
+<link rel="stylesheet" href="https://patroli.site/css/index.css">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" type="5984f977cea2d6f54b94d566-text/javascript"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7fa;
+    color: #333;
+}
+
+body {
+    padding-top: 20px;
+    padding-bottom: 45px;
+}
+
+/* ================= CONTAINER ================= */
+
+.page {
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    padding: 5px 10px 10px;
+}
+
+/* ================= DASHBOARD ================= */
+
+.dashboard {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+    padding: 11px 14px;
+    background: #fff;
+    border: 1px solid #d9e0e6;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #003366;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06);
+}
+
+.dashboard-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #e8f1fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.dashboard-text {
+    flex: 1;
+}
+
+.dashboard-arrow {
+    font-size: 20px;
+    color: #7a8793;
+}
+
+/* ================= INFO ================= */
+
+.scan-info {
+    text-align: center;
+    margin: 0 0 10px;
+}
+
+.scan-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: bold;
+    color: #003366;
+}
+
+.scan-subtitle {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+/* ================= CAMERA BOX ================= */
+
+#camera-box {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto 15px;
+    padding: 8px;
+    border: 1px solid #d9e0e6;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+    overflow: hidden;
+}
+
+#reader {
+    width: 100%;
+    min-height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* ================= CAMERA SELECTOR ================= */
+
+#camera-selector {
+    display: none;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#camera-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d9e0e6;
+    border-radius: 8px;
+    background: #fff;
+    color: #003366;
+    font-size: 14px;
+    outline: none;
+}
+
+#camera-select:focus {
+    border-color: #003366;
+}
+
+/* ================= PESAN ================= */
+
+.pesan {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% - 40px);
+    max-width: 350px;
+    padding: 16px 20px;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 10px;
+    box-shadow: 0 5px 25px rgba(0,0,0,.25);
+    z-index: 10000;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 480px) {
+
+    .page {
+        padding: 10px;
+    }
+
+    .scan-title {
+        font-size: 16px;
+    }
+
+    #camera-box {
+        max-width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+
+<div class="page">
+
+    <!-- INFORMASI -->
+    <div class="scan-info">
+
+        <p class="scan-title">
+            Silakan Scan QR Code
+        </p>
+
+        <p class="scan-subtitle">
+            Arahkan kamera ke QR Code lokasi patroli
+        </p>
+
+    </div>
+
+
+    <!-- FORM SCAN -->
+    <form id="formScan" action="../cek.php" method="post">
+
+        <input type="hidden" name="nama" id="result">
+
+    </form>
+
+
+    <!-- CAMERA -->
+    <div id="camera-box">
+
+        <div id="reader"></div>
+
+        <!-- PILIHAN KAMERA -->
+        <div id="camera-selector">
+
+            <select id="camera-select">
+
+                <option value="">
+                    Pilih Kamera
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <!-- DASHBOARD -->
+    <a href="index.php" class="dashboard">
+
+        <div class="dashboard-icon">
+            ⌂
+        </div>
+
+        <div class="dashboard-text">
+            Kembali ke Dashboard
+        </div>
+
+        <div class="dashboard-arrow">
+            ›
+        </div>
+
+    </a>
+
+</div>
+
+
+
+<script type="5984f977cea2d6f54b94d566-text/javascript">
+
+let scanner = null;
+
+let isScanning = false;
+
+let isScanned = false;
+
+let cameras = [];
+
+let currentCameraId = null;
+
+
+const reader = document.getElementById("reader");
+
+const formScan = document.getElementById("formScan");
+
+const resultInput = document.getElementById("result");
+
+const cameraSelector = document.getElementById("camera-selector");
+
+const cameraSelect = document.getElementById("camera-select");
+
+
+
+/* =========================================================
+   MENCARI KAMERA
+========================================================= */
+
+async function getCameraList() {
+
+    try {
+
+        cameras = await Html5Qrcode.getCameras();
+
+        if (!cameras || cameras.length === 0) {
+
+            console.error("Tidak ada kamera yang ditemukan.");
+
+            return false;
+        }
+
+
+        cameraSelect.innerHTML = "";
+
+
+        cameras.forEach((camera, index) => {
+
+            const option = document.createElement("option");
+
+            option.value = camera.id;
+
+            option.textContent =
+                camera.label ||
+                "Kamera " + (index + 1);
+
+            cameraSelect.appendChild(option);
+
+        });
+
+
+        /*
+         * Cari kamera belakang sebagai default.
+         *
+         * Biasanya nama kamera mengandung:
+         * back, rear, environment
+         */
+
+        let backCamera = cameras.find(camera => {
+
+            const label = (camera.label || "").toLowerCase();
+
+            return (
+                label.includes("back") ||
+                label.includes("rear") ||
+                label.includes("environment")
+            );
+
+        });
+
+
+        /*
+         * Kalau kamera belakang tidak berhasil
+         * dikenali dari namanya, gunakan kamera terakhir.
+         */
+
+        if (!backCamera) {
+
+            backCamera = cameras[cameras.length - 1];
+
+        }
+
+
+        currentCameraId = backCamera.id;
+
+        cameraSelect.value = currentCameraId;
+
+
+        /*
+         * Tampilkan pilihan kamera hanya jika
+         * tersedia lebih dari satu kamera.
+         */
+
+        if (cameras.length > 1) {
+
+            cameraSelector.style.display = "block";
+
+        } else {
+
+            cameraSelector.style.display = "none";
+
+        }
+
+        return true;
+
+    }
+
+    catch (err) {
+
+        console.error(
+            "Gagal mendapatkan daftar kamera:",
+            err
+        );
+
+        return false;
+    }
+}
+
+
+
+/* =========================================================
+   MULAI SCANNER
+========================================================= */
+
+async function startScanner(cameraId = null) {
+
+    if (isScanning || isScanned) {
+
+        return;
+    }
+
+
+    if (typeof Html5Qrcode === "undefined") {
+
+        console.error(
+            "Html5Qrcode tidak tersedia"
+        );
+
+        reader.innerHTML =
+            '<div style="' +
+            'padding:30px;' +
+            'text-align:center;' +
+            'color:#dc3545;' +
+            'font-weight:bold;">' +
+
+            'Scanner tidak dapat dimuat.<br>' +
+            'Silakan refresh halaman.' +
+
+            '</div>';
+
+        return;
+    }
+
+
+    /*
+     * Kalau daftar kamera belum tersedia,
+     * ambil daftar kamera terlebih dahulu.
+     */
+
+    if (cameras.length === 0) {
+
+        const berhasil =
+            await getCameraList();
+
+        if (!berhasil) {
+
+            reader.innerHTML =
+                '<div style="' +
+                'padding:30px;' +
+                'text-align:center;' +
+                'color:#dc3545;' +
+                'font-weight:bold;">' +
+
+                'Kamera tidak ditemukan.<br>' +
+                'Pastikan izin kamera diberikan.' +
+
+                '</div>';
+
+            return;
+        }
+    }
+
+
+    if (cameraId) {
+
+        currentCameraId = cameraId;
+    }
+
+
+    if (!currentCameraId) {
+
+        currentCameraId =
+            cameras[0].id;
+    }
+
+
+    isScanning = true;
+
+    reader.innerHTML = "";
+
+
+    scanner = new Html5Qrcode("reader");
+
+
+    const config = {
+
+        fps: 10,
+
+        qrbox: {
+            width: 250,
+            height: 250
+        }
+
+    };
+
+
+    try {
+
+        await scanner.start(
+
+            currentCameraId,
+
+            config,
+
+            onScanSuccess,
+
+            onScanError
+
+        );
+
+    }
+
+    catch (err) {
+
+        console.error(
+            "Gagal mengaktifkan kamera:",
+            err
+        );
+
+        isScanning = false;
+
+        scanner = null;
+
+        reader.innerHTML =
+            '<div style="' +
+            'padding:30px;' +
+            'text-align:center;' +
+            'color:#dc3545;' +
+            'font-weight:bold;">' +
+
+            'Kamera tidak dapat digunakan.<br>' +
+            'Pastikan izin kamera telah diberikan.' +
+
+            '</div>';
+    }
+
+}
+
+
+
+/* =========================================================
+   HASIL SCAN
+========================================================= */
+
+function onScanSuccess(qr) {
+
+    if (isScanned) {
+
+        return;
+    }
+
+
+    isScanned = true;
+
+
+    /*
+     * Masukkan hasil QR ke form
+     */
+
+    resultInput.value = qr;
+
+
+    /*
+     * Matikan kamera terlebih dahulu
+     * sebelum submit.
+     */
+
+    if (scanner) {
+
+        scanner.stop()
+
+            .catch(() => {})
+
+            .finally(() => {
+
+                scanner = null;
+
+                isScanning = false;
+
+                reader.innerHTML = "";
+
+                formScan.submit();
+
+            });
+
+    }
+
+    else {
+
+        formScan.submit();
+
+    }
+
+}
+
+
+
+/* =========================================================
+   ERROR SCAN
+========================================================= */
+
+function onScanError(err) {
+
+    /*
+     * Jangan tampilkan error scan.
+     *
+     * Error seperti QR belum ditemukan
+     * adalah kondisi normal.
+     */
+
+}
+
+
+
+/* =========================================================
+   GANTI KAMERA
+========================================================= */
+
+cameraSelect.addEventListener(
+    "change",
+    async function() {
+
+        const selectedCamera =
+            this.value;
+
+
+        if (!selectedCamera) {
+
+            return;
+        }
+
+
+        if (isScanned) {
+
+            return;
+        }
+
+
+        /*
+         * Matikan kamera yang sedang aktif
+         */
+
+        if (scanner) {
+
+            try {
+
+                await scanner.stop();
+
+            }
+
+            catch (err) {
+
+                console.log(
+                    "Stop kamera:",
+                    err
+                );
+            }
+
+
+            scanner = null;
+
+            isScanning = false;
+
+            reader.innerHTML = "";
+        }
+
+
+        /*
+         * Jalankan kamera yang dipilih
+         */
+
+        currentCameraId =
+            selectedCamera;
+
+
+        setTimeout(() => {
+
+            startScanner(
+                currentCameraId
+            );
+
+        }, 200);
+
+    }
+);
+
+
+
+/* =========================================================
+   STOP SCANNER
+========================================================= */
+
+async function stopScanner() {
+
+    if (!scanner) {
+
+        isScanning = false;
+
+        reader.innerHTML = "";
+
+        return;
+    }
+
+
+    try {
+
+        await scanner.stop();
+
+    }
+
+    catch (err) {
+
+        console.log(
+            "Stop scanner:",
+            err
+        );
+    }
+
+
+    scanner = null;
+
+    isScanning = false;
+
+    reader.innerHTML = "";
+
+}
+
+
+
+/* =========================================================
+   AKTIFKAN SAAT HALAMAN SIAP
+========================================================= */
+
+window.addEventListener(
+    "load",
+    () => {
+
+        setTimeout(
+            () => {
+
+                startScanner();
+
+            },
+            300
+        );
+
+    }
+);
+
+
+
+/* =========================================================
+   MATIKAN KAMERA SAAT HALAMAN DITINGGALKAN
+========================================================= */
+
+document.addEventListener(
+    "visibilitychange",
+    () => {
+
+        if (document.hidden) {
+
+            stopScanner();
+
+        }
+
+        else if (
+            !isScanning &&
+            !isScanned
+        ) {
+
+            setTimeout(
+                () => {
+
+                    startScanner();
+
+                },
+                300
+            );
+
+        }
+
+    }
+);
+
+
+
+/* =========================================================
+   PAGEHIDE
+========================================================= */
+
+window.addEventListener(
+    "pagehide",
+    stopScanner
+);
+
+</script>
+
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="5984f977cea2d6f54b94d566-|49" defer></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d11561beae0a4',t:'MTc5Mzg5NDM4OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d11561beae0a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

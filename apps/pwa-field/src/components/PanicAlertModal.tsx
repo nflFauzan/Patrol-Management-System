@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShieldAlert, AlertTriangle, BellRing, CheckCircle2, Volume2, VolumeX } from 'lucide-react';
+import { X, ShieldAlert, Volume2, VolumeX, Ban } from 'lucide-react';
 import { sosApi } from '../services/api';
 
 interface PanicAlertModalProps {
@@ -19,8 +19,8 @@ export const PanicAlertModal: React.FC<PanicAlertModalProps> = ({
   officerName,
   onSuccess,
 }) => {
-  const [sosCountdown, setSosCountdown] = useState<number | null>(null);
   const [isTriggered, setIsTriggered] = useState<boolean>(false);
+  const [isFetchingGps, setIsFetchingGps] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
@@ -28,8 +28,8 @@ export const PanicAlertModal: React.FC<PanicAlertModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       stopSiren();
-      setSosCountdown(null);
       setIsTriggered(false);
+      setIsFetchingGps(false);
     }
   }, [isOpen]);
 
@@ -45,11 +45,10 @@ export const PanicAlertModal: React.FC<PanicAlertModalProps> = ({
 
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(800, ctx.currentTime);
-      // Frequency siren sweep
       osc.frequency.linearRampToValueAtTime(1400, ctx.currentTime + 0.3);
       osc.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.6);
 
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
@@ -76,8 +75,7 @@ export const PanicAlertModal: React.FC<PanicAlertModalProps> = ({
   };
 
   const triggerSos = async () => {
-    setIsTriggered(true);
-    startSiren();
+    setIsFetchingGps(true);
 
     const lat = gpsLocation?.lat || -6.2255;
     const lng = gpsLocation?.lng || 106.8090;
@@ -89,116 +87,96 @@ export const PanicAlertModal: React.FC<PanicAlertModalProps> = ({
         longitude: lng,
         message: `EMERGENCY ALERT dari ${officerName} di lokasi presisi (${lat}, ${lng})!`,
       });
-      onSuccess('🚨 ALARM SOS BERHASIL DIPICU! Command Center & WhatsApp Grup telah dinotifikasi.');
+      setIsTriggered(true);
+      startSiren();
+      onSuccess('🚨 ALARM SOS BERHASIL DIPICU! Web Command Center & WhatsApp Grup telah dinotifikasi.');
     } catch (err) {
-      // Offline fallback simulation
-      onSuccess('🚨 ALARM SOS DIPICU (Mode Lokal)!');
+      setIsTriggered(true);
+      startSiren();
+      onSuccess('🚨 ALARM SOS DIPICU (Mode Lokal / Offline)!');
+    } finally {
+      setIsFetchingGps(false);
     }
   };
-
-  // Hold countdown logic
-  const handleHoldStart = () => {
-    if (isTriggered) return;
-    setSosCountdown(3);
-  };
-
-  const handleHoldEnd = () => {
-    if (sosCountdown !== null && sosCountdown > 0) {
-      setSosCountdown(null);
-    }
-  };
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (sosCountdown !== null && sosCountdown > 0) {
-      timer = setTimeout(() => {
-        setSosCountdown((prev) => (prev !== null ? prev - 1 : null));
-      }, 1000);
-    } else if (sosCountdown === 0) {
-      setSosCountdown(null);
-      triggerSos();
-    }
-    return () => clearTimeout(timer);
-  }, [sosCountdown]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-slate-900 border-2 border-rose-600 rounded-3xl max-w-sm w-full p-6 text-center space-y-5 shadow-2xl relative animate-in fade-in zoom-in duration-200">
-        <button
-          onClick={() => {
-            stopSiren();
-            onClose();
-          }}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full bg-slate-800"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="w-20 h-20 mx-auto rounded-full bg-rose-600/20 border-2 border-rose-500 flex items-center justify-center text-rose-500 animate-pulse">
-          <ShieldAlert className="w-10 h-10" />
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-150">
+        {/* Top Info Banner */}
+        <div className="bg-[#17a2b8] text-white p-4 text-center text-xs font-semibold leading-relaxed shadow">
+          Tombol ini akan memicu sirine diperangkat anggota yang lain, <br />
+          anda yakin akan mengirim pesan darurat !!..???
         </div>
 
-        <div>
-          <h2 className="text-xl font-black text-rose-500 tracking-wide">PANIC BUTTON SOS</h2>
-          <p className="text-xs text-rose-200/90 font-medium mt-2 bg-rose-950/60 p-3 rounded-xl border border-rose-800/80 leading-relaxed">
-            "Tombol ini akan memicu sirine di perangkat anggota yang lain & Web Command Center, Anda yakin akan mengirim pesan darurat?!"
-          </p>
-        </div>
+        <div className="p-6 text-center space-y-4">
+          {isTriggered ? (
+            <div className="space-y-4 py-4">
+              <div className="p-4 bg-red-600 rounded-2xl text-white font-extrabold text-sm animate-pulse shadow-xl">
+                🚨 SIRINE DARURAT AKTIF! <br />
+                <span className="text-xs font-normal">Sinyal GPS & WhatsApp Terkirim</span>
+              </div>
 
-        {isTriggered ? (
-          <div className="space-y-4">
-            <div className="p-4 bg-rose-600 rounded-2xl text-white font-extrabold text-sm animate-bounce shadow-xl shadow-rose-900/50">
-              🚨 SIRINE DARURAT AKTIF! <br />
-              <span className="text-xs font-normal">Sinyal GPS & WhatsApp Terkirim</span>
-            </div>
+              <div className="flex justify-center space-x-2">
+                <button
+                  onClick={() => {
+                    if (isMuted) {
+                      startSiren();
+                      setIsMuted(false);
+                    } else {
+                      stopSiren();
+                      setIsMuted(true);
+                    }
+                  }}
+                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center space-x-1.5"
+                >
+                  {isMuted ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-red-400" />}
+                  <span>{isMuted ? 'Bunyikan Sirine' : 'Senyapkan Suara'}</span>
+                </button>
+              </div>
 
-            <div className="flex justify-center space-x-2">
               <button
                 onClick={() => {
-                  if (isMuted) {
-                    startSiren();
-                    setIsMuted(false);
-                  } else {
-                    stopSiren();
-                    setIsMuted(true);
-                  }
+                  stopSiren();
+                  onClose();
                 }}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium flex items-center space-x-1"
+                className="w-full py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold"
               >
-                {isMuted ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-rose-400" />}
-                <span>{isMuted ? 'Bunyikan Sirine' : 'Senyapkan Suara'}</span>
+                Tutup Jendela SOS
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <button
-              onMouseDown={handleHoldStart}
-              onMouseUp={handleHoldEnd}
-              onTouchStart={handleHoldStart}
-              onTouchEnd={handleHoldEnd}
-              className={`w-full py-5 rounded-2xl font-black text-base shadow-2xl transition transform active:scale-95 select-none ${
-                sosCountdown !== null
-                  ? 'bg-rose-700 text-white animate-ping'
-                  : 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white shadow-rose-950/60'
-              }`}
-            >
-              {sosCountdown !== null ? `TAHAN... ${sosCountdown} DETIK` : 'TEKAN & TAHAN (3 DETIK)'}
-            </button>
+          ) : (
+            <div className="space-y-5">
+              {/* Skeuomorphic 3D Circular Red SOS Button */}
+              <button
+                type="button"
+                id="sosButton"
+                onClick={triggerSos}
+                disabled={isFetchingGps}
+                className="sos-btn-3d"
+              >
+                {isFetchingGps ? (
+                  <span className="text-base font-bold">Mengambil Lokasi...</span>
+                ) : (
+                  'SOS'
+                )}
+              </button>
 
-            <button
-              onClick={triggerSos}
-              className="text-xs text-rose-400 underline font-semibold hover:text-rose-300"
-            >
-              Atau Tekan Sekali untuk Langsung Kirim Darurat
-            </button>
-          </div>
-        )}
-
-        <div className="text-[11px] text-slate-500">
-          Koordinat GPS Anda: {gpsLocation ? `${gpsLocation.lat.toFixed(5)}, ${gpsLocation.lng.toFixed(5)} (±${gpsLocation.accuracy}m)` : 'Mengunci satelit GPS...'}
+              {/* Cancel Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  stopSiren();
+                  onClose();
+                }}
+                className="inline-flex items-center space-x-1.5 px-4 py-2.5 bg-[#ffc107] hover:bg-[#e0a800] text-slate-900 rounded-lg text-xs font-bold shadow transition"
+              >
+                <Ban className="w-4 h-4" />
+                <span>Klik untuk batalkan</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

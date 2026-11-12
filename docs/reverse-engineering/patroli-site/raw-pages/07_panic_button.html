@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html translate="no">
+<head>
+<link rel="icon"  href="../img/logo-qng.png">  
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="google" content="notranslate">
+<title>PATROLI SITE</title>
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css">
+<style>
+  .textarea {
+ left: 0;
+ top: 0;
+ visibility: hidden;
+}
+
+button {
+  outline: none;
+  font-family: 'helvetica neue' sans-serif;
+  font-size: 2em;
+  color: white;
+  text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.7), 1px 1px 1px rgba(255, 255, 255, 0.3);
+  display: block;
+  margin: 2em auto;
+  padding: 23px 37px 25px 35px;
+  cursor: pointer;
+  background-color: #2e050c;
+  background-image: linear-gradient(273deg, #eb4763 30%, #e61a3c 40%);
+  border: none;
+  border-radius: 50%;
+  width: 200px;
+  height: 200px;
+  box-shadow: inset 0px 0px 1px 1px rgba(138, 15, 36, 0.9), inset 0px 0px 2px 3px rgba(230, 26, 60, 0.9), inset 1px 1px 1px 4px rgba(255, 255, 255, 0.8), inset 0px 0px 2px 7px rgba(235, 71, 99, 0.8), inset 0px 0px 4px 10px rgba(230, 26, 60, 0.9), 8px 10px 2px 6px rgba(92, 10, 24, 0.55), 0px 0px 3px 2px rgba(184, 20, 48, 0.9), 0px 0px 2px 6px rgba(230, 26, 60, 0.9), -1px -1px 1px 6px rgba(255, 255, 255, 0.9), 0px 0px 2px 11px rgba(230, 26, 60, 0.9), 0px 0px 1px 12px rgba(184, 20, 48, 0.9), 1px 3px 14px 14px rgba(0, 0, 0, 0.4);
+}
+
+button:active {
+  color: #d9d9d9;
+  padding: 26px 34px 22px 38px;
+  background-image: linear-gradient(273deg, #e61a3c 50%, #e8304f 60%);
+  box-shadow: inset 3px 4px 3px 2px rgba(92, 10, 24, 0.55), inset 0px 0px 1px 1px rgba(138, 15, 36, 0.9), inset -1px -1px 2px 3px rgba(230, 26, 60, 0.9), inset -2px -2px 1px 3px rgba(255, 255, 255, 0.8), inset 0px 0px 2px 7px rgba(235, 71, 99, 0.8), inset 0px 0px 3px 10px rgba(230, 26, 60, 0.9), 0px 0px 3px 2px rgba(184, 20, 48, 0.9), 0px 0px 2px 6px rgba(230, 26, 60, 0.9), -1px -1px 1px 6px rgba(255, 255, 255, 0.9), 0px 0px 2px 11px rgba(230, 26, 60, 0.9), 0px 0px 1px 12px rgba(184, 20, 48, 0.9), 1px 3px 14px 14px rgba(0, 0, 0, 0.4);
+}
+</style>
+
+    <div class="alert bg-info text-center text-light" role="alert">
+         Tombol ini akan memicu sirine diperangkat anggota yang lain, <br>anda yakin akan mengirim pesan darurat !!..???
+    </div>
+        <div class="panel-body">
+          <form action="../insert-panic.php" method="post">
+          <input type="hidden" name="kode_anggota" value="1447">
+          <input type="hidden" name="csrf_token" value="d0cbd266532c9a2e17c855a6d99656c0079b92556483c2290c74ac2b4b4d13b8">
+           <textarea id="lat" name="latitude" required hidden></textarea>
+           <textarea id="long" name="longitude" required hidden></textarea>
+
+          <center>
+            <a href="index.php" type="submit" class="btn btn-warning"><i class="fa fa-ban" aria-hidden="true"></i> Klik untuk batalkan</a>
+             <button type="button" id="sosButton" class="btn btn-danger">SOS</button>
+          </center>
+        </form>
+        </div>
+       
+<script type="4cc10546145508de2e254857-text/javascript">
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector("form");
+  const sosButton = document.getElementById("sosButton");
+  const latInput = document.getElementById("lat");
+  const longInput = document.getElementById("long");
+
+  sosButton.addEventListener("click", function () {
+    sosButton.disabled = true;
+    sosButton.innerText = "Mengambil Lokasi...";
+
+    if (!navigator.geolocation) {
+      alert("Browser tidak mendukung geolokasi.");
+      sosButton.disabled = false;
+      sosButton.innerText = "SOS";
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        latInput.value = position.coords.latitude;
+        longInput.value = position.coords.longitude;
+
+        form.submit(); // submit setelah lokasi tersedia
+      },
+      function (error) {
+        alert("Gagal mengambil lokasi. Pastikan izin lokasi aktif.");
+        sosButton.disabled = false;
+        sosButton.innerText = "SOS";
+      }
+    );
+  });
+});
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d115359eae0a4',t:'MTc5Mzg5NDM4Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d115359eae0a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="4cc10546145508de2e254857-|49" defer></script>

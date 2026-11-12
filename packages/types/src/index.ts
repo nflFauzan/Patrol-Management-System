@@ -716,6 +716,7 @@ export interface PaginatedResponse<T = unknown> {
 export interface LoginRequestDto {
   username: string;
   password: string;
+  hp_input?: string; // Honeypot field for bot prevention (matching patroli.site login.php)
 }
 
 export interface LoginResponseDto {

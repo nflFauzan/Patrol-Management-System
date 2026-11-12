@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html translate="no">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta name="google" content="notranslate">
+    <title>PROFILE</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="../img/logo-qng.png">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+     href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css">
+</head>
+
+<body>
+
+<div class="alert bg-info text-center text-light" role="alert">
+    PROFILE
+</div>
+
+<div class="container mt-3">
+    <div class="col-12">
+
+        <form action="password_update.php" enctype="multipart/form-data" method="post">
+
+            <!-- Username -->
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text"
+                       name="username"
+                       class="form-control"
+                       required
+                       maxlength="15"
+                       value="hendra.chief">
+                <input type="hidden" name="kode_anggota"
+                       value="1447">
+                <input type="hidden" name="csrf_token" value="d0cbd266532c9a2e17c855a6d99656c0079b92556483c2290c74ac2b4b4d13b8">
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label>Password Baru</label>
+                <input type="text"
+                       class="form-control"
+                       name="password_baru"
+                       placeholder="Input password baru"
+                       maxlength="15">
+                <input type="hidden" name="password_lama"
+                       value="$2y$10$lJFwz5cZ8/Mkk9u43kIHSucXwr8ia1woAAAkLPc0Twm8q2AjgDNt.">
+            </div>
+
+            <!-- Konfirmasi -->
+            <div class="form-group">
+                <label>Konfirmasi Password</label>
+                <input type="text"
+                       class="form-control"
+                       name="kf_password_baru"
+                       placeholder="Input konfirmasi password baru"
+                       maxlength="15">
+            </div>
+
+            <!-- Foto Lama -->
+            <div class="form-group">
+                <label>Foto Sekarang</label><br>
+                <img src="../foto/"
+                     width="80" height="80" loading="lazy">
+                <input type="hidden" name="fotolama"
+                       value="">
+            </div>
+
+            <!-- Upload Foto -->
+            <div class="form-group">
+                <label>Ganti Foto Baru</label><br>
+            
+                <!-- Area kamera -->
+                <div id="camera" style="width:240px; height:240px; border:1px solid #ccc;"></div>
+            
+                <button type="button" class="btn btn-sm btn-info mt-2" onclick="if (!window.__cfRLUnblockHandlers) return false; takeSnapshot()" data-cf-modified-23d2b39b71859fd37002240c-="">
+                    Ambil Foto
+                </button>
+            
+                <!-- Preview -->
+                <div id="preview" class="mt-2"></div>
+            
+                <!-- Hasil foto base64 disimpan di hidden input -->
+                <input type="hidden" name="foto_base64" id="foto_base64">
+            </div>
+
+            <!-- Tombol -->
+            <div class="form-group">
+                <a href="index.php" class="btn btn-danger">
+                    Kembali
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    Simpan
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js" type="23d2b39b71859fd37002240c-text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js" type="23d2b39b71859fd37002240c-text/javascript"></script>
+
+<script type="23d2b39b71859fd37002240c-text/javascript">
+// Setup kamera
+Webcam.set({
+    width: 240,
+    height: 240,
+    image_format: 'jpeg',
+    jpeg_quality: 30   // ukuran kecil tapi tetap jelas
+});
+Webcam.attach('#camera');
+
+// Ambil foto
+function takeSnapshot() {
+    Webcam.snap(function(data_uri) {
+
+        // tampilkan preview
+        document.getElementById('preview').innerHTML =
+            '<img src="'+data_uri+'" width="120" class="img-thumbnail"/>';
+
+        // simpan ke input hidden
+        document.getElementById('foto_base64').value = data_uri;
+    });
+}
+</script>
+
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="23d2b39b71859fd37002240c-|49" defer></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d1154cae7e0a4',t:'MTc5Mzg5NDM4Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d1154cae7e0a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

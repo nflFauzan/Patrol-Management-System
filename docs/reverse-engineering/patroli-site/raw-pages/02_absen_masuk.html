@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PATROLI SITE</title>
+<link rel="icon" href="../img/logo-qng.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" type="2490db0b5b78c4125594925d-text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.25/webcam.min.js" type="2490db0b5b78c4125594925d-text/javascript"></script>
+<style>
+body,html{margin:0;padding:0;font-family:sans-serif;background:#f5f5f5}.header{background:#006400;color:#fff;height:40px;display:flex;align-items:center;justify-content:center;font-weight:bold}.form-container{display:flex;flex-direction:column;align-items:center;margin:0 5%;padding-top:10px}#camera,#camera img{width:320px;height:320px;object-fit:cover;border:1px solid #006400;border-radius:5px}.box select{color:green;padding:12px;width:100%;font-size:16px;border:1px solid green;border-radius:5px;margin:15px 0}#webcam,#simpan{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}button,a.button-link{padding:10px 15px;font-size:16px;border:none;border-radius:5px;cursor:pointer;text-decoration:none;color:#fff}button.button-foto{background:#007bff}button.button-refresh{background:#ff8000}button.button-ulang{background:#8000ff}button.button-simpan{background:#28a745}a.button-link{background:#555}#notification{text-align:center;margin:10px 0;font-weight:bold}.footer-info{background:#e74c3c;color:#fff;padding:10px 0;position:fixed;bottom:0;left:0;width:100%;text-align:center;font-size:14px}
+</style>
+</head>
+<body>
+<div class="header">ABSEN MASUK</div>
+<div class="form-container">
+<form action="../insert-presensi.php" id="myForm" method="post">
+<input type="hidden" name="csrf_token" value="d0cbd266532c9a2e17c855a6d99656c0079b92556483c2290c74ac2b4b4d13b8">
+<input type="hidden" name="kode_anggota" value="1447">
+<input type="hidden" name="lokasi_site" value="kantor pusat">
+<input type="hidden" name="image" class="image-tag">
+<input type="hidden" name="status_absen" value="1">
+<input type="hidden" id="latin" name="latitude_in" required>
+<input type="hidden" id="longin" name="longitude_in" required>
+<div id="camera"></div>
+<div class="box">
+<select name="alasan" required>
+<option value="">Pilih Status Absen</option>
+<option value="1">Piket Rutin</option>
+<option value="2">Lembur</option>
+<option value="3">Penugasan lain</option>
+</select>
+</div>
+<div id="webcam">
+<button type="button" class="button-foto" onclick="if (!window.__cfRLUnblockHandlers) return false; preview();" data-cf-modified-2490db0b5b78c4125594925d-="">Foto</button>
+<button type="button" class="button-refresh" onclick="if (!window.__cfRLUnblockHandlers) return false; refreshAll()" data-cf-modified-2490db0b5b78c4125594925d-="">Refresh</button>
+<a href="index.php" class="button-link">Batal</a>
+</div>
+<div id="simpan" style="display:none;">
+<button type="button" class="button-ulang" onclick="if (!window.__cfRLUnblockHandlers) return false; batal();" data-cf-modified-2490db0b5b78c4125594925d-="">Ulangi</button>
+<button type="submit" id="submitBtn" class="button-simpan">Simpan</button>
+<a href="index.php" class="button-link">Batal</a>
+</div>
+</form>
+</div>
+<div id="notification">Mendapatkan lokasi Anda, tunggu sebentar ...</div>
+<div class="footer-info">Pastikan izin lokasi aktif. Jika belum <br>silahkan aktifkan izin lokasi dan klik tombol refresh!</div>
+<script type="2490db0b5b78c4125594925d-text/javascript">
+let cameraActive=false,cameraInitializing=false,locationDetected=false,locationInitializing=false,idleTimer;
+function resetIdleTimer(){clearTimeout(idleTimer);idleTimer=setTimeout(()=>{window.location.href="index.php"},60000)}
+function updateNotificationGlobal(){
+    let notif=document.getElementById('notification'),locText,locColor;
+    if(locationDetected){locText='Terdeteksi ✅';locColor='green'}
+    else if(locationInitializing){locText='Mencari lokasi...';locColor='#ff9900'}
+    else{locText='Belum aktif ❌';locColor='red'}
+    let camText,camColor;
+    if(cameraInitializing){camText='Mencari kamera...';camColor='#ff9900'}
+    else{camText=cameraActive?'Aktif ✅':'Belum aktif ❌';camColor=cameraActive?'green':'red'}
+    let additionalText='';
+    if(locationDetected)additionalText=`<div style="color:#0066cc;font-weight:bold;margin-top:25px;font-size:16px;">Silahkan klik Foto dan Simpan..!</div>`;
+    notif.innerHTML=`Lokasi: <span style="color:${locColor};font-weight:bold;">${locText}</span> | Kamera: <span style="color:${camColor};font-weight:bold;">${camText}</span>${additionalText}`;
+}
+function startCamera(){
+    cameraActive=false;cameraInitializing=true;updateNotificationGlobal();
+    try{
+        Webcam.reset();
+        Webcam.set({width:320,height:320,dest_width:320,dest_height:320,image_format:'jpeg',jpeg_quality:20,flip_horiz:false,fps:15});
+        Webcam.attach('#camera');
+        Webcam.on('live',function(){cameraActive=true;cameraInitializing=false;updateNotificationGlobal()});
+        Webcam.on('error',function(err){cameraActive=false;cameraInitializing=false;console.error('WebcamJS error:',err);updateNotificationGlobal()});
+    }catch(e){cameraActive=false;cameraInitializing=false;console.error(e);updateNotificationGlobal()}
+}
+function getLocationin(){
+    if(navigator.geolocation){
+        locationDetected=false;locationInitializing=true;updateNotificationGlobal();
+        navigator.geolocation.getCurrentPosition(
+            function(position){
+                document.getElementById('latin').value=position.coords.latitude;
+                document.getElementById('longin').value=position.coords.longitude;
+                locationDetected=true;locationInitializing=false;updateNotificationGlobal();startCamera();
+            },
+            function(error){
+                locationDetected=false;locationInitializing=false;updateNotificationGlobal();
+                if(error.code===error.PERMISSION_DENIED)alert('Aktifkan izin lokasi lalu klik refresh..');
+                else if(error.code===error.TIMEOUT)alert('GPS lambat. Coba refresh atau pindah area terbuka.');
+                else alert('Gagal mendapatkan lokasi.');
+            },
+            {enableHighAccuracy:true,timeout:8000,maximumAge:5000}
+        );
+    }else{
+        locationDetected=false;locationInitializing=false;alert('Browser tidak mendukung geolokasi.');updateNotificationGlobal();
+    }
+}
+function preview(){
+    if(!locationDetected){alert("Tunggu lokasi selesai terdeteksi!");return}
+    if(!cameraActive){alert("Aktifkan izin kamera lalu klik refresh untuk mencoba lagi.");return}
+    Webcam.snap(function(data_uri){$(".image-tag").val(data_uri);document.getElementById('camera').innerHTML='<img src="'+data_uri+'">'});
+    document.getElementById('webcam').style.display='none';
+    document.getElementById('simpan').style.display='';
+    resetIdleTimer();
+}
+function batal(){
+    document.getElementById('camera').innerHTML='';
+    document.getElementById('webcam').style.display='flex';
+    document.getElementById('simpan').style.display='none';
+    cameraActive=false;cameraInitializing=false;updateNotificationGlobal();startCamera();resetIdleTimer();
+}
+function refreshAll(){
+    document.getElementById('latin').value='';
+    document.getElementById('longin').value='';
+    cameraActive=false;cameraInitializing=false;locationDetected=false;locationInitializing=false;updateNotificationGlobal();
+    try{Webcam.reset()}catch(e){}
+    setTimeout(getLocationin,500);resetIdleTimer();
+}
+function isIOS(){return /iPhone|iPad|iPod/i.test(navigator.userAgent)}
+document.addEventListener("DOMContentLoaded",function(){
+    resetIdleTimer();
+    if(isIOS()){
+        document.getElementById('notification').innerHTML=`<div style="color:#cc0000;font-weight:bold;font-size:16px;margin-top:20px;">Akses kamera dan lokasi dibatasi oleh kebijakan keamanan iOS.<br>Gunakan perangkat Android.!</div>`;
+        return;
+    }
+    getLocationin();
+    const form=document.getElementById('myForm'),btn=document.getElementById('submitBtn');
+    if(form&&btn){
+        form.addEventListener('submit',function(e){
+            if(!document.getElementById('latin').value||!document.getElementById('longin').value){
+                alert("Lokasi tidak valid! Pastikan izin lokasi aktif.");e.preventDefault();return;
+            }
+            if(btn.disabled){e.preventDefault();return}
+            btn.disabled=true;btn.innerText='Menyimpan...';clearTimeout(idleTimer);
+        });
+    }
+});
+</script>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="2490db0b5b78c4125594925d-|49" defer></script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d114c3b8de0a4',t:'MTc5Mzg5NDM4Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d114c3b8de0a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

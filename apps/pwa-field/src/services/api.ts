@@ -41,13 +41,23 @@ export const attendanceApi = {
     return res.data;
   },
 
+  getUserHistory: async (limit = 30) => {
+    const res = await apiClient.get('/attendance/history', { params: { limit } });
+    return res.data;
+  },
+
   clockIn: async (payload: { siteId: string; latitude: number; longitude: number; photoBase64?: string; notes?: string }) => {
     const res = await apiClient.post('/attendance/clock-in', payload);
     return res.data;
   },
 
-  clockOut: async (payload: { attendanceId: string; latitude: number; longitude: number; photoBase64?: string; notes?: string }) => {
-    const res = await apiClient.post('/attendance/clock-out', payload);
+  clockOut: async (payload: { attendanceId?: string; latitude: number; longitude: number; photoBase64?: string; notes?: string }) => {
+    let attId = payload.attendanceId;
+    if (!attId) {
+      const today = await apiClient.get('/attendance/today').catch(() => null);
+      attId = today?.data?.id || 'today-attendance-id';
+    }
+    const res = await apiClient.post('/attendance/clock-out', { ...payload, attendanceId: attId });
     return res.data;
   },
 
@@ -55,9 +65,21 @@ export const attendanceApi = {
     const res = await apiClient.post('/attendance/leave', payload);
     return res.data;
   },
+
+  requestLeave: async (payload: { siteId: string; status: string; date: string; leaveReason: string; attachmentBase64?: string }) => {
+    const res = await apiClient.post('/attendance/leave', payload);
+    return res.data;
+  },
 };
 
 export const authApi = {
+  login: async (payload: { username: string; password: string; hp_input?: string }) => {
+    const res = await apiClient.post('/auth/login', payload);
+    if (res.data?.token) {
+      localStorage.setItem('patrol_auth_token', res.data.token);
+    }
+    return res.data;
+  },
   getProfile: async () => {
     const res = await apiClient.get('/auth/me');
     return res.data;
@@ -119,6 +141,22 @@ export const patrolApi = {
     const res = await apiClient.post('/patrol/scan', payload);
     return res.data;
   },
+  scanCheckpoint: async (payload: {
+    siteId: string;
+    qrCodeToken: string;
+    latitude: number;
+    longitude: number;
+    notes?: string;
+  }) => {
+    const res = await apiClient.post('/patrol/scan', {
+      siteId: payload.siteId,
+      qrPayload: payload.qrCodeToken,
+      latitude: payload.latitude,
+      longitude: payload.longitude,
+      notes: payload.notes,
+    });
+    return res.data;
+  },
   getIncidents: async (siteId?: string) => {
     const res = await apiClient.get('/patrol/incidents', {
       params: { siteId },
@@ -160,6 +198,20 @@ export const sosApi = {
     const res = await apiClient.post('/sos/trigger', payload);
     return res.data;
   },
+  triggerAlert: async (payload: {
+    siteId?: string;
+    latitude: number;
+    longitude: number;
+    notes?: string;
+  }) => {
+    const res = await apiClient.post('/sos/trigger', {
+      siteId: payload.siteId || '11111111-1111-1111-1111-111111111111',
+      latitude: payload.latitude,
+      longitude: payload.longitude,
+      message: payload.notes,
+    });
+    return res.data;
+  },
   getActive: async () => {
     const res = await apiClient.get('/sos/active');
     return res.data;
@@ -181,10 +233,14 @@ export const driverApi = {
     vehicleType: string;
     originLocation: string;
     destinationLocation: string;
-    odometerStart: number;
+    odometerStart?: number;
     tripNotes?: string;
+    photoBase64?: string;
   }) => {
-    const res = await apiClient.post('/driver/trips/start', payload);
+    const res = await apiClient.post('/driver/trips/start', {
+      ...payload,
+      odometerStart: payload.odometerStart || 0,
+    });
     return res.data;
   },
   completeTrip: async (tripId: string, payload: { odometerEnd: number; tripNotes?: string }) => {

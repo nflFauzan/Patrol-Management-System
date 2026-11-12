@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../img/logo-qng.png">
+<title>PATROLI SITE</title>
+
+<!-- CSS Minimal -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/jquery.dataTables.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-responsive-dt/2.0.1/responsive.dataTables.min.css" />
+
+<!-- JS Minimal -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" type="eed261685259d5c8bbab446f-text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/js/bootstrap.bundle.min.js" type="eed261685259d5c8bbab446f-text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js" type="eed261685259d5c8bbab446f-text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables-responsive/2.2.3/dataTables.responsive.min.js" type="eed261685259d5c8bbab446f-text/javascript"></script>
+
+</head>
+<body>
+
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 mt-2">
+                <div class="card-header alert bg-primary text-light" style="font-size:20px;">
+                    <i class="fa fa-qrcode"></i> <small>DATA KEGIATAN</small>
+                    <a href="index.php" class="btn btn-danger float-right"><i class="fa fa-undo"></i> Kembali</a>
+                </div>
+                <div class="card-body">
+                    <table id="chief" class="table-primary display responsive wrap bg-primary rounded" style="width:100%">
+                        <thead>
+                            <tr class="text-center text-light">
+                                                                    <th>NAMA KOMANDAN</th>
+                                                                    <th>KEDISIPLINAN</th>
+                                                                    <th>KOORDINASI</th>
+                                                                    <th>KEHADIRAN</th>
+                                                                    <th>INSIDEN</th>
+                                                                    <th>AKSI</th>
+                                                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail -->
+<div class="modal" id="myModalchief">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body-chief"></div>
+        </div>
+    </div>
+</div>
+
+<script type="eed261685259d5c8bbab446f-text/javascript">
+$(function(){
+    // Modal detail
+    $(document).on('click','.detail-record',function(e){
+        e.preventDefault();
+        $("#myModalchief").modal('show');
+
+        $.post('detail-chief.php',{id:$(this).attr('data-id')},function(html){
+            $(".modal-body-chief").html(html);
+
+                    });
+    });
+
+    // DataTables
+    $('#chief').DataTable({
+        pageLength: 5,
+        lengthMenu: [[5,10,20,50,100],[5,10,20,50,100]],
+        order: [[0,"desc"]],
+        processing: true,
+        serverSide: true,
+        ajax:{
+            url: "serverside-chief.php",
+            type: "POST",
+            error: function(){
+                $("#chief").append('<tbody><tr><th colspan="6">Tidak ada data</th></tr></tbody>');
+                $("#chief_processing").hide();
+            }
+        }
+    });
+});
+</script>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="eed261685259d5c8bbab446f-|49" defer></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d1151a8a1e0a4',t:'MTc5Mzg5NDM4Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d1151a8a1e0a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

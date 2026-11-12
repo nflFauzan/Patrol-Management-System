@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html translate="no">
+<head>
+<link rel="icon" href="../img/logo-qng.png">
+<title>Laporan Chief - PATROLI SITE</title>
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" />
+</head>
+<body>
+
+<div class="container mt-3">
+
+    <center class="mb-3">
+        <h5 class="text-primary font-weight-bold">FORM LAPORAN CHIEF</h5>
+        <small class="text-muted">Penilaian dan evaluasi harian Komandan Regu</small>
+    </center>
+
+    <form action="../insert_chief.php" method="POST" class="mb-5">
+        <input type="hidden" name="csrf_token" value="d0cbd266532c9a2e17c855a6d99656c0079b92556483c2290c74ac2b4b4d13b8">
+        <!-- Pilihan Komandan -->
+        <div class="form-group">
+            <label class="font-weight-bold">Pilih Komandan Regu</label>
+            <select name="kode_anggota" class="form-control border border-info" required>
+                <option value="">-- Pilih Komandan Regu --</option>
+                                    <option value="995">A1</option>
+                                    <option value="1356">ahmad lewa</option>
+                                    <option value="1094">ARIF MUNANDAR</option>
+                                    <option value="1436">budi santoso</option>
+                                    <option value="1430">DANDAN KOMANDAN</option>
+                                    <option value="1394">danrugiga</option>
+                                    <option value="1355">dedy yunus</option>
+                                    <option value="1010">dwi wahyono</option>
+                                    <option value="1111">eko purwanto</option>
+                                    <option value="1218">RIKO RIZKI MASRI</option>
+                                    <option value="1114">saepudin</option>
+                                    <option value="1100">SINGGIH PRASIWIJAYA</option>
+                                    <option value="1118">superiyanto</option>
+                                    <option value="1087">SUSILO ADI SAPUTRO</option>
+                                    <option value="1298">wahyudin</option>
+                                    <option value="1104">WAWAN BAGUS SAPUTRA</option>
+                                    <option value="1112">yudhi wibowo</option>
+                            </select>
+        </div>
+
+        <!-- Penilaian Chief -->
+        <div class="form-group">
+            <label class="font-weight-bold">Disiplin Komandan</label>
+            <select name="disiplin" class="form-control border border-info" required>
+                <option value="">-- Pilih --</option>
+                <option value="Baik">Baik</option>
+                <option value="Cukup">Cukup</option>
+                <option value="Kurang">Kurang</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="font-weight-bold">Koordinasi & Komunikasi</label>
+            <select name="koordinasi" class="form-control border border-info" required>
+                <option value="">-- Pilih --</option>
+                <option value="Baik">Baik</option>
+                <option value="Cukup">Cukup</option>
+                <option value="Kurang">Kurang</option>
+            </select>
+        </div>
+
+        <!-- Kehadiran Regu -->
+        <div class="form-group">
+            <label class="font-weight-bold">Kehadiran Regu (yang dipimpin komandan)</label>
+            <select name="kehadiran_regu" class="form-control border border-info" required>
+                <option value="">-- Pilih --</option>
+                <option value="Lengkap">Lengkap</option>
+                <option value="Tidak Lengkap">Tidak Lengkap</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="regu_detail" style="display:none;">
+            <label class="font-weight-bold">Detail Kehadiran Regu</label>
+            <input type="number" name="regu_hadir" class="form-control mb-1" placeholder="Jumlah hadir" min="0">
+            <input type="number" name="regu_izin" class="form-control" placeholder="Jumlah izin/cuti" min="0">
+        </div>
+
+        <!-- Temuan -->
+        <div class="form-group">
+            <label class="font-weight-bold">Temuan / Insiden</label>
+            <select id="insiden" name="insiden" class="form-control border border-info">
+                <option value="">-- Pilih --</option>
+                <option value="Tidak Ada">Tidak Ada</option>
+                <option value="Ada">Ada</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="insiden_div" style="display:none;">
+            <label class="font-weight-bold">Detail Singkat Temuan</label>
+            <textarea name="detail_insiden" id="detail_insiden" class="form-control border border-info" rows="3" maxlength="100"></textarea>
+            <small class="text-muted"><span id="count_insiden">0</span>/100 karakter</small>
+        </div>
+
+
+        <!-- Catatan Chief -->
+        <div class="form-group">
+            <label class="font-weight-bold">Catatan Singkat Chief</label>
+            <textarea name="catatan" id="catatan" class="form-control border border-info" rows="3" maxlength="100" placeholder="Catatan untuk komandan..."></textarea>
+            <small class="text-muted"><span id="count_catatan">0</span>/100 karakter</small>
+        </div>
+
+
+        <center>
+            <button type="submit" class="btn btn-primary mt-2">Simpan Laporan</button>
+            <a href="index.php" class="btn btn-dark mt-2">Kembali</a>
+        </center>
+
+    </form>
+
+</div>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d115b986de0a4',t:'MTc5Mzg5NDM4OQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d115b986de0a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
+<script type="99ebee631a376ed123a37bb9-text/javascript">
+// Detail kehadiran regu
+document.querySelector("select[name='kehadiran_regu']").addEventListener('change', function() {
+    document.getElementById('regu_detail').style.display = (this.value === 'Tidak Lengkap') ? 'block' : 'none';
+});
+
+// Insiden
+document.getElementById('insiden').addEventListener('change', function() {
+    document.getElementById('insiden_div').style.display = (this.value === 'Ada') ? 'block' : 'none';
+});
+
+document.getElementById('detail_insiden').addEventListener('input', function() {
+    document.getElementById('count_insiden').innerText = this.value.length;
+});
+
+document.getElementById('catatan').addEventListener('input', function() {
+    document.getElementById('count_catatan').innerText = this.value.length;
+});
+
+</script>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="99ebee631a376ed123a37bb9-|49" defer></script>

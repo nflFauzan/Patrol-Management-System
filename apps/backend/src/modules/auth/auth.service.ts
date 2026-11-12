@@ -15,6 +15,12 @@ export class AuthService {
   ) {}
 
   async login(dto: LoginRequestDto): Promise<LoginResponseDto> {
+    // 0. Honeypot check for spam/bot submissions (patroli.site parity)
+    if (dto.hp_input && dto.hp_input.trim() !== '') {
+      this.logger.warn(`Spam bot login attempt blocked via hp_input honeypot: ${dto.username}`);
+      throw new BadRequestException('Security validation failed');
+    }
+
     const userRow = await this.db.queryOne<any>(
       `SELECT id, username, email, password_hash, full_name, phone, role, division, site_id, is_active, avatar_url, created_at, updated_at
        FROM users 

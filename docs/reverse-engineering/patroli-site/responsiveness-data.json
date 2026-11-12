@@ -1,0 +1,370 @@
+{
+  "mobile_small": {
+    "viewport": {
+      "width": 360,
+      "height": 640
+    },
+    "bodyStyle": {
+      "overflow": "hidden",
+      "position": "fixed",
+      "width": "360px",
+      "height": "640px"
+    },
+    "containerStyle": {
+      "display": "grid",
+      "gridTemplateColumns": "159px 159px",
+      "gap": "12px",
+      "padding": "15px",
+      "margin": "15px 0px 0px",
+      "maxWidth": "none",
+      "width": 360,
+      "height": 546
+    },
+    "headerRect": {
+      "width": 360,
+      "height": 77,
+      "padding": "12px 10px"
+    },
+    "marqueeRect": {
+      "width": 360,
+      "height": 40,
+      "bottom": "0px",
+      "position": "fixed"
+    },
+    "cardsCount": 8,
+    "cards": [
+      {
+        "text": "ABSEN MASUK",
+        "width": 159,
+        "height": 120,
+        "top": 107,
+        "left": 15
+      },
+      {
+        "text": "IZIN ALPHA",
+        "width": 159,
+        "height": 120,
+        "top": 107,
+        "left": 186
+      },
+      {
+        "text": "RIWAYAT ABSEN",
+        "width": 159,
+        "height": 120,
+        "top": 239,
+        "left": 15
+      },
+      {
+        "text": "RIWAYAT KEGIATAN",
+        "width": 159,
+        "height": 120,
+        "top": 239,
+        "left": 186
+      },
+      {
+        "text": "PANIC BUTTON",
+        "width": 159,
+        "height": 120,
+        "top": 371,
+        "left": 15
+      },
+      {
+        "text": "UPDATE PROFILE",
+        "width": 159,
+        "height": 120,
+        "top": 371,
+        "left": 186
+      },
+      {
+        "text": "BANTUAN TEKNIS",
+        "width": 159,
+        "height": 120,
+        "top": 503,
+        "left": 15
+      },
+      {
+        "text": "LOGOUT SISTEM",
+        "width": 159,
+        "height": 120,
+        "top": 503,
+        "left": 186
+      }
+    ]
+  },
+  "mobile_iphone": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "bodyStyle": {
+      "overflow": "hidden",
+      "position": "fixed",
+      "width": "390px",
+      "height": "844px"
+    },
+    "containerStyle": {
+      "display": "grid",
+      "gridTemplateColumns": "174px 174px",
+      "gap": "12px",
+      "padding": "15px",
+      "margin": "15px 0px 0px",
+      "maxWidth": "none",
+      "width": 390,
+      "height": 546
+    },
+    "headerRect": {
+      "width": 390,
+      "height": 77,
+      "padding": "12px 10px"
+    },
+    "marqueeRect": {
+      "width": 390,
+      "height": 40,
+      "bottom": "0px",
+      "position": "fixed"
+    },
+    "cardsCount": 8,
+    "cards": [
+      {
+        "text": "ABSEN MASUK",
+        "width": 174,
+        "height": 120,
+        "top": 107,
+        "left": 15
+      },
+      {
+        "text": "IZIN ALPHA",
+        "width": 174,
+        "height": 120,
+        "top": 107,
+        "left": 201
+      },
+      {
+        "text": "RIWAYAT ABSEN",
+        "width": 174,
+        "height": 120,
+        "top": 239,
+        "left": 15
+      },
+      {
+        "text": "RIWAYAT KEGIATAN",
+        "width": 174,
+        "height": 120,
+        "top": 239,
+        "left": 201
+      },
+      {
+        "text": "PANIC BUTTON",
+        "width": 174,
+        "height": 120,
+        "top": 371,
+        "left": 15
+      },
+      {
+        "text": "UPDATE PROFILE",
+        "width": 174,
+        "height": 120,
+        "top": 371,
+        "left": 201
+      },
+      {
+        "text": "BANTUAN TEKNIS",
+        "width": 174,
+        "height": 120,
+        "top": 503,
+        "left": 15
+      },
+      {
+        "text": "LOGOUT SISTEM",
+        "width": 174,
+        "height": 120,
+        "top": 503,
+        "left": 201
+      }
+    ]
+  },
+  "tablet": {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "bodyStyle": {
+      "overflow": "hidden",
+      "position": "fixed",
+      "width": "768px",
+      "height": "1024px"
+    },
+    "containerStyle": {
+      "display": "grid",
+      "gridTemplateColumns": "175.5px 175.5px 175.5px 175.5px",
+      "gap": "12px",
+      "padding": "15px",
+      "margin": "15px 0px 0px",
+      "maxWidth": "none",
+      "width": 768,
+      "height": 282
+    },
+    "headerRect": {
+      "width": 768,
+      "height": 77,
+      "padding": "12px 10px"
+    },
+    "marqueeRect": {
+      "width": 768,
+      "height": 40,
+      "bottom": "0px",
+      "position": "fixed"
+    },
+    "cardsCount": 8,
+    "cards": [
+      {
+        "text": "ABSEN MASUK",
+        "width": 176,
+        "height": 120,
+        "top": 107,
+        "left": 15
+      },
+      {
+        "text": "IZIN ALPHA",
+        "width": 176,
+        "height": 120,
+        "top": 107,
+        "left": 203
+      },
+      {
+        "text": "RIWAYAT ABSEN",
+        "width": 176,
+        "height": 120,
+        "top": 107,
+        "left": 390
+      },
+      {
+        "text": "RIWAYAT KEGIATAN",
+        "width": 176,
+        "height": 120,
+        "top": 107,
+        "left": 578
+      },
+      {
+        "text": "PANIC BUTTON",
+        "width": 176,
+        "height": 120,
+        "top": 239,
+        "left": 15
+      },
+      {
+        "text": "UPDATE PROFILE",
+        "width": 176,
+        "height": 120,
+        "top": 239,
+        "left": 203
+      },
+      {
+        "text": "BANTUAN TEKNIS",
+        "width": 176,
+        "height": 120,
+        "top": 239,
+        "left": 390
+      },
+      {
+        "text": "LOGOUT SISTEM",
+        "width": 176,
+        "height": 120,
+        "top": 239,
+        "left": 578
+      }
+    ]
+  },
+  "desktop": {
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    },
+    "bodyStyle": {
+      "overflow": "hidden",
+      "position": "fixed",
+      "width": "1366px",
+      "height": "768px"
+    },
+    "containerStyle": {
+      "display": "grid",
+      "gridTemplateColumns": "156.5px 156.5px 156.5px 156.5px 156.5px 156.5px 156.5px 156.5px",
+      "gap": "12px",
+      "padding": "15px",
+      "margin": "15px 0px 0px",
+      "maxWidth": "none",
+      "width": 1366,
+      "height": 150
+    },
+    "headerRect": {
+      "width": 1366,
+      "height": 77,
+      "padding": "12px 10px"
+    },
+    "marqueeRect": {
+      "width": 1366,
+      "height": 40,
+      "bottom": "0px",
+      "position": "fixed"
+    },
+    "cardsCount": 8,
+    "cards": [
+      {
+        "text": "ABSEN MASUK",
+        "width": 157,
+        "height": 120,
+        "top": 107,
+        "left": 15
+      },
+      {
+        "text": "IZIN ALPHA",
+        "width": 157,
+        "height": 120,
+        "top": 107,
+        "left": 184
+      },
+      {
+        "text": "RIWAYAT ABSEN",
+        "width": 157,
+        "height": 120,
+        "top": 107,
+        "left": 352
+      },
+      {
+        "text": "RIWAYAT KEGIATAN",
+        "width": 157,
+        "height": 120,
+        "top": 107,
+        "left": 521
+      },
+      {
+        "text": "PANIC BUTTON",
+        "width": 157,
+        "height": 120,
+        "top": 107,
+        "left": 689
+      },
+      {
+        "text": "UPDATE PROFILE",
+        "width": 157,
+        "height": 120,
+        "top": 107,
+        "left": 858
+      },
+      {
+        "text": "BANTUAN TEKNIS",
+        "width": 157,
+        "height": 120,
+        "top": 107,
+        "left": 1026
+      },
+      {
+        "text": "LOGOUT SISTEM",
+        "width": 157,
+        "height": 120,
+        "top": 107,
+        "left": 1195
+      }
+    ]
+  }
+}

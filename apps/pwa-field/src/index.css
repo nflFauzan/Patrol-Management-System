@@ -2,10 +2,326 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================================
+   PATROLI.SITE 100% AUTHENTIC CORE CSS
+   Extracted directly from patroli.site live production
+======================================================== */
+
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background-color: #f4f7fa;
+  color: #333;
+}
+
+/* Authentic Container: Grid layout auto-fit across mobile (2 cols), tablet (4 cols), desktop (8 cols) */
+.container,
+.ps-menu-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none !important;
+  height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 15px;
+  margin: 15px 0 0 0;
+}
+
+/* Authentic Card: 18px border radius, 120px height, 40px 10px padding, glass shine reflection */
+.card,
+.ps-card {
+  box-sizing: border-box;
+  border-radius: 18px;
+  padding: 40px 10px;
+  text-align: center;
+  font-size: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 10px 20px rgba(0, 0, 0, 0.18);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+/* Glass shine reflection rotated 25 degrees */
+.card:before,
+.ps-card:before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 70%;
+  height: 220%;
+  background: rgba(255, 255, 255, 0.18);
+  transform: rotate(25deg);
+  pointer-events: none;
+}
+
+.card:active,
+.ps-card:active {
+  transform: translateY(2px) scale(0.97);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.card:hover,
+.ps-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Card typography matching patroli.site */
+.text,
+.ps-card-text {
+  display: block;
+  text-decoration: none;
+  color: #fff;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+/* Bottom Marquee Running Text (18s linear animation) */
+.marquee-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(135deg, #0d6efd, #4dabf7);
+  color: #fff;
+  overflow: hidden;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  border-top: 2px solid rgba(0, 0, 0, 0.3);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 0.5px;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 40;
+}
+
+.marquee-text {
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: jalan 18s linear infinite;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@keyframes jalan {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+/* WhatsApp Floating Action Button */
+.whatsapp-float {
+  position: fixed;
+  bottom: 48px;
+  left: 14px;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.whatsapp-float img {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 14px rgba(37, 211, 102, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}
+
+/* Skeuomorphic 3D Circular SOS Button */
+.sos-btn-3d {
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 2.2em;
+  font-weight: 800;
+  color: white;
+  text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.7), 1px 1px 1px rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5em auto;
+  cursor: pointer;
+  background-color: #2e050c;
+  background-image: linear-gradient(273deg, #eb4763 30%, #e61a3c 40%);
+  border: none;
+  border-radius: 50%;
+  width: 200px;
+  height: 200px;
+  box-shadow: inset 0px 0px 1px 1px rgba(138, 15, 36, 0.9),
+              inset 0px 0px 2px 3px rgba(230, 26, 60, 0.9),
+              inset 1px 1px 1px 4px rgba(255, 255, 255, 0.8),
+              inset 0px 0px 2px 7px rgba(235, 71, 99, 0.8),
+              inset 0px 0px 4px 10px rgba(230, 26, 60, 0.9),
+              8px 10px 2px 6px rgba(92, 10, 24, 0.55),
+              0px 0px 3px 2px rgba(184, 20, 48, 0.9),
+              0px 0px 2px 6px rgba(230, 26, 60, 0.9),
+              -1px -1px 1px 6px rgba(255, 255, 255, 0.9),
+              0px 0px 2px 11px rgba(230, 26, 60, 0.9),
+              0px 0px 1px 12px rgba(184, 20, 48, 0.9),
+              1px 3px 14px 14px rgba(0, 0, 0, 0.4);
+  transition: all 0.1s ease;
+}
+
+.sos-btn-3d:active {
+  color: #d9d9d9;
+  padding: 26px 34px 22px 38px;
+  background-image: linear-gradient(273deg, #e61a3c 50%, #e8304f 60%);
+  box-shadow: inset 3px 4px 3px 2px rgba(92, 10, 24, 0.55),
+              inset 0px 0px 1px 1px rgba(138, 15, 36, 0.9),
+              inset -1px -1px 2px 3px rgba(230, 26, 60, 0.9),
+              inset -2px -2px 1px 3px rgba(255, 255, 255, 0.8),
+              inset 0px 0px 2px 7px rgba(235, 71, 99, 0.8),
+              inset 0px 0px 3px 10px rgba(230, 26, 60, 0.9),
+              0px 0px 3px 2px rgba(184, 20, 48, 0.9),
+              0px 0px 2px 6px rgba(230, 26, 60, 0.9),
+              -1px -1px 1px 6px rgba(255, 255, 255, 0.9),
+              0px 0px 2px 11px rgba(230, 26, 60, 0.9),
+              0px 0px 1px 12px rgba(184, 20, 48, 0.9),
+              1px 3px 14px 14px rgba(0, 0, 0, 0.4);
+  transform: scale(0.97);
+}
+
+/* Authentic Responsive Modal Rules */
+.custom-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 999999;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.custom-modal.show {
+  display: flex !important;
+}
+
+.custom-modal-box {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  margin: 0;
+  transform: scale(1);
+}
+
+.custom-modal-header {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: #fff;
+  padding: 12px;
+  font-weight: 600;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.custom-modal-body {
+  padding: 15px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.info-box {
+  background: #e7f1ff;
+  border-left: 4px solid #0d6efd;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.custom-modal-footer {
+  padding: 10px;
+  text-align: center;
+}
+
+.custom-modal-footer button {
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  background: #0d6efd;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .modal-dialog {
+    margin: 10px;
+    max-width: 95% !important;
+    height: auto;
+  }
+  .modal-content {
+    border-radius: 14px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .modal-body {
+    font-size: 12px !important;
+    padding: 12px;
+    line-height: 1.5;
+  }
+  .modal-header {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  .modal-footer {
+    padding: 10px;
+  }
+  .modal-title {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .custom-modal-box {
+    max-width: 95%;
+    border-radius: 14px;
+  }
 }

@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>404 - Not Found</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fefefe;
+            color: #333;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            max-width: 120px;
+            margin-bottom: 20px;
+        }
+
+        .code {
+            font-size: 48px;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .msg {
+            font-size: 22px;
+            margin: 10px 0;
+        }
+
+        .desc {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .solution-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .button-group a {
+            display: inline-block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: opacity 0.3s;
+        }
+
+        .button-group a:hover {
+            opacity: 0.85;
+        }
+
+        .btn-back {
+            background-color: #007bff;
+        }
+
+        .btn-admin {
+            background-color: #25D366;
+        }
+
+        .btn-solution {
+            background-color: #FF0000;
+        }
+
+        @media (max-width: 480px) {
+
+            body {
+                padding: 30px 15px;
+            }
+
+            .code {
+                font-size: 40px;
+            }
+
+            .msg {
+                font-size: 20px;
+            }
+
+            .desc {
+                font-size: 15px;
+            }
+
+            .solution-text {
+                font-size: 15px;
+            }
+
+            .logo {
+                max-width: 100px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .button-group a {
+                width: 80%;
+                max-width: 280px;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <img src="/img/logo-ps.png" class="logo" alt="Logo">
+
+        <div class="code">
+            404        </div>
+
+        <div class="msg">
+            404 - Not Found        </div>
+
+        <div class="desc">
+            Halaman tidak ditemukan.        </div>
+
+        
+        <div class="button-group">
+
+            <a href="/" class="btn-back">
+                Kembali
+            </a>
+
+            <a href="https://wa.me/6281215293593?text=Halo%20admin,%20saya%20mendapatkan%20error%20404%20pada%20halaman%20%2Fcss%2Findex.css%20di%20website%20patroli.site"
+               target="_blank"
+               class="btn-admin">
+                Hubungi Admin
+            </a>
+
+            
+        </div>
+
+    </div>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

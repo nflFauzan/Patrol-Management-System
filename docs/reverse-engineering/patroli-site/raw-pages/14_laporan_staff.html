@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html translate="no">
+<head>
+<link rel="icon" href="../img/logo-qng.png">  
+<title>PATROLI SITE</title>
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" />
+</head>
+<body>
+
+<div class="container mt-3">
+    <center class="mb-3">
+        <h5 class="text-primary font-weight-bold">FORM KEGIATAN STAFF</h5>
+        <small class="text-muted">Input aktivitas kerja harian staff</small>
+    </center>
+
+    <form action="../insert_staf.php" method="POST" class="mb-5">
+        
+        <input type="hidden" name="csrf_token" value="d0cbd266532c9a2e17c855a6d99656c0079b92556483c2290c74ac2b4b4d13b8">
+
+        <!-- Jenis Kegiatan -->
+        <div class="form-group">
+            <label class="font-weight-bold">Jenis Kegiatan</label>
+            <select id="jenis" name="jenis_kegiatan" class="form-control border border-info" required>
+                <option value="">-- Pilih Kegiatan --</option>
+                <option value="Administrasi">Administrasi</option>
+                <option value="Monitoring">Monitoring</option>
+                <option value="Koordinasi">Koordinasi</option>
+                <option value="Meeting">Meeting</option>
+                <option value="Pengecekan">Pengecekan</option>
+                <option value="Follow Up">Follow Up</option>
+                <option value="Laporan">Laporan</option>
+                <option value="Lainnya">Lainnya</option>
+            </select>
+        </div>
+
+        <!-- Detail tambahan kalau "Lainnya" -->
+        <div class="form-group" id="lainnya_div" style="display:none;">
+            <label class="font-weight-bold">Detail Kegiatan</label>
+            <input type="text" name="detail_lainnya" class="form-control" placeholder="Tulis kegiatan...">
+        </div>
+
+        <!-- Deskripsi -->
+        <div class="form-group">
+            <label class="font-weight-bold">Deskripsi</label>
+            <textarea name="deskripsi" id="deskripsi" class="form-control border border-info" rows="3" maxlength="150" required></textarea>
+            <small id="char_count" class="form-text text-muted">Sisa 150 karakter</small>
+        </div>
+
+        <!-- Status -->
+        <div class="form-group">
+            <label class="font-weight-bold">Status Kegiatan</label>
+            <select name="status" class="form-control border border-info" required>
+                <option value="selesai">Selesai</option>
+                <option value="tertunda">Tertunda</option>
+                <option value="dibatalkan">Dibatalkan</option>
+            </select>
+        </div>
+
+        <center>
+            <button type="submit" class="btn btn-primary mt-2">Simpan Kegiatan</button>
+            <a href="index.php" class="btn btn-dark mt-2">Kembali</a>
+        </center>
+
+    </form>
+</div>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d115cf96de0a4',t:'MTc5Mzg5NDM4OQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d115cf96de0a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
+<script type="efa73ab19ce4c608115c8adb-text/javascript">
+// tampilkan field "lainnya"
+document.getElementById('jenis').addEventListener('change', function() {
+    let div = document.getElementById('lainnya_div');
+    if (this.value === 'Lainnya') {
+        div.style.display = 'block';
+    } else {
+        div.style.display = 'none';
+    }
+});
+
+// counter deskripsi
+const textarea = document.getElementById("deskripsi");
+const counter = document.getElementById("char_count");
+const maxChars = 150;
+
+textarea.addEventListener("input", function() {
+    const remaining = maxChars - this.value.length;
+    counter.textContent = "Sisa " + remaining + " karakter";
+});
+
+</script><script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="efa73ab19ce4c608115c8adb-|49" defer></script>

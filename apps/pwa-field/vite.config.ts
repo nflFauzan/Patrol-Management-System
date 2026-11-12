@@ -10,23 +10,23 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['logo-ps.png', 'admin.png', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Patrol Management System - Field App',
-        short_name: 'PatrolField',
-        description: 'Aplikasi Lapangan Personil Satpam, Cleaning Service & Driver',
-        theme_color: '#0f172a',
-        background_color: '#f8fafc',
+        name: 'Patroli Site',
+        short_name: 'Patroli',
+        description: 'Patroli Site - Patrol & Facility Management System',
+        theme_color: '#0b3d91',
+        background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: '/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: 'pwa-512x512.png',
+            src: '/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
           },

@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html translate="no">
+<head>
+<link rel="icon"  href="../img/logo-qng.png">  
+<title>Laporan Komandan - PATROLI SITE</title>
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" />
+</head>
+<body>
+
+<div class="container mt-3">
+    <center class="mb-3">
+        <h5 class="text-primary font-weight-bold">FORM LAPORAN KOMANDAN</h5>
+        <small class="text-muted">Laporan harian komandan per shift</small>
+    </center>
+
+    <form action="../insert_komandan.php" method="POST" class="mb-5">
+        <input type="hidden" name="csrf_token" value="d0cbd266532c9a2e17c855a6d99656c0079b92556483c2290c74ac2b4b4d13b8">
+        <!-- Shift -->
+        <div class="form-group">
+            <label class="font-weight-bold">Shift</label>
+            <select name="shift" class="form-control border border-info" required>
+                <option value="">-- Pilih Shift --</option>
+                <option value="Pagi">Pagi</option>
+                <option value="Siang">Siang</option>
+                <option value="Malam">Malam</option>
+            </select>
+        </div>
+
+        <!-- Kehadiran Anggota -->
+        <div class="form-group">
+            <label class="font-weight-bold">Kehadiran Anggota</label>
+            <select id="kehadiran" name="kehadiran" class="form-control border border-info" required>
+                <option value="">-- Pilih Kehadiran --</option>
+                <option value="Lengkap">Lengkap</option>
+                <option value="Tidak Lengkap">Tidak Lengkap</option>
+            </select>
+        </div>
+        
+        <!-- Detail Kehadiran -->
+        <div class="form-group" id="detail_kehadiran" style="display:none;">
+            <label class="font-weight-bold">Detail Kehadiran</label>
+            <input type="number" name="jumlah_hadir" class="form-control mb-2" placeholder="Jumlah hadir" min="0">
+            <input type="number" name="jumlah_izin" class="form-control" placeholder="Jumlah izin/cuti" min="0">
+            <small class="form-text text-muted">Isi sesuai kondisi kehadiran.</small>
+        </div>
+
+
+        <!-- Kesimpulan Komandan -->
+        <div class="form-group">
+          <label class="font-weight-bold">Kesimpulan Komandan</label>
+          <select id="kesimpulan" name="kesimpulan" class="form-control border border-info">
+            <option value="">-- Pilih Kesimpulan --</option>
+            <option value="A">Situasi aman terkendali</option>
+            <option value="L">Ada catatan</option>
+          </select>
+        </div>
+        
+        <!-- Textarea muncul hanya jika pilih "Lainnya" -->
+        <div class="form-group" id="catatan_div" style="display:none;">
+          <label class="font-weight-bold">Catatan Khusus</label>
+          <textarea name="catatan" id="catatan" class="form-control border border-info" rows="3" maxlength="100" placeholder="Tulis catatan singkat..."></textarea>
+          <small id="char_count" class="form-text text-muted">Sisa 100 karakter</small>
+        </div>
+
+
+
+        <center>
+            <button type="submit" class="btn btn-primary mt-2">Simpan Laporan</button>
+            <a href="index.php" class="btn btn-dark mt-2">Kembali</a>
+        </center>
+    </form>
+</div>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d115a1f41e0a4',t:'MTc5Mzg5NDM4OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d115a1f41e0a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
+<script type="ee7c73c95867e4a493f66ec2-text/javascript">
+document.getElementById('kesimpulan').addEventListener('change', function() {
+  var catatanDiv = document.getElementById('catatan_div');
+  if (this.value === 'L') {
+    catatanDiv.style.display = 'block';
+  } else {
+    catatanDiv.style.display = 'none';
+  }
+});
+
+
+document.getElementById('kehadiran').addEventListener('change', function() {
+  var detailDiv = document.getElementById('detail_kehadiran');
+  if (this.value === 'Tidak Lengkap') {
+    detailDiv.style.display = 'block';
+  } else {
+    detailDiv.style.display = 'none';
+  }
+});
+
+</script>
+
+<script type="ee7c73c95867e4a493f66ec2-text/javascript">
+  const textarea = document.getElementById("catatan");
+  const counter = document.getElementById("char_count");
+  const maxChars = 100;
+
+  textarea.addEventListener("input", function() {
+    const remaining = maxChars - this.value.length;
+    counter.textContent = "Sisa " + remaining + " karakter";
+  });
+</script>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="ee7c73c95867e4a493f66ec2-|49" defer></script>

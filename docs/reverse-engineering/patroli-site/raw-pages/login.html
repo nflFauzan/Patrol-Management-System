@@ -1,0 +1,292 @@
+
+<!DOCTYPE html>
+<html translate="no">
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>PATROLI SITE</title>
+<link rel="icon" href="img/logo-ps.png">
+
+<link rel="manifest" href="manifest.php">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+<link type="text/css" href="https://patroli.site/css/log_in.css?v=2" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.modal {
+    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal.show {
+    display: block !important;
+    opacity: 1;
+    pointer-events: auto;
+}
+</style>
+
+<style>
+#installBtn{
+    margin-top:12px;
+    width:100%;
+    border-radius:4px;
+    background:#28a745;
+    border:0;
+    color:#fff;
+    padding:10px;
+    font-size:15px;
+    cursor:pointer;
+    display:none;
+}
+
+/* WHATSAPP TETAP ADA (TIDAK DIHAPUS) */
+.whatsapp-float{
+    position:fixed;
+    bottom:25px;
+    left:15px;
+    z-index:9999;
+}
+
+.whatsapp-float img{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+    0%{
+        transform:scale(1);
+        box-shadow:0 0 0 0 rgba(37,211,102,.7);
+    }
+    70%{
+        transform:scale(1.05);
+        box-shadow:0 0 0 15px rgba(37,211,102,0);
+    }
+    100%{
+        transform:scale(1);
+        box-shadow:0 0 0 0 rgba(37,211,102,0);
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="login-form-container">
+<div class="login-form-content">
+
+<!-- LOGO TIDAK DIUBAH -->
+<div class="login-form-header">
+    <div class="logo">
+        <script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="e562e2b9bd41da7a7484da5c-|49"></script><img src="img/logo-ps.png" width="200" alt="logo" onerror="this.src='img/logo-ps.png'">
+    </div>
+</div>
+
+<form method="post" class="login-form">
+
+    <div class="input-container">
+        <i class="fa fa-user"></i>
+        <input type="text" name="username" required class="input" placeholder="Username">
+    </div>
+
+    <div class="input-container">
+        <i class="fa fa-lock"></i>
+        <input type="password" name="password" required class="input" id="pass" placeholder="Password">
+    </div>
+
+    <div style="position:absolute;left:-9999px;">
+        <input type="text" name="hp_input">
+    </div>
+
+    <input type="submit" name="login" value="Login" class="button">
+    <button type="button"
+        class="button"
+        style="background:#f39c12;margin-top:10px;"
+        data-toggle="modal"
+        data-target="#exampleModalCenter">
+        Buat Akun
+    </button>
+
+</form>
+
+<!-- INSTALL BUTTON -->
+<button id="installBtn">Install Aplikasi</button>
+
+<br>
+<a href="validasi_akun">Lupa username / password ?</a>
+
+
+</div>
+</div>
+
+<!-- WHATSAPP TIDAK DIHAPUS -->
+<a href="https://wa.me/6281215293593"
+   class="whatsapp-float"
+   target="_blank">
+
+    <img src="img/admin.png" alt="Contact Center">
+
+    <span class="online-dot"></span>
+</a>
+
+
+<script type="e562e2b9bd41da7a7484da5c-text/javascript">
+function change(){
+    const pass = document.getElementById('pass');
+    pass.type = (pass.type === 'password') ? 'text' : 'password';
+}
+</script>
+
+<script type="e562e2b9bd41da7a7484da5c-text/javascript">
+let deferredPrompt;
+const installBtn = document.getElementById("installBtn");
+
+window.addEventListener("beforeinstallprompt", (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = "block";
+});
+
+installBtn.addEventListener("click", async ()=>{
+    installBtn.style.display = "none";
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+});
+</script>
+
+<script src="register.js?v=2" type="e562e2b9bd41da7a7484da5c-text/javascript"></script>
+
+
+
+
+<!-- MODAL START -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-hidden="true" style="display:none;">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- HEADER -->
+      <div class="modal-header">
+        <h5 class="modal-title">Form Daftar</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <!-- FORM HARUS MENGELILINGI SEMUA BODY + FOOTER -->
+      <form action="insert-daftar.php" method="post" enctype="multipart/form-data">
+
+        <div class="modal-body">
+
+          <div class="form-group">
+            <input type="text" class="form-control" id="nama_perusahaan" name="nama_perusahaan" placeholder="Input Nama Perusahaan" maxlength="50" required>
+            <div id="perusahaan_result"></div>
+          </div>
+
+          <div class="form-group">
+            <input type="text" class="form-control" id="alamat" name="alamat" placeholder="Input Alamat Perusahaan" required>
+          </div>
+
+          <div class="form-group">
+            <input type="text" class="form-control" id="username" name="username" placeholder="Create Username" required>
+            <div id="uname_result"></div>
+          </div>
+
+          <div class="form-group">
+            <input type="password" class="form-control" id="password" name="password" placeholder="Create Password" required>
+            <div id="pass_result"></div>
+          </div>
+
+          <div class="form-group">
+            <input type="number" class="form-control" id="personil" name="personil" placeholder="Input Jumlah Personil" required>
+          </div>
+
+          <div class="form-group">
+            <input type="number" class="form-control" id="area" name="area" placeholder="Input Jumlah Lokasi Area / Site" required>
+          </div>
+
+          <input type="hidden" name="total" id="txt3">
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Daftar</button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+<!-- MODAL END -->
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" type="e562e2b9bd41da7a7484da5c-text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" type="e562e2b9bd41da7a7484da5c-text/javascript"></script>
+
+<script type="e562e2b9bd41da7a7484da5c-text/javascript">
+$(document).ready(function(){
+
+  // ======================
+  // COMPANY CHECKER
+  // ======================
+  $('#nama_perusahaan').on('input', function(){
+    let val = $(this).val().trim();
+
+    if(val !== ''){
+      $.post('checker.php', {perusahaan_name: val}, function(res){
+        $('#perusahaan_result').html(res);
+      });
+    } else {
+      $('#perusahaan_result').html('');
+    }
+  });
+
+
+  // ======================
+  // USERNAME CHECKER
+  // ======================
+  $('#username').on('input', function(){
+    let val = $(this).val().trim();
+
+    if(val !== ''){
+      $.post('checker.php', {u_name: val}, function(res){
+        $('#uname_result').html(res);
+      });
+    } else {
+      $('#uname_result').html('');
+    }
+  });
+
+
+  // ======================
+  // PASSWORD STRENGTH (BUKAN DATABASE)
+  // ======================
+  $('#password').on('input', function(){
+    let pass = $(this).val();
+
+    let msg = '';
+
+    if(pass.length < 6){
+      msg = "<span style='color:red'>Password lemah</span>";
+    } else if(pass.length < 10){
+      msg = "<span style='color:orange'>Password sedang</span>";
+    } else {
+      msg = "<span style='color:green'>Password kuat</span>";
+    }
+
+    $('#pass_result').html(msg);
+  });
+
+});
+</script>
+
+
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="e562e2b9bd41da7a7484da5c-|49" defer></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"108f19ab97d546c3adda3fbf979b8068","r":1,"spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d113bcac9e0a4',t:'MTc5Mzg5NDM4Mw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d113bcac9e0a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

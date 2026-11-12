@@ -13,6 +13,7 @@ import { SosModule } from './modules/sos/sos.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { BroadcastModule } from './modules/broadcast/broadcast.module';
 import { UsersModule } from './modules/users/users.module';
+import { LegacyModule } from './modules/legacy/legacy.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UsersModule } from './modules/users/users.module';
     SosModule,
     ReportsModule,
     BroadcastModule,
+    LegacyModule,
   ],
 })
 export class AppModule {}
