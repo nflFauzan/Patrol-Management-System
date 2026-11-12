@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Search, Eye, Edit3, Filter, ShieldCheck, AlertCircle, Clock, MapPin, Building, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { PatrolRecordItem, PatrolRecordsResponse } from '@patrol/types';
 import { useData } from '../lib/DataContext';
 import { PatroliDetailModal } from './PatroliDetailModal';
@@ -9,12 +10,10 @@ import { PatroliTindakLanjutModal } from './PatroliTindakLanjutModal';
 export const LaporanSecurityAnggotaView: React.FC = () => {
   const { sites } = useData();
 
-  // Filters state (matching patroli.site id: #category)
+  // Filters state
   const [selectedSiteName, setSelectedSiteName] = useState<string>('');
-
-  // Search & Pagination state
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [pageLength, setPageLength] = useState<number>(5);
+  const [pageLength, setPageLength] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   // Data & loading state
@@ -53,19 +52,19 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
       setRecords(data.data);
       setRecordsTotal(data.recordsTotal);
     } catch {
-      // 100% Parity Demo Records from patroli.site live dump (ID 7545)
+      // Demo fallback records
       const demoRecords: PatrolRecordItem[] = [
         {
           id: '7545',
-          siteName: 'site proyek demo',
-          officerName: 'budi satpam test',
-          position: 'anggota',
-          assetName: 'pos gerbang utama',
-          assetType: 'keamanan',
-          assetLocation: 'gerbang utama depan - site proyek demo',
-          taskDescription: 'pemeriksaan akses masuk tamu',
+          siteName: 'Site Proyek Demo',
+          officerName: 'Budi Satpam Test',
+          position: 'Anggota Security',
+          assetName: 'Pos Gerbang Utama',
+          assetType: 'Keamanan',
+          assetLocation: 'Gerbang Utama Depan',
+          taskDescription: 'Pemeriksaan akses masuk tamu',
           statusResult: 'Situasi Aman Terkendali',
-          notes: 'Pemeriksaan akses masuk tamu di pos gerbang utama gerbang utama depan',
+          notes: 'Pemeriksaan akses keluar-masuk tamu dan kendaraan operasional lancar terkendali.',
           scannedAt: '2026-10-12T11:01:00.000Z',
           dateFormatted: 'Senin, 12 Oct 2026',
           timeFormatted: '18:01:00',
@@ -100,570 +99,256 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
   const totalPages = Math.max(1, Math.ceil(recordsTotal / pageLength));
 
   return (
-    <div className="w-full">
-      {/* External CSS matching patroli.site bootstrap & DataTables styles */}
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-      />
-
-      <style jsx global>{`
-        .laporan-security-container {
-          width: 100%;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-        .laporan-security-container .card-header.bg-primary {
-          background-color: #0d6efd !important;
-          color: #ffffff !important;
-          padding: 0.75rem 1.25rem;
-          margin-bottom: 0;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-          border-radius: calc(0.375rem - 1px) calc(0.375rem - 1px) 0 0;
-        }
-        .laporan-security-container .card-body.border-primary {
-          border: 1px solid #0d6efd !important;
-          border-radius: 0 0 0.375rem 0.375rem;
-          padding: 1.25rem;
-          background-color: #ffffff;
-        }
-        .laporan-security-container table.dataTable {
-          width: 100% !important;
-          margin-top: 15px !important;
-          margin-bottom: 15px !important;
-          border-collapse: collapse !important;
-          border-spacing: 0;
-        }
-        .laporan-security-container table.dataTable thead th {
-          background-color: #0d6efd;
-          color: #ffffff;
-          padding: 10px 12px;
-          border: 1px solid #0d6efd;
-          font-size: 13px;
-          font-weight: 700;
-          vertical-align: middle;
-        }
-        .laporan-security-container table.dataTable tbody td {
-          padding: 12px 10px;
-          vertical-align: middle;
-          border: 1px solid #dee2e6;
-          font-size: 12px;
-        }
-        .laporan-security-container .detail-record.btn-primary {
-          background-color: #0d6efd;
-          border-color: #0d6efd;
-          color: #ffffff;
-          padding: 4px 10px;
-          font-size: 11px;
-          border-radius: 4px;
-          text-decoration: none;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          transition: background-color 0.15s ease-in-out;
-        }
-        .laporan-security-container .detail-record.btn-primary:hover {
-          background-color: #0b5ed7;
-          border-color: #0a58ca;
-        }
-        .laporan-security-container .tl-record.btn-warning {
-          background-color: #ffc107;
-          border-color: #ffc107;
-          color: #000;
-          padding: 4px 10px;
-          font-size: 11px;
-          border-radius: 4px;
-          text-decoration: none;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-        }
-        .laporan-security-container .tl-record.btn-warning:hover {
-          background-color: #ffca2c;
-          border-color: #ffc720;
-        }
-      `}</style>
-
-      <div className="laporan-security-container">
-        <div className="row">
-          <div className="col-12" style={{ marginTop: '10px' }}>
-            {/* Header: <div class="card-header alert bg-primary text-light"> */}
-            <div
-              className="card-header alert bg-primary text-light flex items-center gap-2 shadow-xs"
-              style={{
-                backgroundColor: '#0d6efd',
-                color: '#fff',
-                padding: '12px 18px',
-                borderRadius: '8px 8px 0 0',
-                fontSize: '14px',
-                fontWeight: 600,
-              }}
-            >
-              <i className="fa fa-qrcode" style={{ fontSize: '16px' }}></i>
-              <small style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.5px' }}>KEGIATAN SECURITY</small>
+    <div className="space-y-4">
+      {/* Modern Card Container */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
+        {/* Controls Bar: Search & Filters */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="search"
+                placeholder="Cari personil, pos, atau temuan..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="pl-9 pr-4 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 w-64 transition"
+              />
             </div>
 
-            {/* Body: <div class="card-body border border-primary rounded"> */}
-            <div
-              className="card-body border border-primary rounded shadow-xs"
-              style={{
-                borderColor: '#0d6efd',
-                borderWidth: '1px',
-                borderStyle: 'solid',
-                borderRadius: '0 0 8px 8px',
-                backgroundColor: '#fff',
-                padding: '20px',
-              }}
-            >
-              {/* DataTables Controls Header */}
-              <div
-                id="patroli_wrapper"
-                className="dataTables_wrapper no-footer"
-                style={{ width: '100%', position: 'relative' }}
+            {/* Site Filter Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedSiteName}
+                onChange={(e) => {
+                  setSelectedSiteName(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="text-xs bg-slate-50 border border-slate-200 text-slate-700 font-semibold px-3 py-2 pr-7 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
               >
-                <div
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                  style={{ marginBottom: '14px' }}
-                >
-                  {/* Length selector */}
-                  <div id="patroli_length" className="dataTables_length">
-                    <label style={{ fontSize: '13px', color: '#334155', fontWeight: 500 }}>
-                      SHOW{' '}
-                      <select
-                        name="patroli_length"
-                        aria-controls="patroli"
-                        value={pageLength}
-                        onChange={(e) => {
-                          setPageLength(Number(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                        style={{
-                          border: '1px solid #cbd5e1',
-                          borderRadius: '4px',
-                          padding: '3px 8px',
-                          fontSize: '12px',
-                          margin: '0 4px',
-                          backgroundColor: '#fff',
-                        }}
-                      >
-                        <option value="5">5</option>
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="1000">1,000</option>
-                      </select>{' '}
-                      ENTRIES
-                    </label>
-                  </div>
-
-                  {/* Search Filter */}
-                  <div id="patroli_filter" className="dataTables_filter">
-                    <label style={{ fontSize: '13px', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500 }}>
-                      SEARCH:
-                      <input
-                        type="search"
-                        className="form-control"
-                        placeholder=""
-                        value={searchTerm}
-                        onChange={(e) => {
-                          setSearchTerm(e.target.value);
-                          setCurrentPage(1);
-                        }}
-                        style={{
-                          border: '1px solid #cbd5e1',
-                          borderRadius: '4px',
-                          padding: '4px 10px',
-                          fontSize: '12px',
-                          width: '180px',
-                        }}
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                {/* Table: id="patroli" */}
-                <div style={{ overflowX: 'auto', width: '100%' }}>
-                  <table
-                    id="patroli"
-                    className="table-primary display responsive wrap bg-primary rounded dataTable no-footer dtr-inline"
-                    style={{ width: '100%', borderCollapse: 'collapse' }}
-                    role="grid"
-                  >
-                    <thead>
-                      <tr className="text text-center text-light" style={{ backgroundColor: '#0d6efd', color: '#fff' }}>
-                        {/* Column 1: SORT LOKASI / SITE with category dropdown */}
-                        <th
-                          className="sorting_disabled"
-                          style={{
-                            width: '220px',
-                            padding: '10px',
-                            textAlign: 'center',
-                            verticalAlign: 'middle',
-                            border: '1px solid #0d6efd',
-                          }}
-                        >
-                          <div style={{ fontSize: '12px', marginBottom: '6px', fontWeight: 700 }}>
-                            SORT LOKASI / SITE
-                          </div>
-                          <select
-                            name="category"
-                            id="category"
-                            value={selectedSiteName}
-                            onChange={(e) => {
-                              setSelectedSiteName(e.target.value);
-                              setCurrentPage(1);
-                            }}
-                            className="custom-select border border-danger text-uppercase"
-                            style={{
-                              borderColor: '#dc3545',
-                              borderWidth: '1.5px',
-                              borderStyle: 'solid',
-                              height: '34px',
-                              color: '#212529',
-                              backgroundColor: '#fff',
-                              borderRadius: '4px',
-                              padding: '2px 8px',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              width: '100%',
-                              textAlign: 'center',
-                            }}
-                          >
-                            <option value="">SEMUA LOKASI</option>
-                            {sites.map((s) => (
-                              <option key={s.id} value={s.name}>
-                                {s.name}
-                              </option>
-                            ))}
-                            {!sites.some((s) => s.name === 'site proyek demo') && (
-                              <option value="site proyek demo">site proyek demo</option>
-                            )}
-                          </select>
-                        </th>
-
-                        {/* Column 2: NAMA PERSONIL */}
-                        <th
-                          className="sorting"
-                          style={{
-                            width: '180px',
-                            padding: '10px',
-                            textAlign: 'center',
-                            verticalAlign: 'middle',
-                            border: '1px solid #0d6efd',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                          }}
-                        >
-                          NAMA PERSONIL
-                        </th>
-
-                        {/* Column 3: KEGIATAN / TEMUAN */}
-                        <th
-                          className="sorting"
-                          style={{
-                            width: '380px',
-                            padding: '10px',
-                            textAlign: 'center',
-                            verticalAlign: 'middle',
-                            border: '1px solid #0d6efd',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                          }}
-                        >
-                          KEGIATAN / TEMUAN
-                        </th>
-
-                        {/* Column 4: WAKTU */}
-                        <th
-                          className="sorting"
-                          style={{
-                            width: '180px',
-                            padding: '10px',
-                            textAlign: 'center',
-                            verticalAlign: 'middle',
-                            border: '1px solid #0d6efd',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                          }}
-                        >
-                          WAKTU
-                        </th>
-
-                        {/* Column 5: AKSI */}
-                        <th
-                          className="sorting_disabled"
-                          style={{
-                            width: '100px',
-                            padding: '10px',
-                            textAlign: 'center',
-                            verticalAlign: 'middle',
-                            border: '1px solid #0d6efd',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                          }}
-                        >
-                          AKSI
-                        </th>
-                      </tr>
-                    </thead>
-
-                    <tbody className="bg-white">
-                      {isLoading ? (
-                        <tr>
-                          <td colSpan={5} style={{ textAlign: 'center', padding: '30px 10px', color: '#64748b' }}>
-                            <i className="fa fa-spinner fa-spin fa-2x"></i>
-                            <p style={{ marginTop: '8px', fontSize: '12px' }}>Memuat data kegiatan security...</p>
-                          </td>
-                        </tr>
-                      ) : records.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} style={{ textAlign: 'center', padding: '30px 10px', color: '#64748b', fontSize: '13px' }}>
-                            Tidak ada data kegiatan yang sesuai kriteria filter.
-                          </td>
-                        </tr>
-                      ) : (
-                        records.map((row, idx) => (
-                          <tr
-                            key={row.id || idx}
-                            role="row"
-                            className={idx % 2 === 0 ? 'odd' : 'even'}
-                            style={{
-                              backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
-                              borderBottom: '1px solid #e2e8f0',
-                            }}
-                          >
-                            {/* Col 1: Lokasi / Site */}
-                            <td className="dtr-control" style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                              <small>
-                                <p
-                                  className="text text-center text-success"
-                                  style={{ color: '#28a745', margin: 0, fontWeight: 600 }}
-                                >
-                                  {row.siteName}
-                                </p>
-                              </small>
-                            </td>
-
-                            {/* Col 2: Nama Personil */}
-                            <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                              <small>
-                                <p
-                                  className="text text-center text-mute"
-                                  style={{ color: '#6c757d', margin: 0, fontWeight: 500 }}
-                                >
-                                  {row.officerName}
-                                </p>
-                              </small>
-                            </td>
-
-                            {/* Col 3: Kegiatan / Temuan */}
-                            <td style={{ verticalAlign: 'middle', padding: '12px 10px' }}>
-                              <small>
-                                <div className="text-center">
-                                  <p className="mb-1" style={{ color: '#343a40', marginBottom: '4px' }}>
-                                    {row.statusResult.toLowerCase().includes('tindak') ||
-                                    row.statusResult.toLowerCase().includes('perlu') ? (
-                                      <strong style={{ color: '#dc3545' }}>🔴 {row.statusResult.toUpperCase()}</strong>
-                                    ) : (
-                                      <strong style={{ color: '#28a745' }}>🟢 {row.statusResult.toUpperCase()}</strong>
-                                    )}
-                                  </p>
-                                  <p className="mb-1" style={{ color: '#343a40', margin: 0, fontSize: '12px' }}>
-                                    {row.notes || row.taskDescription || 'Pemeriksaan situasi dan objek tugas'}
-                                  </p>
-                                  {row.tindakLanjutStatus && (
-                                    <span
-                                      className="badge badge-success"
-                                      style={{
-                                        backgroundColor: '#198754',
-                                        color: '#fff',
-                                        padding: '2px 6px',
-                                        borderRadius: '4px',
-                                        fontSize: '10px',
-                                        display: 'inline-block',
-                                        marginTop: '4px',
-                                      }}
-                                    >
-                                      {row.tindakLanjutStatus}
-                                    </span>
-                                  )}
-                                </div>
-                              </small>
-                            </td>
-
-                            {/* Col 4: Waktu */}
-                            <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                              <small>
-                                <p
-                                  className="text text-center text-primary"
-                                  style={{ color: '#0d6efd', margin: 0, fontWeight: 600 }}
-                                >
-                                  {row.dateTimeFull || `${row.dateFormatted} | ${row.timeFormatted}`}
-                                </p>
-                              </small>
-                            </td>
-
-                            {/* Col 5: Aksi */}
-                            <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '12px 10px' }}>
-                              <center>
-                                <div
-                                  className="btn-group btn-group-sm"
-                                  role="group"
-                                  aria-label="Basic example"
-                                  style={{ display: 'inline-flex', gap: '4px' }}
-                                >
-                                  <a
-                                    href="#"
-                                    className="detail-record btn btn-primary"
-                                    data-id={row.id}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setSelectedDetailId(row.id);
-                                      setIsDetailOpen(true);
-                                    }}
-                                    style={{
-                                      backgroundColor: '#0d6efd',
-                                      borderColor: '#0d6efd',
-                                      color: '#fff',
-                                      padding: '4px 10px',
-                                      fontSize: '11px',
-                                      borderRadius: '4px',
-                                      textDecoration: 'none',
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      gap: '4px',
-                                    }}
-                                  >
-                                    <i className="fa fa-search-plus" aria-hidden="true"></i>
-                                    <small>Detail</small>
-                                  </a>
-
-                                  {/* If anomaly / needs follow-up, show TL button */}
-                                  {(row.statusResult.toLowerCase().includes('tindak') ||
-                                    row.statusResult.toLowerCase().includes('perlu')) && (
-                                    <a
-                                      href="#"
-                                      className="tl-record btn btn-warning"
-                                      data-id={row.id}
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        setSelectedTlId(row.id);
-                                        setIsTlOpen(true);
-                                      }}
-                                      style={{
-                                        backgroundColor: '#ffc107',
-                                        borderColor: '#ffc107',
-                                        color: '#000',
-                                        padding: '4px 10px',
-                                        fontSize: '11px',
-                                        borderRadius: '4px',
-                                        textDecoration: 'none',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '4px',
-                                      }}
-                                    >
-                                      <i className="fa fa-pencil" aria-hidden="true"></i>
-                                      <small>TL</small>
-                                    </a>
-                                  )}
-                                </div>
-                              </center>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Footer: DataTables Info & Simple Numbers Pagination */}
-                <div
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                  style={{ marginTop: '16px', fontSize: '13px', color: '#64748b' }}
-                >
-                  <div id="patroli_info" role="status" aria-live="polite" style={{ textTransform: 'uppercase', fontSize: '13px', fontWeight: 500 }}>
-                    SHOWING {records.length === 0 ? 0 : (currentPage - 1) * pageLength + 1} TO{' '}
-                    {Math.min(currentPage * pageLength, recordsTotal)} OF {recordsTotal} ENTRIES
-                  </div>
-
-                  <div
-                    id="patroli_paginate"
-                    className="dataTables_paginate paging_simple_numbers flex items-center gap-1"
-                  >
-                    <button
-                      type="button"
-                      disabled={currentPage <= 1}
-                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                      style={{
-                        padding: '4px 12px',
-                        borderRadius: '4px',
-                        border: '1px solid #cbd5e1',
-                        backgroundColor: currentPage <= 1 ? '#f8fafc' : '#fff',
-                        color: currentPage <= 1 ? '#94a3b8' : '#334155',
-                        cursor: currentPage <= 1 ? 'not-allowed' : 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      PREVIOUS
-                    </button>
-
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
-                      <button
-                        key={pg}
-                        type="button"
-                        onClick={() => setCurrentPage(pg)}
-                        style={{
-                          padding: '4px 10px',
-                          borderRadius: '4px',
-                          border: pg === currentPage ? '1px solid #0d6efd' : '1px solid #cbd5e1',
-                          backgroundColor: pg === currentPage ? '#0d6efd' : '#fff',
-                          color: pg === currentPage ? '#fff' : '#334155',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          fontWeight: pg === currentPage ? 700 : 400,
-                        }}
-                      >
-                        {pg}
-                      </button>
-                    ))}
-
-                    <button
-                      type="button"
-                      disabled={currentPage >= totalPages}
-                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                      style={{
-                        padding: '4px 12px',
-                        borderRadius: '4px',
-                        border: '1px solid #cbd5e1',
-                        backgroundColor: currentPage >= totalPages ? '#f8fafc' : '#fff',
-                        color: currentPage >= totalPages ? '#94a3b8' : '#334155',
-                        cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      NEXT
-                    </button>
-                  </div>
-                </div>
-              </div>
+                <option value="">Semua Lokasi / Site</option>
+                {sites.map((s) => (
+                  <option key={s.id} value={s.name}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
             </div>
+          </div>
+
+          {/* Page Length Selector */}
+          <div className="flex items-center space-x-2 text-xs text-slate-500">
+            <span>Tampilkan</span>
+            <select
+              value={pageLength}
+              onChange={(e) => {
+                setPageLength(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="bg-slate-50 border border-slate-200 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg focus:outline-none cursor-pointer"
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+            <span>data per halaman</span>
+          </div>
+        </div>
+
+        {/* Clean Modern Table */}
+        <div className="overflow-x-auto mt-4">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-200/80">
+                <th className="py-3 px-4 rounded-l-xl">Lokasi / Site</th>
+                <th className="py-3 px-4">Nama Personil</th>
+                <th className="py-3 px-4">Titik Pos & Temuan</th>
+                <th className="py-3 px-4">Waktu Pemindaian</th>
+                <th className="py-3 px-4 text-center rounded-r-xl">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-slate-500">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-teal-600 mb-2" />
+                    <span>Memuat log kegiatan security...</span>
+                  </td>
+                </tr>
+              ) : records.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-slate-400">
+                    Tidak ada catatan kegiatan patroli yang sesuai filter.
+                  </td>
+                </tr>
+              ) : (
+                records.map((row) => {
+                  const isAnomaly =
+                    row.statusResult.toLowerCase().includes('tindak') ||
+                    row.statusResult.toLowerCase().includes('perlu') ||
+                    row.statusResult.toLowerCase().includes('bahaya');
+
+                  return (
+                    <tr key={row.id} className="hover:bg-slate-50/70 transition">
+                      {/* Lokasi */}
+                      <td className="py-3.5 px-4 font-semibold text-slate-800">
+                        <div className="flex items-center space-x-1.5">
+                          <Building className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
+                          <span className="capitalize">{row.siteName}</span>
+                        </div>
+                      </td>
+
+                      {/* Personil */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-slate-900 capitalize">{row.officerName}</div>
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold">
+                          {row.position || 'Anggota'}
+                        </span>
+                      </td>
+
+                      {/* Pos & Temuan */}
+                      <td className="py-3.5 px-4 max-w-sm">
+                        <div className="flex items-center space-x-2">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] border ${
+                              isAnomaly
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            }`}
+                          >
+                            {isAnomaly ? (
+                              <AlertCircle className="w-3 h-3 text-rose-600" />
+                            ) : (
+                              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                            )}
+                            <span>{row.statusResult}</span>
+                          </span>
+                          <span className="font-semibold text-slate-700 capitalize text-[11px]">
+                            {row.assetName}
+                          </span>
+                        </div>
+                        <p className="text-slate-500 text-[11px] mt-1 line-clamp-1">
+                          {row.notes || row.taskDescription || 'Pemeriksaan situasi patroli rutin'}
+                        </p>
+                        {row.tindakLanjutStatus && (
+                          <span className="inline-block mt-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            Status TL: {row.tindakLanjutStatus}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Waktu */}
+                      <td className="py-3.5 px-4 text-slate-600 font-medium">
+                        <div className="flex items-center space-x-1.5">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{row.dateTimeFull || `${row.dateFormatted} | ${row.timeFormatted}`}</span>
+                        </div>
+                      </td>
+
+                      {/* Aksi */}
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="inline-flex items-center space-x-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedDetailId(row.id);
+                              setIsDetailOpen(true);
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-semibold flex items-center space-x-1 border border-teal-200/60 transition shadow-xs"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Detail</span>
+                          </button>
+
+                          {isAnomaly && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedTlId(row.id);
+                                setIsTlOpen(true);
+                              }}
+                              className="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold flex items-center space-x-1 border border-amber-200 transition shadow-xs"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>TL</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Modern Pagination Footer */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 mt-2 border-t border-slate-100 text-xs text-slate-500">
+          <div>
+            Menampilkan{' '}
+            <span className="font-bold text-slate-800">
+              {records.length === 0 ? 0 : (currentPage - 1) * pageLength + 1}
+            </span>{' '}
+            hingga{' '}
+            <span className="font-bold text-slate-800">
+              {Math.min(currentPage * pageLength, recordsTotal)}
+            </span>{' '}
+            dari <span className="font-bold text-slate-800">{recordsTotal}</span> data
+          </div>
+
+          <div className="flex items-center space-x-1">
+            <button
+              type="button"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 font-semibold transition flex items-center space-x-1"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Sebelumnya</span>
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+              <button
+                key={pg}
+                type="button"
+                onClick={() => setCurrentPage(pg)}
+                className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
+                  pg === currentPage
+                    ? 'bg-teal-600 text-white shadow-xs'
+                    : 'text-slate-700 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                {pg}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 font-semibold transition flex items-center space-x-1"
+            >
+              <span>Berikutnya</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Modal Detail Patroli (#myModalpat) */}
+      {/* Modal Detail Patroli */}
       <PatroliDetailModal
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
         patrolId={selectedDetailId}
       />
 
-      {/* Modal Tindak Lanjut (#myModaltl) */}
+      {/* Modal Tindak Lanjut */}
       <PatroliTindakLanjutModal
         isOpen={isTlOpen}
         onClose={() => setIsTlOpen(false)}

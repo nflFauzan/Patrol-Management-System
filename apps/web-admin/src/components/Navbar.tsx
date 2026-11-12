@@ -4,32 +4,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Home,
-  Database,
-  CalendarCheck,
-  FileText,
-  DollarSign,
-  Megaphone,
-  AlertCircle,
-  Printer,
-  KeyRound,
-  LogOut,
+  Building2,
   ChevronDown,
-  ChevronRight,
   Globe,
   Building,
   Users,
   Menu,
   X,
   ExternalLink,
-  Shield,
-  Briefcase,
-  Leaf,
-  Car,
-  MapPin,
-  Calendar,
-  List,
-  Monitor
+  ShieldAlert,
+  KeyRound,
+  LogOut,
+  Bell,
+  Sparkles
 } from 'lucide-react';
 import { useData } from '../lib/DataContext';
 import { ChangePasswordModal } from './ChangePasswordModal';
@@ -38,9 +25,8 @@ export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const { activeSosAlert, setActiveSosAlert } = useData();
 
-  // Active dropdown state: click-to-open and stays open!
-  const [activeDropdown, setActiveDropdown] = useState<'DATA_INDUK' | 'ABSENSI' | 'LAPORAN' | null>(null);
-  const [isSecuritySubmenuOpen, setIsSecuritySubmenuOpen] = useState(false);
+  // Active dropdown state
+  const [activeDropdown, setActiveDropdown] = useState<'DATA_INDUK' | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
@@ -51,7 +37,6 @@ export const Navbar: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
         setActiveDropdown(null);
-        setIsSecuritySubmenuOpen(false);
       }
     };
 
@@ -69,37 +54,34 @@ export const Navbar: React.FC = () => {
   const isGajiActive = pathname.startsWith('/gaji');
   const isBroadcastActive = pathname.startsWith('/pesan-siaran');
   const isEmergencyActive = pathname.startsWith('/emergency');
-  const isExportActive = pathname.startsWith('/export-laporan');
 
-  const toggleDropdown = (menu: 'DATA_INDUK' | 'ABSENSI' | 'LAPORAN') => {
+  const toggleDropdown = (menu: 'DATA_INDUK') => {
     setActiveDropdown((prev) => (prev === menu ? null : menu));
-    setIsSecuritySubmenuOpen(false);
   };
 
   const handleLinkClick = () => {
     setActiveDropdown(null);
-    setIsSecuritySubmenuOpen(false);
     setIsMobileMenuOpen(false);
   };
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full shadow-lg" ref={navRef}>
+      <header className="sticky top-0 z-50 w-full pt-3 pb-2 px-4 lg:px-8 transition-all" ref={navRef}>
         {/* ========================================================
             EMERGENCY SOS DARURAT BANNER (JIKA AKTIF)
             ======================================================== */}
         {activeSosAlert && (
-          <div className="bg-rose-600 text-white border-b-2 border-rose-800 px-4 py-2.5 shadow-2xl animate-pulse flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="max-w-[1440px] mx-auto mb-3 bg-gradient-to-r from-rose-600 via-rose-700 to-red-800 text-white rounded-2xl p-3 sm:p-4 shadow-2xl border border-rose-500/40 animate-pulse flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <div className="flex items-center space-x-3">
-              <div className="p-1.5 bg-white text-rose-600 rounded-lg shadow animate-bounce">
-                <AlertCircle className="w-5 h-5" />
+              <div className="p-2 bg-white text-rose-700 rounded-xl shadow-md">
+                <ShieldAlert className="w-5 h-5 animate-bounce" />
               </div>
               <div>
-                <p className="font-extrabold uppercase tracking-wide">
-                  🚨 SOS DARURAT AKTIF: {activeSosAlert.officerName} ({activeSosAlert.division}) - {activeSosAlert.siteName}
+                <p className="font-extrabold uppercase tracking-wide text-sm">
+                  🚨 ALARM SOS AKTIF: {activeSosAlert.officerName} ({activeSosAlert.division}) - {activeSosAlert.siteName}
                 </p>
                 <p className="text-[11px] text-rose-100">
-                  Peringatan darurat otomatis via WhatsApp Gateway & WebSocket Real-time.
+                  Peringatan darurat otomatis lapangan terverifikasi via WebSocket & WhatsApp Gateway.
                 </p>
               </div>
             </div>
@@ -108,14 +90,14 @@ export const Navbar: React.FC = () => {
                 href={activeSosAlert.mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg flex items-center space-x-1"
+                className="bg-white/20 hover:bg-white/30 text-white font-bold px-3.5 py-1.5 rounded-xl flex items-center space-x-1.5 transition"
               >
-                <span>Buka Google Maps</span>
+                <span>Buka Koordinat GPS</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
               <button
                 onClick={() => setActiveSosAlert(null)}
-                className="bg-white text-rose-700 hover:bg-rose-50 font-bold px-3 py-1.5 rounded-lg"
+                className="bg-white text-rose-700 hover:bg-rose-50 font-bold px-3.5 py-1.5 rounded-xl transition shadow"
               >
                 Tutup Alarm
               </button>
@@ -124,466 +106,309 @@ export const Navbar: React.FC = () => {
         )}
 
         {/* ========================================================
-            MAIN NAVBAR (100% PARITY DENGAN PATROLI.SITE)
+            FLOATING FROSTED-GLASS NAVBAR (LUMIO MODERN STYLE)
             ======================================================== */}
-        <nav className="patroli-nav text-white px-4 lg:px-6 py-2 border-b border-white/5">
-          <div className="max-w-[1440px] mx-auto flex items-center justify-between">
-            {/* BRAND LOGO & TITLE */}
-            <div className="flex items-center space-x-3">
-              <Link href="/" onClick={handleLinkClick} className="flex items-center space-x-2.5 group">
-                <div className="w-11 h-11 bg-white rounded-[10px] p-1 flex items-center justify-center patroli-brand-img group-hover:scale-105 transition shadow-sm">
-                  <div className="w-full h-full border border-slate-300 rounded-[8px] flex flex-col items-center justify-center p-0.5 text-center">
-                    <Building className="w-4 h-4 text-slate-700" />
-                    <span className="text-[7px] font-black text-slate-800 leading-tight uppercase">
-                      LOGO
-                    </span>
-                  </div>
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+          {/* BRAND LOGO & TITLE */}
+          <Link href="/" onClick={handleLinkClick} className="flex items-center space-x-3 group">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/20 group-hover:scale-105 transition-all">
+              <Building2 className="w-5 h-5 text-slate-950 font-bold" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-sm tracking-wider text-white">TES-PT</span>
+              <span className="text-[10px] text-teal-200/80 font-medium tracking-tight">Enterprise Ops</span>
+            </div>
+          </Link>
+
+          {/* DESKTOP FLOATING PILL NAVIGATION */}
+          <nav className="hidden lg:flex items-center bg-white/10 backdrop-blur-xl border border-white/15 rounded-full p-1.5 shadow-2xl shadow-slate-950/20 space-x-0.5">
+            {/* OVERVIEW */}
+            <Link
+              href="/"
+              onClick={handleLinkClick}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                isHomeActive
+                  ? 'bg-white/25 text-white shadow-sm font-bold backdrop-blur-md'
+                  : 'text-slate-200 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Overview
+            </Link>
+
+            {/* DATA INDUK (CLEAN POPOVER DROPDOWN) */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => toggleDropdown('DATA_INDUK')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  isDataIndukActive || activeDropdown === 'DATA_INDUK'
+                    ? 'bg-white/25 text-white shadow-sm font-bold'
+                    : 'text-slate-200 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <span>Data Induk</span>
+                <ChevronDown
+                  className={`w-3 h-3 transition-transform ${
+                    activeDropdown === 'DATA_INDUK' ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {activeDropdown === 'DATA_INDUK' && (
+                <div
+                  className="absolute left-0 top-full mt-2.5 w-48 bg-slate-900/95 backdrop-blur-xl border border-white/15 rounded-2xl p-2 shadow-2xl shadow-slate-950/40 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Link
+                    href="/datainduk/area"
+                    onClick={handleLinkClick}
+                    className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                      pathname === '/datainduk/area'
+                        ? 'bg-white/20 text-white font-bold'
+                        : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <Globe className="w-4 h-4 text-cyan-400" />
+                    <span>Area & Geofence</span>
+                  </Link>
+                  <Link
+                    href="/datainduk/checkpoint"
+                    onClick={handleLinkClick}
+                    className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                      pathname === '/datainduk/checkpoint'
+                        ? 'bg-white/20 text-white font-bold'
+                        : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <Building className="w-4 h-4 text-emerald-400" />
+                    <span>Titik Checkpoint QR</span>
+                  </Link>
+                  <Link
+                    href="/datainduk/personil"
+                    onClick={handleLinkClick}
+                    className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                      pathname === '/datainduk/personil'
+                        ? 'bg-white/20 text-white font-bold'
+                        : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <Users className="w-4 h-4 text-amber-400" />
+                    <span>Data Personil</span>
+                  </Link>
                 </div>
-                <span className="font-bold text-sm tracking-wider text-white uppercase brand-text">
-                  TES-PT
-                </span>
-              </Link>
+              )}
             </div>
 
-            {/* DESKTOP NAVIGATION MENU */}
-            <div className="hidden lg:flex items-center space-x-0.5">
-              {/* HOME */}
-              <Link
-                href="/"
-                onClick={handleLinkClick}
-                className={`patroli-nav-link ${isHomeActive ? 'active' : ''}`}
-                title="Home Dashboard"
-              >
-                <Home className="w-4 h-4" />
-                <small>Home</small>
-              </Link>
+            {/* ABSENSI */}
+            <Link
+              href="/absensi"
+              onClick={handleLinkClick}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                isAbsensiActive
+                  ? 'bg-white/25 text-white shadow-sm font-bold backdrop-blur-md'
+                  : 'text-slate-200 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Absensi
+            </Link>
 
-              {/* DATA INDUK (DROPDOWN) */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => toggleDropdown('DATA_INDUK')}
-                  className={`patroli-nav-link flex flex-col items-center justify-center cursor-pointer ${
-                    isDataIndukActive || activeDropdown === 'DATA_INDUK' ? 'active' : ''
-                  }`}
-                  aria-expanded={activeDropdown === 'DATA_INDUK'}
-                >
-                  <div className="flex items-center gap-1">
-                    <Database className="w-4 h-4" />
-                    <ChevronDown className={`w-3 h-3 transition-transform ${activeDropdown === 'DATA_INDUK' ? 'rotate-180' : ''}`} />
-                  </div>
-                  <small>Data Induk</small>
-                </button>
+            {/* LAPORAN (DIRECT LINK TO UNIFIED OPERATIONS HUB - NO TRICKY FLYOUT!) */}
+            <Link
+              href="/laporan"
+              onClick={handleLinkClick}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                isLaporanActive
+                  ? 'bg-white/25 text-white shadow-sm font-bold backdrop-blur-md'
+                  : 'text-slate-200 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Laporan
+            </Link>
 
-                {activeDropdown === 'DATA_INDUK' && (
-                  <div
-                    className="absolute left-0 top-full mt-1.5 patroli-dropdown-menu animate-in fade-in zoom-in-95 duration-100"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Link
-                      href="/datainduk/area"
-                      onClick={handleLinkClick}
-                      className={`patroli-dropdown-item ${pathname === '/datainduk/area' ? 'active' : ''}`}
-                    >
-                      <Globe className="w-4 h-4 text-cyan-400" />
-                      <span>Area</span>
-                    </Link>
+            {/* GAJI (PRESERVED AS REQUESTED) */}
+            <Link
+              href="/gaji"
+              onClick={handleLinkClick}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                isGajiActive
+                  ? 'bg-white/25 text-white shadow-sm font-bold backdrop-blur-md'
+                  : 'text-slate-200 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Gaji
+            </Link>
 
-                    <div className="patroli-dropdown-divider" />
+            {/* PESAN SIARAN */}
+            <Link
+              href="/pesan-siaran"
+              onClick={handleLinkClick}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                isBroadcastActive
+                  ? 'bg-white/25 text-white shadow-sm font-bold backdrop-blur-md'
+                  : 'text-slate-200 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Pesan Siaran
+            </Link>
 
-                    <Link
-                      href="/datainduk/checkpoint"
-                      onClick={handleLinkClick}
-                      className={`patroli-dropdown-item ${pathname === '/datainduk/checkpoint' ? 'active' : ''}`}
-                    >
-                      <Building className="w-4 h-4 text-emerald-400" />
-                      <span>Checkpoint</span>
-                    </Link>
+            {/* EMERGENCY SOS */}
+            <Link
+              href="/emergency"
+              onClick={handleLinkClick}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                isEmergencyActive
+                  ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30'
+                  : 'text-rose-200 hover:text-white hover:bg-rose-500/25'
+              }`}
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-300" />
+              <span>SOS</span>
+            </Link>
+          </nav>
 
-                    <div className="patroli-dropdown-divider" />
+          {/* USER ACTIONS & PROFILE */}
+          <div className="flex items-center space-x-2">
+            {/* Password Modal Button */}
+            <button
+              type="button"
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white backdrop-blur-md border border-white/10 transition shadow-sm"
+              title="Ubah Password Akun"
+            >
+              <KeyRound className="w-4 h-4" />
+            </button>
 
-                    <Link
-                      href="/datainduk/personil"
-                      onClick={handleLinkClick}
-                      className={`patroli-dropdown-item ${pathname === '/datainduk/personil' ? 'active' : ''}`}
-                    >
-                      <Users className="w-4 h-4 text-amber-400" />
-                      <span>Personil</span>
-                    </Link>
-                  </div>
-                )}
+            {/* Logout Action */}
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm('Apakah Anda yakin ingin keluar dari sistem?')) {
+                  alert('Sesi administrator telah selesai.');
+                }
+              }}
+              className="p-2 rounded-full bg-white/10 hover:bg-rose-500/20 text-rose-200 hover:text-white backdrop-blur-md border border-white/10 transition shadow-sm"
+              title="Keluar dari Sistem"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+
+            {/* User Avatar Chip */}
+            <div className="hidden sm:flex items-center space-x-2 pl-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-teal-300 flex items-center justify-center text-slate-950 font-black text-xs shadow-md border border-white/30">
+                A
               </div>
-
-              {/* ABSENSI (DROPDOWN) */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => toggleDropdown('ABSENSI')}
-                  className={`patroli-nav-link flex flex-col items-center justify-center cursor-pointer ${
-                    isAbsensiActive || activeDropdown === 'ABSENSI' ? 'active' : ''
-                  }`}
-                  aria-expanded={activeDropdown === 'ABSENSI'}
-                >
-                  <div className="flex items-center gap-1">
-                    <CalendarCheck className="w-4 h-4" />
-                    <ChevronDown className={`w-3 h-3 transition-transform ${activeDropdown === 'ABSENSI' ? 'rotate-180' : ''}`} />
-                  </div>
-                  <small>Absensi</small>
-                </button>
-
-                {activeDropdown === 'ABSENSI' && (
-                  <div
-                    className="absolute left-0 top-full mt-1.5 patroli-dropdown-menu animate-in fade-in zoom-in-95 duration-100"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Link
-                      href="/absensi?tab=semua-data"
-                      onClick={handleLinkClick}
-                      className="patroli-dropdown-item"
-                    >
-                      <List className="w-4 h-4 text-emerald-400" />
-                      <span>Semua Data</span>
-                    </Link>
-
-                    <Link
-                      href="/absensi?tab=monitoring"
-                      onClick={handleLinkClick}
-                      className="patroli-dropdown-item"
-                    >
-                      <Monitor className="w-4 h-4 text-cyan-400" />
-                      <span>Monitoring</span>
-                    </Link>
-                  </div>
-                )}
-              </div>
-
-              {/* LAPORAN (DROPDOWN WITH SUBMENU) */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => toggleDropdown('LAPORAN')}
-                  className={`patroli-nav-link flex flex-col items-center justify-center cursor-pointer ${
-                    isLaporanActive || activeDropdown === 'LAPORAN' ? 'active' : ''
-                  }`}
-                  aria-expanded={activeDropdown === 'LAPORAN'}
-                >
-                  <div className="flex items-center gap-1">
-                    <FileText className="w-4 h-4" />
-                    <ChevronDown className={`w-3 h-3 transition-transform ${activeDropdown === 'LAPORAN' ? 'rotate-180' : ''}`} />
-                  </div>
-                  <small>Laporan</small>
-                </button>
-
-                {activeDropdown === 'LAPORAN' && (
-                  <div
-                    className="absolute left-0 top-full mt-1.5 patroli-dropdown-menu w-56 animate-in fade-in zoom-in-95 duration-100"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {/* Security Submenu Parent */}
-                    <div
-                      className="relative"
-                      onMouseEnter={() => setIsSecuritySubmenuOpen(true)}
-                      onMouseLeave={() => setIsSecuritySubmenuOpen(false)}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setIsSecuritySubmenuOpen(!isSecuritySubmenuOpen)}
-                        className="patroli-dropdown-item justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Shield className="w-4 h-4 text-blue-400" />
-                          <span>Security</span>
-                        </div>
-                        <ChevronRight className="w-3.5 h-3.5 text-white/50" />
-                      </button>
-
-                      {/* Nested Flyout Submenu */}
-                      {isSecuritySubmenuOpen && (
-                        <div className="absolute left-full top-0 ml-1 patroli-dropdown-menu w-44 shadow-2xl animate-in fade-in duration-100">
-                          <Link
-                            href="/laporan/security/anggota"
-                            onClick={handleLinkClick}
-                            className={`patroli-dropdown-item ${pathname === '/laporan/security/anggota' ? 'active' : ''}`}
-                          >
-                            <span>Anggota</span>
-                          </Link>
-                          <Link
-                            href="/laporan/security/komandan"
-                            onClick={handleLinkClick}
-                            className={`patroli-dropdown-item ${pathname === '/laporan/security/komandan' ? 'active' : ''}`}
-                          >
-                            <span>Komandan</span>
-                          </Link>
-                          <Link
-                            href="/laporan/security/chief"
-                            onClick={handleLinkClick}
-                            className={`patroli-dropdown-item ${pathname === '/laporan/security/chief' ? 'active' : ''}`}
-                          >
-                            <span>Chief</span>
-                          </Link>
-                        </div>
-                      )}
-                    </div>
-
-                    <Link
-                      href="/laporan/staff"
-                      onClick={handleLinkClick}
-                      className={`patroli-dropdown-item ${pathname === '/laporan/staff' ? 'active' : ''}`}
-                    >
-                      <Briefcase className="w-4 h-4 text-slate-400" />
-                      <span>Staff Operasional</span>
-                    </Link>
-
-                    <Link
-                      href="/laporan/cleaning-service"
-                      onClick={handleLinkClick}
-                      className={`patroli-dropdown-item ${pathname === '/laporan/cleaning-service' ? 'active' : ''}`}
-                    >
-                      <Leaf className="w-4 h-4 text-emerald-400" />
-                      <span>Cleaning Service</span>
-                    </Link>
-
-                    <Link
-                      href="/laporan/driver"
-                      onClick={handleLinkClick}
-                      className={`patroli-dropdown-item ${pathname === '/laporan/driver' ? 'active' : ''}`}
-                    >
-                      <Car className="w-4 h-4 text-amber-400" />
-                      <span>Driver</span>
-                    </Link>
-
-                    <div className="patroli-dropdown-divider" />
-
-                    <Link
-                      href="/laporan/tracking-patroli"
-                      onClick={handleLinkClick}
-                      className={`patroli-dropdown-item font-bold ${pathname === '/laporan/tracking-patroli' ? 'active' : ''}`}
-                    >
-                      <MapPin className="w-4 h-4 text-rose-400" />
-                      <span>Tracking Patroli</span>
-                    </Link>
-
-                    <div className="patroli-dropdown-divider" />
-
-                    <Link
-                      href="/laporan/rekap-kegiatan"
-                      onClick={handleLinkClick}
-                      className={`patroli-dropdown-item font-bold ${pathname === '/laporan/rekap-kegiatan' ? 'active' : ''}`}
-                    >
-                      <Calendar className="w-4 h-4 text-cyan-400" />
-                      <span>Rekap Kegiatan</span>
-                    </Link>
-
-                    <div className="patroli-dropdown-divider" />
-
-                    <Link
-                      href="/laporan/monitoring-kegiatan"
-                      onClick={handleLinkClick}
-                      className={`patroli-dropdown-item font-bold ${pathname === '/laporan/monitoring-kegiatan' ? 'active' : ''}`}
-                    >
-                      <Shield className="w-4 h-4 text-indigo-400" />
-                      <span>Monitoring Kegiatan</span>
-                    </Link>
-                  </div>
-                )}
-              </div>
-
-              {/* GAJI */}
-              <Link
-                href="/gaji"
-                onClick={handleLinkClick}
-                className={`patroli-nav-link ${isGajiActive ? 'active' : ''}`}
-                title="Laporan Gaji Personil"
-              >
-                <DollarSign className="w-4 h-4" />
-                <small>Gaji</small>
-              </Link>
-
-              {/* PESAN SIARAN */}
-              <Link
-                href="/pesan-siaran"
-                onClick={handleLinkClick}
-                className={`patroli-nav-link ${isBroadcastActive ? 'active' : ''}`}
-                title="Pesan Siaran"
-              >
-                <Megaphone className="w-4 h-4" />
-                <small>Pesan Siaran</small>
-              </Link>
-
-              {/* EMERGENCY */}
-              <Link
-                href="/emergency"
-                onClick={handleLinkClick}
-                className={`patroli-nav-link ${isEmergencyActive ? 'active' : ''}`}
-                title="Emergency Log"
-              >
-                <AlertCircle className="w-4 h-4" />
-                <small>Emergency</small>
-              </Link>
-
-              {/* EXPORT LAPORAN */}
-              <Link
-                href="/export-laporan"
-                onClick={handleLinkClick}
-                className={`patroli-nav-link ${isExportActive ? 'active' : ''}`}
-                title="Export Laporan"
-              >
-                <Printer className="w-4 h-4" />
-                <small>Export Laporan</small>
-              </Link>
-
-              {/* UBAH PASSWORD */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveDropdown(null);
-                  setIsPasswordModalOpen(true);
-                }}
-                className="patroli-nav-link cursor-pointer"
-                title="Ubah Password"
-              >
-                <KeyRound className="w-4 h-4" />
-                <small>Ubah Password</small>
-              </button>
             </div>
 
-            {/* LOGOUT */}
-            <div className="hidden lg:flex items-center">
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm('Apakah Anda yakin ingin keluar dari sistem?')) {
-                    alert('Sesi administrator telah selesai.');
-                  }
-                }}
-                className="patroli-nav-link cursor-pointer text-rose-300 hover:text-white"
-                title="Logout dari akun"
-              >
-                <LogOut className="w-4 h-4" />
-                <small>Logout</small>
-              </button>
-            </div>
-
-            {/* MOBILE HAMBURGER BUTTON */}
+            {/* Mobile Hamburger Toggle */}
             <div className="lg:hidden flex items-center">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10"
+                className="p-2 text-white/90 hover:text-white rounded-xl bg-white/10 backdrop-blur-md border border-white/10"
               >
-                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
+        </div>
 
-          {/* MOBILE ACCORDION MENU */}
-          {isMobileMenuOpen && (
-            <div className="lg:hidden mt-3 pt-3 border-t border-white/10 space-y-2 pb-2 text-sm font-semibold">
-              <Link
-                href="/"
-                onClick={handleLinkClick}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10"
-              >
-                <Home className="w-4 h-4 text-blue-400" />
-                <span>Home</span>
-              </Link>
+        {/* ========================================================
+            MOBILE ACCORDION DRAWER
+            ======================================================== */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden max-w-[1440px] mx-auto mt-3 bg-slate-900/95 backdrop-blur-2xl border border-white/15 rounded-3xl p-4 shadow-2xl space-y-2 animate-in fade-in zoom-in-95 duration-150">
+            <Link
+              href="/"
+              onClick={handleLinkClick}
+              className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
+                isHomeActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Overview
+            </Link>
 
-              <div className="px-3 pt-2 text-[11px] font-bold text-slate-400 uppercase">
+            <div className="pt-1 pb-1">
+              <span className="block px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 Data Induk
+              </span>
+              <div className="space-y-1 pl-2 mt-1">
+                <Link
+                  href="/datainduk/area"
+                  onClick={handleLinkClick}
+                  className="block px-4 py-2 rounded-xl text-xs text-slate-300 hover:text-white hover:bg-white/10"
+                >
+                  Area & Geofence
+                </Link>
+                <Link
+                  href="/datainduk/checkpoint"
+                  onClick={handleLinkClick}
+                  className="block px-4 py-2 rounded-xl text-xs text-slate-300 hover:text-white hover:bg-white/10"
+                >
+                  Titik Checkpoint QR
+                </Link>
+                <Link
+                  href="/datainduk/personil"
+                  onClick={handleLinkClick}
+                  className="block px-4 py-2 rounded-xl text-xs text-slate-300 hover:text-white hover:bg-white/10"
+                >
+                  Data Personil
+                </Link>
               </div>
-              <Link
-                href="/datainduk/area"
-                onClick={handleLinkClick}
-                className="flex items-center space-x-2 pl-6 py-1.5 rounded-lg hover:bg-white/10 text-xs"
-              >
-                <Globe className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Area</span>
-              </Link>
-              <Link
-                href="/datainduk/checkpoint"
-                onClick={handleLinkClick}
-                className="flex items-center space-x-2 pl-6 py-1.5 rounded-lg hover:bg-white/10 text-xs"
-              >
-                <Building className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Checkpoint</span>
-              </Link>
-              <Link
-                href="/datainduk/personil"
-                onClick={handleLinkClick}
-                className="flex items-center space-x-2 pl-6 py-1.5 rounded-lg hover:bg-white/10 text-xs"
-              >
-                <Users className="w-3.5 h-3.5 text-amber-400" />
-                <span>Personil</span>
-              </Link>
-
-              <div className="px-3 pt-2 text-[11px] font-bold text-slate-400 uppercase">
-                Absensi & Laporan
-              </div>
-              <Link
-                href="/absensi"
-                onClick={handleLinkClick}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10"
-              >
-                <CalendarCheck className="w-4 h-4 text-emerald-400" />
-                <span>Absensi</span>
-              </Link>
-              <Link
-                href="/laporan"
-                onClick={handleLinkClick}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10"
-              >
-                <FileText className="w-4 h-4 text-purple-400" />
-                <span>Laporan</span>
-              </Link>
-              <Link
-                href="/gaji"
-                onClick={handleLinkClick}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10"
-              >
-                <DollarSign className="w-4 h-4 text-emerald-400" />
-                <span>Gaji</span>
-              </Link>
-              <Link
-                href="/pesan-siaran"
-                onClick={handleLinkClick}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10"
-              >
-                <Megaphone className="w-4 h-4 text-amber-400" />
-                <span>Pesan Siaran</span>
-              </Link>
-              <Link
-                href="/emergency"
-                onClick={handleLinkClick}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10"
-              >
-                <AlertCircle className="w-4 h-4 text-rose-400" />
-                <span>Emergency</span>
-              </Link>
-              <Link
-                href="/export-laporan"
-                onClick={handleLinkClick}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10"
-              >
-                <Printer className="w-4 h-4 text-cyan-400" />
-                <span>Export Laporan</span>
-              </Link>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setIsPasswordModalOpen(true);
-                }}
-                className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 text-left"
-              >
-                <KeyRound className="w-4 h-4 text-yellow-400" />
-                <span>Ubah Password</span>
-              </button>
             </div>
-          )}
-        </nav>
+
+            <Link
+              href="/absensi"
+              onClick={handleLinkClick}
+              className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
+                isAbsensiActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Absensi
+            </Link>
+
+            <Link
+              href="/laporan"
+              onClick={handleLinkClick}
+              className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
+                isLaporanActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Laporan Operasional
+            </Link>
+
+            <Link
+              href="/gaji"
+              onClick={handleLinkClick}
+              className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
+                isGajiActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Gaji & Rekap
+            </Link>
+
+            <Link
+              href="/pesan-siaran"
+              onClick={handleLinkClick}
+              className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
+                isBroadcastActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Pesan Siaran
+            </Link>
+
+            <Link
+              href="/emergency"
+              onClick={handleLinkClick}
+              className={`block px-4 py-2.5 rounded-xl text-xs font-bold text-rose-300 hover:bg-rose-500/20 transition ${
+                isEmergencyActive ? 'bg-rose-600 text-white' : ''
+              }`}
+            >
+              Pusat SOS Darurat
+            </Link>
+          </div>
+        )}
       </header>
 
-      {/* MODAL UBAH PASSWORD */}
+      {/* Global Change Password Modal */}
       <ChangePasswordModal
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}

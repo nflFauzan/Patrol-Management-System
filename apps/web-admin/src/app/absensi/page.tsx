@@ -38,16 +38,16 @@ function AbsensiPageContent() {
       <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <span>MODUL ABSENSI</span>
+            <span>Presensi & Kehadiran Operasional</span>
             <span className="text-xs font-normal text-slate-400">|</span>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-              {activeTab === 'semua-data' ? 'SEMUA DATA (100% PARITY)' : 'MONITORING (31-HARI MATRIKS HRIS)'}
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200">
+              {activeTab === 'semua-data' ? 'Log Presensi Harian' : 'Matriks Kehadiran 31-Hari'}
             </span>
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             {activeTab === 'semua-data'
-              ? 'Tabel presensi harian, filter dinamis per site/posisi, dan modal detail peta Leaflet PostGIS'
-              : 'Audit matriks presensi 31-hari korporat, toleransi grace period, dan rekap jam lembur'}
+              ? 'Data presensi seluruh divisi dengan verifikasi koordinat lokasi dan swafoto petugas'
+              : 'Audit matriks kehadiran 31-hari, toleransi keterlambatan, dan akumulasi lembur'}
           </p>
         </div>
 

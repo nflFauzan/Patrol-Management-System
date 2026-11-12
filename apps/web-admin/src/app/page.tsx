@@ -209,20 +209,20 @@ export default function DashboardPage() {
       )}
 
       {/* ========================================================
-          1. ATMOSPHERIC HERO COMMAND BANNER (PINTEREST LUMIO STYLE)
+          1. ATMOSPHERIC HERO COMMAND HEADER (LUMIO MODERN STYLE)
           ======================================================== */}
-      <div className="lumio-hero text-white p-6 sm:p-8">
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
+      <div className="pt-2 pb-5 px-1 text-white">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="space-y-1.5 max-w-2xl">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-teal-200 text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <span>Sistem Komando Aktif • {formattedDate}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">
               {greeting}, Komandan Operasional.
             </h1>
-            <p className="text-teal-100/80 text-xs sm:text-sm leading-relaxed">
-              Dapatkan gambaran komprehensif atas kepatuhan patroli keamanan, kebersihan sanitasi area fasilitas, dan mobilitas armada logistik di seluruh site korporat hari ini.
+            <p className="text-teal-100/90 text-xs sm:text-sm leading-relaxed">
+              Pantau kesiapan personil, kepatuhan patroli keamanan, dan sanitasi fasilitas korporat hari ini.
             </p>
           </div>
 
@@ -233,7 +233,7 @@ export default function DashboardPage() {
               <select
                 value={selectedSiteId}
                 onChange={(e) => setSelectedSiteId(e.target.value)}
-                className="appearance-none lumio-pill-btn text-xs font-semibold px-4 py-2.5 pr-8 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400"
+                className="appearance-none bg-white/10 hover:bg-white/15 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 pr-8 rounded-full border border-white/20 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 shadow-sm transition"
               >
                 <option value="ALL" className="text-slate-900 bg-white">
                   🏢 Semua Fasilitas ({sites.length} Site)
@@ -250,18 +250,18 @@ export default function DashboardPage() {
             {/* Quick Export Pill */}
             <Link
               href="/export-laporan"
-              className="lumio-pill-btn text-xs font-semibold px-4 py-2.5 rounded-full inline-flex items-center space-x-2 shadow-sm"
+              className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/20 text-xs font-semibold px-4 py-2.5 rounded-full inline-flex items-center space-x-2 shadow-sm transition"
             >
               <Download className="w-3.5 h-3.5 text-teal-300" />
               <span>Export Laporan</span>
             </Link>
 
-            {/* SOS Center Pill */}
+            {/* SOS Center Pill (Lumio High-Contrast White Pill) */}
             <Link
               href="/emergency"
-              className="bg-teal-400 hover:bg-teal-300 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-full inline-flex items-center space-x-2 shadow-lg transition"
+              className="bg-white hover:bg-teal-50 text-slate-950 font-extrabold text-xs px-5 py-2.5 rounded-full inline-flex items-center space-x-2 shadow-xl shadow-slate-950/20 transition group"
             >
-              <Radio className="w-3.5 h-3.5 text-slate-950" />
+              <Radio className="w-3.5 h-3.5 text-rose-600 group-hover:scale-110 transition" />
               <span>Pusat SOS</span>
             </Link>
           </div>
@@ -302,7 +302,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Rasio kehadiran aktif shift berjalan memenuhi target operasional harian.
+              Kehadiran personil shift aktif sesuai target harian.
             </p>
           </div>
 
@@ -396,7 +396,7 @@ export default function DashboardPage() {
             </div>
 
             <p className="text-xs text-slate-500 mb-4">
-              Ritme checkpoint tiap interval 2 jam untuk memastikan tidak ada celah perimeter tanpa patroli.
+              Ritme checkpoint per 2 jam untuk memastikan seluruh pos terpantau berkala.
             </p>
           </div>
 
@@ -461,10 +461,10 @@ export default function DashboardPage() {
             </div>
 
             <h3 className="text-xl font-bold text-white tracking-tight leading-snug">
-              Integritas & Kepatuhan Geofence Terjaga.
+              Perimeter Aman & Terverifikasi
             </h3>
-            <p className="text-xs text-teal-100/75 mt-2.5 leading-relaxed">
-              Tingkat validasi GPS koordinat PostGIS mencapai 99.2%. Seluruh pemindaian QR code petugas tervalidasi tepat di dalam radius perimeter situs.
+            <p className="text-xs text-teal-100/80 mt-2 leading-relaxed">
+              99.2% pemindaian QR code tervalidasi presisi di dalam batas perimeter fasilitas (radius aman maksimum 50 meter).
             </p>
           </div>
 
@@ -659,7 +659,7 @@ export default function DashboardPage() {
           <div className="pt-3 border-t border-slate-100 mt-2 flex items-center justify-between text-[11px] text-slate-500">
             <span className="flex items-center space-x-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>WebSocket Sinkron: Aktif</span>
+              <span>Live Sync: Terhubung</span>
             </span>
             <span className="text-slate-400">Pembaruan otomatis</span>
           </div>

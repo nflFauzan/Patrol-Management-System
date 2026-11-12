@@ -14,8 +14,8 @@ Sistem ini dirancang khusus untuk **satu perusahaan korporat (Single-Tenant In-H
    - **Satpam (Security)**: Patroli rute checkpoint QR Code, validasi geofence, laporan insiden, dan Panic SOS.
    - **Cleaning Service**: Checklist sanitasi berkala per zona lantai/toilet, pembersihan, dan verifikasi foto.
    - **Driver Logistik**: Log perjalanan armada, pelat nomor kendaraan, odometer awal/akhir, dan status pengiriman.
-3. **HRIS-Ready Engine (Bukan Penggajian Internal)**:
-   - Tidak ada slip gaji internal. Sistem bertindak sebagai *Attendance & Working Hours Recap Engine* yang menghitung jam kerja efektif, menit terlambat, jam lembur (overtime), dan status validitas geofence untuk diekspor ke format Excel/CSV HRIS korporat.
+3. **Modul Penggajian & HRIS Terpadu (Gaji)**:
+   - Sistem mencakup perhitungan penggajian personil operasional (gaji pokok, uang makan, tunjangan kehadiran/jabatan, lembur, dan potongan keterlambatan) serta rekapitulasi jam kerja efektif untuk operasional internal korporat dan ekspor HRIS.
 4. **Media Retention Policy (180 Hari / 6 Bulan)**:
    - Foto bukti swafoto dan temuan patroli disimpan selama 180 hari sebelum di-purge otomatis oleh worker background.
 5. **Panic Button SOS Terintegrasi**:
