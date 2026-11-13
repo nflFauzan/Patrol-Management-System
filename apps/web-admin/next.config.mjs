@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@patrol/types'],
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'exceljs'],
+  },
   images: {
     remotePatterns: [
       {
@@ -25,8 +28,16 @@ const nextConfig = {
         destination: 'http://127.0.0.1:3000/socket.io/:path*',
       },
       {
-        source: '/pwa/:path*',
-        destination: 'http://127.0.0.1:5173/:path*',
+        source: '/login.php',
+        destination: '/login',
+      },
+      {
+        source: '/validasi-patroli/index.php',
+        destination: '/validasi-patroli',
+      },
+      {
+        source: '/xxxxx_:slug.php',
+        destination: '/validasi-patroli/xxxxx_:slug.php',
       },
     ];
   },

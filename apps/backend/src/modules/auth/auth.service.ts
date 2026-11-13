@@ -22,9 +22,28 @@ export class AuthService {
     }
 
     const userRow = await this.db.queryOne<any>(
-      `SELECT id, username, email, password_hash, full_name, phone, role, division, site_id, is_active, avatar_url, created_at, updated_at
-       FROM users 
-       WHERE username = $1`,
+      `SELECT 
+        u.id, 
+        u.nik,
+        u.username, 
+        u.email, 
+        u.password_hash, 
+        u.full_name, 
+        u.phone_number as phone, 
+        u.role, 
+        u.division, 
+        u.security_rank as "securityRank",
+        usa.site_id as "siteId", 
+        s.name as "siteName",
+        u.is_active, 
+        u.photo_key as "avatarUrl", 
+        u.created_at, 
+        u.updated_at
+       FROM users u
+       LEFT JOIN user_site_assignments usa ON usa.user_id = u.id
+       LEFT JOIN sites s ON s.id = usa.site_id
+       WHERE LOWER(u.username) = $1
+       LIMIT 1`,
       [dto.username.trim().toLowerCase()],
     );
 
@@ -47,14 +66,15 @@ export class AuthService {
     const user: User = {
       id: userRow.id,
       username: userRow.username,
-      email: userRow.email,
+      email: userRow.email || `${userRow.username}@mahakarya-ops.co.id`,
       fullName: userRow.full_name,
-      phone: userRow.phone,
+      phone: userRow.phone || '',
       role: userRow.role,
       division: userRow.division,
-      siteId: userRow.site_id,
+      securityRank: userRow.securityRank,
+      siteId: userRow.siteId,
       isActive: userRow.is_active,
-      avatarUrl: userRow.avatar_url,
+      avatarUrl: userRow.avatarUrl,
       createdAt: userRow.created_at,
       updatedAt: userRow.updated_at,
     };
@@ -72,8 +92,27 @@ export class AuthService {
 
   async getProfile(userId: string): Promise<User> {
     const user = await this.db.queryOne<any>(
-      `SELECT id, username, email, full_name as "fullName", phone, role, division, site_id as "siteId", is_active as "isActive", avatar_url as "avatarUrl", created_at as "createdAt", updated_at as "updatedAt"
-       FROM users WHERE id = $1`,
+      `SELECT 
+        u.id, 
+        u.nik,
+        u.username, 
+        COALESCE(u.email, CONCAT(u.username, '@mahakarya-ops.co.id')) as email, 
+        u.full_name as "fullName", 
+        COALESCE(u.phone_number, '') as phone, 
+        u.role, 
+        u.division, 
+        u.security_rank as "securityRank",
+        usa.site_id as "siteId", 
+        s.name as "siteName",
+        u.is_active as "isActive", 
+        u.photo_key as "avatarUrl", 
+        u.created_at as "createdAt", 
+        u.updated_at as "updatedAt"
+       FROM users u
+       LEFT JOIN user_site_assignments usa ON usa.user_id = u.id
+       LEFT JOIN sites s ON s.id = usa.site_id
+       WHERE u.id = $1
+       LIMIT 1`,
       [userId],
     );
 

@@ -22,11 +22,11 @@ export default defineConfig({
     {
       name: 'Mobile Chrome (PWA)',
       testMatch: '**/pwa-field-flow.spec.ts',
-      use: { ...devices['Pixel 5'], baseURL: 'https://localhost:5173', ignoreHTTPSErrors: true },
+      use: { ...devices['Pixel 5'], baseURL: 'http://localhost:3001', ignoreHTTPSErrors: true },
     },
     {
       name: 'Desktop Chrome (Web Admin)',
-      testMatch: '**/*{admin,personil,chief,export,security,audit,phase}*.spec.ts',
+      testMatch: '**/*{admin,personil,chief,export,security,audit,phase,auth}*.spec.ts',
       use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:3001' },
     },
   ],

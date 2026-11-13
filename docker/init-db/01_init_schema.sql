@@ -83,6 +83,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(150) NOT NULL,
+    email VARCHAR(100),
     phone_number VARCHAR(30),
     role VARCHAR(50) NOT NULL, -- 'SUPERADMIN', 'HR_GA_MANAGER', 'CHIEF_SECURITY', 'CLEANING_SUPERVISOR', 'DRIVER_COORDINATOR', 'DANRU', 'PETUGAS'
     division VARCHAR(50) NOT NULL, -- 'Security', 'Cleaning Service', 'Driver', 'Management'
@@ -95,6 +96,7 @@ CREATE TABLE IF NOT EXISTS users (
     potongan_alpa NUMERIC(15,2) DEFAULT 0,
     potongan_lupa_absen NUMERIC(15,2) DEFAULT 0,
     photo_key TEXT,
+    last_login_at TIMESTAMP WITH TIME ZONE,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

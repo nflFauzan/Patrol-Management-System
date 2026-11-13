@@ -100,6 +100,7 @@ export interface User {
   division: Division;
   securityRank?: SecurityRank | null;
   siteId?: string | null;
+  siteName?: string | null;
   multiSiteIds?: string[];
   workingHoursPerDay?: number;
   // Payroll & financial attributes

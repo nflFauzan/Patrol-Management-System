@@ -16,14 +16,17 @@ import {
   KeyRound,
   LogOut,
   Bell,
-  Sparkles
+  Sparkles,
+  Smartphone
 } from 'lucide-react';
 import { useData } from '../lib/DataContext';
+import { useAuth } from '../lib/AuthContext';
 import { ChangePasswordModal } from './ChangePasswordModal';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const { activeSosAlert, setActiveSosAlert } = useData();
+  const { user, logout } = useAuth();
 
   // Active dropdown state
   const [activeDropdown, setActiveDropdown] = useState<'DATA_INDUK' | null>(null);
@@ -268,6 +271,16 @@ export const Navbar: React.FC = () => {
 
           {/* USER ACTIONS & PROFILE */}
           <div className="flex items-center space-x-2">
+            {/* Field PWA Mode Switcher */}
+            <Link
+              href="/validasi-patroli"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 hover:text-white border border-cyan-400/30 text-xs font-semibold transition shadow-sm"
+              title="Buka Tampilan Lapangan Satpam / Cleaning / Driver"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-cyan-300" />
+              <span className="hidden md:inline">Mode Lapangan</span>
+            </Link>
+
             {/* Password Modal Button */}
             <button
               type="button"
@@ -282,20 +295,31 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                if (confirm('Apakah Anda yakin ingin keluar dari sistem?')) {
-                  alert('Sesi administrator telah selesai.');
+                if (confirm('Apakah Anda yakin ingin keluar dari Command Center?')) {
+                  logout();
                 }
               }}
-              className="p-2 rounded-full bg-white/10 hover:bg-rose-500/20 text-rose-200 hover:text-white backdrop-blur-md border border-white/10 transition shadow-sm"
-              title="Keluar dari Sistem"
+              className="p-2 rounded-full bg-white/10 hover:bg-rose-500/30 text-rose-200 hover:text-white backdrop-blur-md border border-white/10 transition shadow-sm"
+              title="Keluar dari Sistem (Logout)"
             >
               <LogOut className="w-4 h-4" />
             </button>
 
-            {/* User Avatar Chip */}
+            {/* User Avatar & Name Chip */}
             <div className="hidden sm:flex items-center space-x-2 pl-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-teal-300 flex items-center justify-center text-slate-950 font-black text-xs shadow-md border border-white/30">
-                A
+              <div className="text-right">
+                <div className="text-xs font-bold text-white truncate max-w-[130px]" title={user?.fullName || 'Administrator'}>
+                  {user?.fullName || 'Administrator'}
+                </div>
+                <div className="text-[10px] text-cyan-300 font-semibold truncate max-w-[130px]">
+                  {user?.securityRank || user?.role || 'Super Admin'}
+                </div>
+              </div>
+              <div
+                className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-teal-300 flex items-center justify-center text-slate-950 font-black text-xs shadow-md border border-white/30"
+                title={`${user?.fullName || 'User'} (${user?.role || ''})`}
+              >
+                {(user?.fullName || 'A').charAt(0).toUpperCase()}
               </div>
             </div>
 
@@ -396,6 +420,15 @@ export const Navbar: React.FC = () => {
             </Link>
 
             <Link
+              href="/validasi-patroli"
+              onClick={handleLinkClick}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition"
+            >
+              <Smartphone className="w-4 h-4 text-cyan-300" />
+              <span>Buka Tampilan Lapangan (PWA)</span>
+            </Link>
+
+            <Link
               href="/emergency"
               onClick={handleLinkClick}
               className={`block px-4 py-2.5 rounded-xl text-xs font-bold text-rose-300 hover:bg-rose-500/20 transition ${
@@ -404,6 +437,26 @@ export const Navbar: React.FC = () => {
             >
               Pusat SOS Darurat
             </Link>
+
+            {/* Mobile User Info & Logout */}
+            <div className="pt-2 mt-2 border-t border-white/10 flex items-center justify-between px-3">
+              <div className="text-left">
+                <div className="text-xs font-bold text-white">{user?.fullName || 'Administrator'}</div>
+                <div className="text-[10px] text-cyan-300">{user?.role || 'Super Admin'}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('Keluar dari Command Center?')) {
+                    logout();
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg bg-rose-600/30 text-rose-200 border border-rose-500/30 text-xs font-bold flex items-center gap-1.5"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Keluar</span>
+              </button>
+            </div>
           </div>
         )}
       </header>

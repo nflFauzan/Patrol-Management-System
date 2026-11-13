@@ -25,7 +25,13 @@ import {
   Calendar,
   ExternalLink,
   ShieldCheck,
-  Radio
+  Radio,
+  FileText,
+  Send,
+  Navigation,
+  Eye,
+  X,
+  AlertCircle
 } from 'lucide-react';
 import { useData } from '../lib/DataContext';
 
@@ -34,9 +40,12 @@ export default function DashboardPage() {
 
   // Active filter state
   const [selectedSiteId, setSelectedSiteId] = useState<string>('ALL');
-  const [activeShiftFilter, setActiveShiftFilter] = useState<'ALL' | 'PAGI' | 'SIANG' | 'MALAM'>('ALL');
+  const [activeShiftFilter, setActiveShiftFilter] = useState<'ALL' | 'PAGI' | 'SIANG' | 'MALAM'>('PAGI');
   const [barChartMetric, setBarChartMetric] = useState<'VOLUME' | 'ATTENDANCE'>('VOLUME');
   const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(3); // Default highlight index 3 (Kamis/Today)
+
+  // Quick activity preview modal
+  const [selectedActivity, setSelectedActivity] = useState<any | null>(null);
 
   // Filtered data based on site selection
   const filteredCheckpoints = useMemo(() => {
@@ -61,6 +70,60 @@ export default function DashboardPage() {
   const cleaningCheckpoints = filteredCheckpoints.filter((c) => c.category === 'Cleaning Service').length;
   const driverCheckpoints = filteredCheckpoints.filter((c) => c.category === 'Driver').length;
 
+  // Dynamic Shift Compliance Calculations
+  const shiftComplianceData = useMemo(() => {
+    switch (activeShiftFilter) {
+      case 'PAGI':
+        return {
+          shiftName: 'Shift Pagi (07:00 - 15:00)',
+          completed: 24,
+          total: 28,
+          percent: 86,
+          pendingPos: [
+            { name: 'Pos Genset & Pompa Hydrant', lastScan: '3 jam lalu', pic: 'Budi (Satpam)' },
+            { name: 'Pintu Darurat Timur Lt 2', lastScan: '2 jam lalu', pic: 'Ahmad Fauzi' }
+          ],
+          statusText: 'Patroli putaran ke-3 sedang berjalan sesuai jadwal.'
+        };
+      case 'SIANG':
+        return {
+          shiftName: 'Shift Siang (15:00 - 23:00)',
+          completed: 9,
+          total: 28,
+          percent: 32,
+          pendingPos: [
+            { name: 'Loading Dock Bawah', lastScan: 'Standby Shift', pic: 'Regu Siang' },
+            { name: 'Perimeter Pagar Belakang', lastScan: 'Standby Shift', pic: 'Regu Siang' }
+          ],
+          statusText: 'Persiapan serah terima regu siang dimulai.'
+        };
+      case 'MALAM':
+        return {
+          shiftName: 'Shift Malam (23:00 - 07:00)',
+          completed: 0,
+          total: 28,
+          percent: 0,
+          pendingPos: [
+            { name: 'Seluruh Pos Perimeter (28 Titik)', lastScan: 'Jadwal 23:00', pic: 'Regu Malam' }
+          ],
+          statusText: 'Shift malam belum dimulai. Standby persiapan apel malam.'
+        };
+      case 'ALL':
+      default:
+        return {
+          shiftName: 'Akumulasi Semua Shift Hari Ini',
+          completed: 33,
+          total: 56,
+          percent: 59,
+          pendingPos: [
+            { name: 'Pos Genset & Pompa Hydrant', lastScan: '3 jam lalu', pic: 'Budi (Satpam)' },
+            { name: 'Pintu Darurat Timur Lt 2', lastScan: '2 jam lalu', pic: 'Ahmad Fauzi' }
+          ],
+          statusText: 'Total patroli gabungan 2 shift berjalan normal.'
+        };
+    }
+  }, [activeShiftFilter]);
+
   // Time & Greeting Logic
   const currentDate = new Date();
   const currentHour = currentDate.getHours();
@@ -80,21 +143,7 @@ export default function DashboardPage() {
     year: 'numeric'
   });
 
-  // Shift & Cadence Matrix Data
-  const hourlyCadence = [
-    { hour: '06:00', label: '06', pagi: 4, siang: 0, malam: 2, total: 6 },
-    { hour: '08:00', label: '08', pagi: 8, siang: 0, malam: 0, total: 8 },
-    { hour: '10:00', label: '10', pagi: 7, siang: 0, malam: 0, total: 7 },
-    { hour: '12:00', label: '12', pagi: 6, siang: 1, malam: 0, total: 7 },
-    { hour: '14:00', label: '14', pagi: 8, siang: 2, malam: 0, total: 10 },
-    { hour: '16:00', label: '16', pagi: 1, siang: 7, malam: 0, total: 8 },
-    { hour: '18:00', label: '18', pagi: 0, siang: 8, malam: 0, total: 8 },
-    { hour: '20:00', label: '20', pagi: 0, siang: 7, malam: 2, total: 9 },
-    { hour: '22:00', label: '22', pagi: 0, siang: 3, malam: 6, total: 9 },
-    { hour: '24:00', label: '00', pagi: 0, siang: 0, malam: 8, total: 8 }
-  ];
-
-  // 7-Day Performance Bar Data (Lumio Pattern Style)
+  // 7-Day Performance Bar Data
   const weeklyData = [
     { day: 'Sen', fullDay: 'Senin', volume: 118, attendance: 92, target: 120 },
     { day: 'Sel', fullDay: 'Selasa', volume: 134, attendance: 96, target: 120 },
@@ -105,7 +154,7 @@ export default function DashboardPage() {
     { day: 'Min', fullDay: 'Minggu', volume: 88, attendance: 82, target: 120 }
   ];
 
-  // Live Activity Log Items
+  // Live Activity Log Items (with relative humanized times and coordinates)
   const recentActivities = [
     {
       id: 'act-1',
@@ -113,8 +162,11 @@ export default function DashboardPage() {
       division: 'SECURITY',
       location: 'Pos Gerbang Utama',
       time: '14:48',
+      relativeTime: '2 menit lalu',
       status: 'Normal • Geofence Valid',
-      statusColor: 'text-emerald-600 bg-emerald-50 border-emerald-200'
+      coords: '-6.2088, 106.8456 (Akurasi 8m)',
+      photoUrl: '/placeholder-officer.jpg',
+      notes: 'Area gerbang tertib, palang pintu otomatis berfungsi normal.'
     },
     {
       id: 'act-2',
@@ -122,8 +174,11 @@ export default function DashboardPage() {
       division: 'CLEANING',
       location: 'Toilet - Lobby Utama',
       time: '14:32',
+      relativeTime: '18 menit lalu',
       status: 'Sanitasi Lengkap Selesai',
-      statusColor: 'text-emerald-600 bg-emerald-50 border-emerald-200'
+      coords: '-6.2091, 106.8459 (Akurasi 6m)',
+      photoUrl: '/placeholder-officer.jpg',
+      notes: 'Wastafel, cermin, dan lantai telah dibersihkan & dipel dengan disinfektan.'
     },
     {
       id: 'act-3',
@@ -131,8 +186,11 @@ export default function DashboardPage() {
       division: 'SECURITY',
       location: 'Ruang Server IT Lt 3',
       time: '13:55',
+      relativeTime: '55 menit lalu',
       status: 'Suhu AC Normal (21°C)',
-      statusColor: 'text-cyan-700 bg-cyan-50 border-cyan-200'
+      coords: '-6.2085, 106.8452 (Akurasi 10m)',
+      photoUrl: '/placeholder-officer.jpg',
+      notes: 'Pintu server terkunci rapat, indikator LED rack server hijau stabil.'
     },
     {
       id: 'act-4',
@@ -140,8 +198,11 @@ export default function DashboardPage() {
       division: 'DRIVER',
       location: 'Logistik Warehouse Cikarang',
       time: '13:10',
-      status: 'Check-In Odometer: 42.150 KM',
-      statusColor: 'text-amber-700 bg-amber-50 border-amber-200'
+      relativeTime: '1 jam lalu',
+      status: 'Odometer: 42.150 KM • Tiba Pool',
+      coords: '-6.2981, 107.1523 (Akurasi 12m)',
+      photoUrl: '/placeholder-officer.jpg',
+      notes: 'Pengiriman paket logistik batch pagi tuntas tanpa insiden jalan raya.'
     }
   ];
 
@@ -256,7 +317,7 @@ export default function DashboardPage() {
               <span>Export Laporan</span>
             </Link>
 
-            {/* SOS Center Pill (Lumio High-Contrast White Pill) */}
+            {/* SOS Center Pill */}
             <Link
               href="/emergency"
               className="bg-white hover:bg-teal-50 text-slate-950 font-extrabold text-xs px-5 py-2.5 rounded-full inline-flex items-center space-x-2 shadow-xl shadow-slate-950/20 transition group"
@@ -270,12 +331,12 @@ export default function DashboardPage() {
 
       {/* ========================================================
           2. ASYMMETRIC GRID ROW 1:
-             - Hero Attendance Card (Sparkline + Breakdown)
-             - Hourly Shift & Checkpoint Cadence Matrix
-             - Facility Readiness Spotlight (Teal Accent Card)
+             - Card 1: Presensi & Kesiapan Regu Hari Ini (Humanized)
+             - Card 2: Radar Kepatuhan Pos & Rute Patroli (Replaces dot-plot!)
+             - Card 3: Pusat Status Keamanan & Perimeter (Accurate Link!)
           ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* CARD 1: HERO OPERATIONAL ATTENDANCE (5 Columns) */}
+        {/* CARD 1: PRESENSI & KESIAPAN REGU OPERASIONAL (4 Columns) */}
         <div className="lg:col-span-4 lumio-card p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -284,11 +345,11 @@ export default function DashboardPage() {
                   <Users className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Kesiapan Personil
+                  Presensi & Kesiapan Regu
                 </span>
               </div>
               <span className="inline-flex items-center space-x-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
-                <TrendingUp className="w-3 h-3" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>100% Siaga</span>
               </span>
             </div>
@@ -298,157 +359,158 @@ export default function DashboardPage() {
                 {totalPersonil}
               </span>
               <span className="text-sm font-semibold text-slate-500">
-                Personil Terdaftar
+                Personil On-Duty
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Kehadiran personil shift aktif sesuai target harian.
-            </p>
-          </div>
 
-          {/* SVG Sparkline Curve (Lumio style smooth curve with gradient fill) */}
-          <div className="my-5">
-            <div className="h-14 w-full">
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 300 70">
-                <defs>
-                  <linearGradient id="lumioSparklineGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0d9488" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#0d9488" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M 0 55 Q 50 50, 100 42 T 200 25 T 300 12 L 300 70 L 0 70 Z"
-                  fill="url(#lumioSparklineGrad)"
-                />
-                <path
-                  d="M 0 55 Q 50 50, 100 42 T 200 25 T 300 12"
-                  fill="none"
-                  stroke="#0f766e"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-                <circle cx="300" cy="12" r="4.5" fill="#0f766e" stroke="#ffffff" strokeWidth="2" />
-              </svg>
-            </div>
-            <div className="flex justify-between text-[10px] font-semibold text-slate-400 mt-1 px-1">
-              <span>Sen</span>
-              <span>Sel</span>
-              <span>Rab</span>
-              <span>Kam</span>
-              <span>Jum</span>
-              <span>Sab</span>
-              <span className="text-teal-700 font-bold">Hari Ini</span>
+            {/* Active Shift Badge for Gaptek Clarity */}
+            <div className="mt-2.5 p-2.5 rounded-xl bg-teal-50/70 border border-teal-100/80 flex items-center justify-between text-xs">
+              <span className="font-semibold text-teal-800">Regu Rajawali (Shift Pagi)</span>
+              <span className="font-bold text-teal-900">07:00 - 15:00</span>
             </div>
           </div>
 
-          {/* Micro Division Breakdown Pills */}
-          <div className="grid grid-cols-4 gap-2 pt-3 border-t border-slate-100">
-            <div className="text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="block text-[10px] font-bold text-slate-400 uppercase">Satpam</span>
-              <span className="text-sm font-extrabold text-blue-700 tabular-nums">{securityPersonil}</span>
+          {/* Humanized Attendance Status (No weird fake curves) */}
+          <div className="my-4 space-y-2">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-600 font-medium">Tingkat Kehadiran Shift Ini</span>
+              <span className="font-extrabold text-emerald-700">3 dari 3 Hadir Tepat Waktu</span>
             </div>
-            <div className="text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="block text-[10px] font-bold text-slate-400 uppercase">Cleaning</span>
-              <span className="text-sm font-extrabold text-emerald-700 tabular-nums">{cleaningPersonil}</span>
+            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex">
+              <div className="bg-emerald-500 h-full w-full rounded-full" title="Hadir Tepat Waktu (100%)" />
             </div>
-            <div className="text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="block text-[10px] font-bold text-slate-400 uppercase">Driver</span>
-              <span className="text-sm font-extrabold text-amber-700 tabular-nums">{driverPersonil}</span>
+            <div className="flex justify-between text-[11px] text-slate-500 pt-1">
+              <span className="flex items-center space-x-1 text-emerald-700 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>Hadir: {totalPersonil}</span>
+              </span>
+              <span className="flex items-center space-x-1 text-amber-600 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                <span>Terlambat: 0</span>
+              </span>
+              <span className="flex items-center space-x-1 text-slate-400 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                <span>Izin / Off: 0</span>
+              </span>
             </div>
-            <div className="text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="block text-[10px] font-bold text-slate-400 uppercase">Staf</span>
-              <span className="text-sm font-extrabold text-slate-700 tabular-nums">{staffPersonil}</span>
+          </div>
+
+          {/* Division Breakdown Counters */}
+          <div>
+            <div className="grid grid-cols-4 gap-2 pt-3 border-t border-slate-100">
+              <div className="text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase">Satpam</span>
+                <span className="text-sm font-extrabold text-blue-700 tabular-nums">{securityPersonil}</span>
+              </div>
+              <div className="text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase">Cleaning</span>
+                <span className="text-sm font-extrabold text-emerald-700 tabular-nums">{cleaningPersonil}</span>
+              </div>
+              <div className="text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase">Driver</span>
+                <span className="text-sm font-extrabold text-amber-700 tabular-nums">{driverPersonil}</span>
+              </div>
+              <div className="text-center p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase">Staf</span>
+                <span className="text-sm font-extrabold text-slate-700 tabular-nums">{staffPersonil}</span>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-2.5 border-t border-slate-100 text-right">
+              <Link
+                href="/absensi"
+                className="text-xs font-bold text-teal-700 hover:text-teal-800 hover:underline inline-flex items-center space-x-1"
+              >
+                <span>Rekap Presensi Lengkap & Lembur</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* CARD 2: HOURLY CADENCE & MATRIX DISTRIBUTION (4 Columns) */}
+        {/* CARD 2: RADAR KEPATUHAN POS & RUTE PATROLI (4 Columns - REVOLUSI UTAMA MENGGANTIKAN DOT-PLOT) */}
         <div className="lg:col-span-4 lumio-card p-6 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Distribusi Pemindaian Checkpoint
+                  Radar Kepatuhan Checkpoint
                 </span>
                 <div className="flex items-baseline space-x-2 mt-1">
                   <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tabular-nums">
-                    {totalCheckpoints}
+                    {shiftComplianceData.completed} / {shiftComplianceData.total}
                   </span>
                   <span className="text-xs font-semibold text-slate-500">
-                    Titik QR Terdaftar
+                    Titik Tuntas ({shiftComplianceData.percent}%)
                   </span>
                 </div>
               </div>
 
-              {/* Time Selector */}
+              {/* Functional Shift Selector */}
               <div className="relative">
                 <select
                   value={activeShiftFilter}
                   onChange={(e) => setActiveShiftFilter(e.target.value as any)}
-                  className="text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200/80 cursor-pointer focus:outline-none"
+                  className="text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
-                  <option value="ALL">Semua Jam</option>
                   <option value="PAGI">Shift Pagi</option>
                   <option value="SIANG">Shift Siang</option>
                   <option value="MALAM">Shift Malam</option>
+                  <option value="ALL">Semua Shift</option>
                 </select>
               </div>
             </div>
 
-            <p className="text-xs text-slate-500 mb-4">
-              Ritme checkpoint per 2 jam untuk memastikan seluruh pos terpantau berkala.
+            <p className="text-xs text-slate-500 mb-3">
+              {shiftComplianceData.statusText}
             </p>
           </div>
 
-          {/* Matrix Dot Plot Visual (Lumio Forecast style) */}
-          <div className="space-y-3 py-2">
-            <div className="grid grid-cols-10 gap-1.5 text-center">
-              {hourlyCadence.map((item, idx) => (
-                <div key={idx} className="flex flex-col items-center space-y-1">
-                  <div className="h-20 w-full bg-slate-50 rounded-lg flex flex-col justify-end items-center p-1 space-y-1 border border-slate-100">
-                    {Array.from({ length: 4 }).map((_, dotIdx) => {
-                      const isActive = dotIdx < (item.total > 7 ? 4 : item.total > 5 ? 3 : 2);
-                      return (
-                        <span
-                          key={dotIdx}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            isActive
-                              ? idx === 4
-                                ? 'bg-teal-700 scale-110 shadow-xs'
-                                : 'bg-teal-400'
-                              : 'bg-slate-200'
-                          }`}
-                        />
-                      );
-                    })}
-                  </div>
-                  <span className={`text-[10px] font-bold ${idx === 4 ? 'text-teal-700 font-extrabold' : 'text-slate-400'}`}>
-                    {item.label}
-                  </span>
-                </div>
-              ))}
+          {/* Clean Progress Meter Bar */}
+          <div className="space-y-3 py-1">
+            <div>
+              <div className="flex justify-between items-center text-xs mb-1.5">
+                <span className="font-semibold text-slate-700">{shiftComplianceData.shiftName}</span>
+                <span className="font-extrabold text-teal-700">{shiftComplianceData.percent}%</span>
+              </div>
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div
+                  className="bg-teal-600 h-full rounded-full transition-all duration-500 shadow-xs"
+                  style={{ width: `${shiftComplianceData.percent}%` }}
+                />
+              </div>
             </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
-              <span className="flex items-center space-x-1.5">
-                <span className="w-2 h-2 rounded-full bg-teal-600" />
-                <span>Patroli Terjadwal</span>
-              </span>
-              <span className="flex items-center space-x-1.5">
-                <span className="w-2 h-2 rounded-full bg-slate-300" />
-                <span>Standby / Transisi Shift</span>
-              </span>
+
+            {/* List of Critical / Pending Points */}
+            <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-2">
+              <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-900">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                <span>Pos Belum Dipatroli (&gt; 2 Jam):</span>
+              </div>
+              <div className="space-y-1.5">
+                {shiftComplianceData.pendingPos.map((pos, pIdx) => (
+                  <div key={pIdx} className="flex justify-between items-center text-[11px] text-slate-700">
+                    <span className="truncate font-medium">• {pos.name}</span>
+                    <span className="text-amber-700 font-bold shrink-0 pl-2">{pos.lastScan}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-500">Status Site:</span>
-            <span className="font-bold text-slate-800">
-              Shift Berjalan: Pagi (07:00 - 15:00)
-            </span>
+            <span className="text-slate-500">Rute Patroli:</span>
+            <Link
+              href="/laporan?tab=tracking"
+              className="font-bold text-teal-700 hover:text-teal-800 hover:underline flex items-center space-x-1"
+            >
+              <span>📍 Buka Peta Rute Patroli</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
 
-        {/* CARD 3: SPOTLIGHT FACILITY READINESS (4 Columns, Deep Teal Accent) */}
+        {/* CARD 3: SPOTLIGHT PERIMETER & KEAMANAN (4 Columns - Deep Teal Accent) */}
         <div className="lg:col-span-4 lumio-card-dark p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -464,32 +526,35 @@ export default function DashboardPage() {
               Perimeter Aman & Terverifikasi
             </h3>
             <p className="text-xs text-teal-100/80 mt-2 leading-relaxed">
-              99.2% pemindaian QR code tervalidasi presisi di dalam batas perimeter fasilitas (radius aman maksimum 50 meter).
+              Seluruh pemindaian checkpoint QR tervalidasi presisi di dalam batas radius resmi perimeter fasilitas korporat.
             </p>
           </div>
 
-          <div className="space-y-4 my-4">
+          <div className="space-y-3.5 my-4">
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-teal-100/90 font-medium">Validasi Radius Geofence:</span>
-                <span className="font-extrabold text-emerald-300">50m Max • Akurat</span>
+                <span className="font-extrabold text-emerald-300">50m Max • 99.2% Akurat</span>
               </div>
               <div className="w-full bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
-                <div className="bg-emerald-400 h-full rounded-full w-[98%]" />
+                <div className="bg-emerald-400 h-full rounded-full w-[99%]" />
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-teal-100/80">
-              <span>Temuan Insiden Aktif:</span>
-              <span className="font-bold text-white">0 Temuan Terbuka</span>
+            <div className="flex items-center justify-between text-xs text-teal-100/90 px-1">
+              <span>Temuan Insiden Lapangan:</span>
+              <span className="font-extrabold text-emerald-300 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/30">
+                0 Temuan Terbuka
+              </span>
             </div>
           </div>
 
+          {/* FIXED LINK: Directed to Security Reports instead of /absensi */}
           <Link
-            href="/absensi"
+            href="/laporan?tab=security&role=anggota"
             className="w-full bg-white hover:bg-teal-50 text-slate-900 font-bold text-xs py-3 px-4 rounded-xl text-center shadow-lg transition flex items-center justify-center space-x-1.5 group"
           >
-            <span>Buka Monitoring Absensi & Rute</span>
+            <span>🛡️ Cek Laporan Keamanan & Temuan</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -497,12 +562,12 @@ export default function DashboardPage() {
 
       {/* ========================================================
           3. ASYMMETRIC GRID ROW 2:
-             - Division Operational Progress (Segmented Bars)
-             - Live Activity Feed (Recent Check-Ins & Incident Logs)
-             - 7-Day Performance Bar Chart (with active highlight & tooltip)
+             - Card 4: Progress 3 Divisi (Clickable Jump Cards, Fixed 0 Armada)
+             - Card 5: Live Activity Feed (Relative Time & Quick Photo Modal)
+             - Card 6: 7-Day Performance Bar Chart (Fixed Tooltip Anchor & Y-Axis)
           ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* CARD 4: DIVISION OPERATIONAL PROGRESS (4 Columns, Lumio "Where your money goes" style) */}
+        {/* CARD 4: PENYELESAIAN TUGAS PER DIVISI (4 Columns - INTERACTIVE JUMP CARDS) */}
         <div className="lg:col-span-4 lumio-card p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -513,61 +578,75 @@ export default function DashboardPage() {
                 Hari Ini
               </span>
             </div>
-            <p className="text-xs text-slate-500 mb-5">
-              Rasio kelengkapan checklist patroli, sanitasi zona, dan perjalanan logistik.
+            <p className="text-xs text-slate-500 mb-4">
+              Klik divisi untuk langsung membuka rekapitulasi checklist lapangan.
             </p>
 
-            <div className="space-y-4">
-              {/* Security Patrol */}
-              <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 hover:bg-slate-50 transition">
+            <div className="space-y-3">
+              {/* Satpam Security -> Jump to /laporan?tab=security */}
+              <Link
+                href="/laporan?tab=security&role=anggota"
+                className="block p-3 rounded-xl bg-slate-50/70 border border-slate-100 hover:bg-blue-50/50 hover:border-blue-200 transition group cursor-pointer"
+              >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center space-x-2">
-                    <Shield className="w-4 h-4 text-blue-600" />
-                    <span className="text-xs font-bold text-slate-800">Satpam Security</span>
+                    <Shield className="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-bold text-slate-800 group-hover:text-blue-900">Satpam Security</span>
                   </div>
-                  <span className="text-xs font-extrabold text-slate-900 tabular-nums">85%</span>
+                  <span className="text-xs font-extrabold text-blue-700 tabular-nums">85%</span>
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-slate-500">
                   <span>{securityCheckpoints} Pos • Rute Terkontrol</span>
                   {renderSegmentedPill(9, 10, 'bg-blue-600')}
                 </div>
-              </div>
+              </Link>
 
-              {/* Cleaning Service */}
-              <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 hover:bg-slate-50 transition">
+              {/* Cleaning Service -> Jump to /laporan?tab=cleaning */}
+              <Link
+                href="/laporan?tab=cleaning"
+                className="block p-3 rounded-xl bg-slate-50/70 border border-slate-100 hover:bg-emerald-50/50 hover:border-emerald-200 transition group cursor-pointer"
+              >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center space-x-2">
-                    <Leaf className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs font-bold text-slate-800">Cleaning Service</span>
+                    <Leaf className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-900">Cleaning Service</span>
                   </div>
-                  <span className="text-xs font-extrabold text-slate-900 tabular-nums">90%</span>
+                  <span className="text-xs font-extrabold text-emerald-700 tabular-nums">90%</span>
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-slate-500">
                   <span>{cleaningCheckpoints} Zona • Checklist Bersih</span>
                   {renderSegmentedPill(9, 10, 'bg-emerald-600')}
                 </div>
-              </div>
+              </Link>
 
-              {/* Driver Fleet */}
-              <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 hover:bg-slate-50 transition">
+              {/* Driver Fleet -> Jump to /laporan?tab=driver (Fixed mathematical discrepancy: Standby in Pool) */}
+              <Link
+                href="/laporan?tab=driver"
+                className="block p-3 rounded-xl bg-slate-50/70 border border-slate-100 hover:bg-amber-50/50 hover:border-amber-200 transition group cursor-pointer"
+              >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center space-x-2">
-                    <Car className="w-4 h-4 text-amber-600" />
-                    <span className="text-xs font-bold text-slate-800">Driver Logistik</span>
+                    <Car className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-bold text-slate-800 group-hover:text-amber-900">Driver Logistik</span>
                   </div>
-                  <span className="text-xs font-extrabold text-slate-900 tabular-nums">75%</span>
+                  <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Standby di Pool
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-slate-500">
-                  <span>{driverPersonil} Armada • 0 Keterlambatan</span>
-                  {renderSegmentedPill(7, 10, 'bg-amber-600')}
+                  <span>0 Jadwal Pengiriman Aktif</span>
+                  <span className="text-[10px] text-slate-400">Armada Siap Digunakan</span>
                 </div>
-              </div>
+              </Link>
 
-              {/* Staff Operasional */}
-              <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 hover:bg-slate-50 transition">
+              {/* Staff Operasional -> Jump to /absensi */}
+              <Link
+                href="/absensi"
+                className="block p-3 rounded-xl bg-slate-50/70 border border-slate-100 hover:bg-slate-100 transition group cursor-pointer"
+              >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center space-x-2">
-                    <Briefcase className="w-4 h-4 text-slate-600" />
+                    <Briefcase className="w-4 h-4 text-slate-600 group-hover:scale-110 transition-transform" />
                     <span className="text-xs font-bold text-slate-800">Staf Fasilitas</span>
                   </div>
                   <span className="text-xs font-extrabold text-slate-900 tabular-nums">100%</span>
@@ -576,17 +655,17 @@ export default function DashboardPage() {
                   <span>Administrasi & Rekap Presensi</span>
                   {renderSegmentedPill(10, 10, 'bg-slate-700')}
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 mt-4 flex justify-between items-center text-xs">
+          <div className="pt-4 border-t border-slate-100 mt-3 flex justify-between items-center text-xs">
             <span className="text-slate-500">Kepatuhan Total Divisi:</span>
             <span className="font-extrabold text-teal-700">88.5% Target Terpenuhi</span>
           </div>
         </div>
 
-        {/* CARD 5: LIVE OPERATIONAL ACTIVITY FEED (4 Columns, Lumio "Recent activity" style) */}
+        {/* CARD 5: LIVE OPERATIONAL ACTIVITY FEED (4 Columns - RELATIVE TIME & CLICKABLE MODAL) */}
         <div className="lg:col-span-4 lumio-card p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -601,16 +680,18 @@ export default function DashboardPage() {
                 <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
               </Link>
             </div>
-            <p className="text-xs text-slate-500 mb-4">
-              Log pemindaian QR code dan pelaporan tugas lapangan secara waktu-nyata.
+            <p className="text-xs text-slate-500 mb-3">
+              Log pemindaian QR code dan pelaporan waktu-nyata. Klik item untuk cek bukti.
             </p>
 
-            {/* List of Recent Activities */}
-            <div className="space-y-3">
+            {/* List of Recent Activities with relative time */}
+            <div className="space-y-2.5">
               {recentActivities.map((act) => (
                 <div
                   key={act.id}
-                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition"
+                  onClick={() => setSelectedActivity(act)}
+                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-teal-50/40 border border-transparent hover:border-teal-200/60 transition cursor-pointer group"
+                  title="Klik untuk inspeksi bukti pemindaian"
                 >
                   <div className="flex items-center space-x-3 min-w-0">
                     <div
@@ -631,8 +712,9 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <div className="truncate">
-                      <div className="text-xs font-bold text-slate-900 truncate">
-                        {act.name}
+                      <div className="text-xs font-bold text-slate-900 group-hover:text-teal-800 truncate flex items-center space-x-1.5">
+                        <span>{act.name}</span>
+                        <Eye className="w-3 h-3 text-slate-400 group-hover:text-teal-600 transition" />
                       </div>
                       <div className="text-[11px] text-slate-500 flex items-center space-x-1 mt-0.5">
                         <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
@@ -642,12 +724,10 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="text-right shrink-0 pl-2">
-                    <div className="text-xs font-bold text-slate-700 tabular-nums">
-                      {act.time}
+                    <div className="text-[11px] font-bold text-slate-700 tabular-nums">
+                      {act.relativeTime}
                     </div>
-                    <span
-                      className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full border mt-0.5 ${act.statusColor}`}
-                    >
+                    <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-full border mt-0.5 text-emerald-700 bg-emerald-50 border-emerald-200">
                       {act.status.split('•')[0]}
                     </span>
                   </div>
@@ -665,7 +745,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* CARD 6: 7-DAY OPERATIONAL VOLUME PERFORMANCE (4 Columns, Lumio style bar chart with active bar) */}
+        {/* CARD 6: TREN AKTIVITAS 7 HARI (4 Columns - FIXED TOOLTIP ANCHOR & Y-AXIS SCALE) */}
         <div className="lg:col-span-4 lumio-card p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -683,35 +763,34 @@ export default function DashboardPage() {
                 </select>
               </div>
             </div>
-            <p className="text-xs text-slate-500 mb-4">
-              Monitoring stabilitas aktivitas harian dibanding target kuota operasional.
+            <p className="text-xs text-slate-500 mb-2">
+              Monitoring stabilitas aktivitas harian dibanding target SOP korporat.
             </p>
 
-            {/* Bar Chart Area with Active Tooltip */}
-            <div className="relative py-4">
-              {/* Floating Tooltip for Active / Hovered Bar */}
-              {hoveredBarIndex !== null && (
+            {/* Target Legend indicator */}
+            <div className="flex items-center space-x-3 text-[11px] text-slate-500 mb-2">
+              <span className="flex items-center space-x-1">
+                <span className="w-3 h-0.5 bg-teal-600 inline-block" />
+                <span>Target SOP: 120 Scan/Hari</span>
+              </span>
+            </div>
+
+            {/* Bar Chart Area with Fixed Column-Anchored Tooltip */}
+            <div className="relative pt-6 pb-2">
+              {/* Benchmark Line at 120 (approx 75% height) */}
+              {barChartMetric === 'VOLUME' && (
                 <div
-                  className="absolute -top-3 transition-all duration-200 pointer-events-none z-20"
-                  style={{
-                    left: `${(hoveredBarIndex / (weeklyData.length - 1)) * 75 + 5}%`,
-                    transform: 'translateX(-50%)'
-                  }}
+                  className="absolute w-full border-b border-dashed border-teal-300 pointer-events-none z-0"
+                  style={{ bottom: '38px' }}
                 >
-                  <div className="bg-slate-900 text-white text-[10px] font-bold py-1 px-2.5 rounded-lg shadow-lg whitespace-nowrap flex items-center space-x-1">
-                    <span>{weeklyData[hoveredBarIndex].fullDay}:</span>
-                    <span className="text-teal-300 font-extrabold">
-                      {barChartMetric === 'VOLUME'
-                        ? `${weeklyData[hoveredBarIndex].volume} Scan`
-                        : `${weeklyData[hoveredBarIndex].attendance}%`}
-                    </span>
-                  </div>
-                  <div className="w-2 h-2 bg-slate-900 rotate-45 mx-auto -mt-1" />
+                  <span className="absolute -top-3.5 right-0 text-[9px] font-extrabold text-teal-700 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
+                    Target 120
+                  </span>
                 </div>
               )}
 
               {/* Bars Visual */}
-              <div className="h-40 flex items-end justify-between gap-2.5 pt-6 pb-2 px-1 border-b border-slate-100">
+              <div className="h-40 flex items-end justify-between gap-2 border-b border-slate-100 relative z-10 px-1">
                 {weeklyData.map((item, idx) => {
                   const val = barChartMetric === 'VOLUME' ? item.volume : item.attendance;
                   const maxVal = barChartMetric === 'VOLUME' ? 160 : 100;
@@ -721,9 +800,22 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={idx}
-                      className="flex-1 flex flex-col items-center h-full justify-end cursor-pointer group"
+                      className="flex-1 flex flex-col items-center h-full justify-end cursor-pointer group relative"
                       onMouseEnter={() => setHoveredBarIndex(idx)}
                     >
+                      {/* Fixed Tooltip: Anchored precisely on top of this individual bar column */}
+                      {isHovered && (
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-30 pointer-events-none transition-all duration-150">
+                          <div className="bg-slate-900 text-white text-[10px] font-bold py-1 px-2 rounded-lg shadow-xl whitespace-nowrap flex items-center space-x-1">
+                            <span>{item.fullDay}:</span>
+                            <span className="text-teal-300 font-extrabold">
+                              {barChartMetric === 'VOLUME' ? `${item.volume} Scan` : `${item.attendance}%`}
+                            </span>
+                          </div>
+                          <div className="w-2 h-2 bg-slate-900 rotate-45 mx-auto -mt-1" />
+                        </div>
+                      )}
+
                       <div className="w-full flex items-end justify-center h-full">
                         <div
                           style={{ height: `${heightPercent}%` }}
@@ -731,8 +823,8 @@ export default function DashboardPage() {
                             item.isCurrent
                               ? 'bg-teal-700 lumio-bar-pattern shadow-sm'
                               : isHovered
-                              ? 'bg-teal-500'
-                              : 'bg-slate-100 group-hover:bg-slate-200'
+                              ? 'bg-teal-500 scale-105'
+                              : 'bg-slate-200 group-hover:bg-slate-300'
                           }`}
                         />
                       </div>
@@ -753,46 +845,144 @@ export default function DashboardPage() {
           <div className="pt-3 border-t border-slate-100 mt-2 flex items-center justify-between text-xs">
             <span className="text-slate-500">Rata-rata 7 Hari:</span>
             <span className="font-extrabold text-slate-800">
-              {barChartMetric === 'VOLUME' ? '117 Scan / Hari' : '90.7% Kepatuhan'}
+              {barChartMetric === 'VOLUME' ? '117 Scan / Hari (97.5% Target)' : '90.7% Kepatuhan'}
             </span>
           </div>
         </div>
       </div>
 
       {/* ========================================================
-          4. CONDITIONAL ATTENTION & ESCALATION STRIP
-             (Only renders when there is attention needed or positive status)
+          4. COMMAND QUICK ACTIONS DOCK (4 PRIORITY SHORTCUTS)
           ======================================================== */}
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-4">
         <div className="flex items-center space-x-3.5">
-          <div className="p-2 rounded-xl bg-teal-50 border border-teal-100 text-teal-700">
-            <CheckCircle className="w-5 h-5" />
+          <div className="p-2.5 rounded-xl bg-teal-50 border border-teal-100 text-teal-700">
+            <Activity className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-slate-900">
-              Status Keseluruhan: Kondisi Normal & Terkendali
+            <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+              Pusat Pintasan Komando Cepat
             </h4>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Tidak ada personil izin hari ini. Semua checkpoint pos patroli dan sanitasi area terdistribusi sesuai jadwal operasional masing-masing site.
+              Akses cepat instruksi siaran, ekspor berkas operasional harian, dan radar pelacakan GPS.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-3 w-full md:w-auto">
+        {/* 4 Action Buttons */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full lg:w-auto">
           <Link
-            href="/datainduk/checkpoint"
-            className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition text-center"
+            href="/pesan-siaran"
+            className="inline-flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-teal-50 text-slate-700 hover:text-teal-900 border border-slate-200 hover:border-teal-300 text-xs font-bold transition shadow-2xs"
           >
-            Kelola Checkpoint QR
+            <Send className="w-3.5 h-3.5 text-teal-600" />
+            <span>Kirim Siaran</span>
           </Link>
+
           <Link
-            href="/laporan"
-            className="text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white px-3.5 py-1.5 rounded-lg shadow-xs transition text-center"
+            href="/export-laporan"
+            className="inline-flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-teal-50 text-slate-700 hover:text-teal-900 border border-slate-200 hover:border-teal-300 text-xs font-bold transition shadow-2xs"
           >
-            Buka Arsip Laporan
+            <FileText className="w-3.5 h-3.5 text-teal-600" />
+            <span>Unduh Laporan</span>
+          </Link>
+
+          <Link
+            href="/laporan?tab=tracking"
+            className="inline-flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-teal-50 text-slate-700 hover:text-teal-900 border border-slate-200 hover:border-teal-300 text-xs font-bold transition shadow-2xs"
+          >
+            <Navigation className="w-3.5 h-3.5 text-teal-600" />
+            <span>Live Tracking</span>
+          </Link>
+
+          <Link
+            href="/emergency"
+            className="inline-flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 border border-rose-200 hover:border-rose-300 text-xs font-bold transition shadow-2xs"
+          >
+            <Radio className="w-3.5 h-3.5 text-rose-600" />
+            <span>Riwayat SOS</span>
           </Link>
         </div>
       </div>
+
+      {/* ========================================================
+          5. QUICK INSPECTION MODAL (FOR ACTIVITY FEED PREVIEW)
+          ======================================================== */}
+      {selectedActivity && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="p-4 bg-teal-800 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <ShieldCheck className="w-5 h-5 text-teal-300" />
+                <h3 className="font-extrabold text-sm tracking-wide">
+                  Inspeksi Bukti Pemindaian
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedActivity(null)}
+                className="p-1 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4 text-xs text-slate-700">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Petugas Pelapor</span>
+                  <div className="font-extrabold text-sm text-slate-900 mt-0.5">{selectedActivity.name}</div>
+                  <span className="text-[11px] text-teal-700 font-semibold">{selectedActivity.division}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Waktu Validasi</span>
+                  <div className="font-bold text-slate-900 mt-0.5">{selectedActivity.time} WIB</div>
+                  <span className="text-[11px] text-slate-500 font-medium">{selectedActivity.relativeTime}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-semibold">Titik Checkpoint:</span>
+                  <span className="font-bold text-slate-900">{selectedActivity.location}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-semibold">Validasi Radius GPS:</span>
+                  <span className="font-bold text-emerald-700">{selectedActivity.coords}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-semibold">Status Kepatuhan:</span>
+                  <span className="font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    {selectedActivity.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Catatan Lapangan:</span>
+                <p className="text-xs text-slate-700 italic leading-relaxed">
+                  &ldquo;{selectedActivity.notes}&rdquo;
+                </p>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end space-x-2">
+                <button
+                  onClick={() => setSelectedActivity(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-slate-700 text-xs transition"
+                >
+                  Tutup
+                </button>
+                <Link
+                  href="/laporan"
+                  className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 font-bold text-white text-xs transition shadow-xs inline-flex items-center space-x-1"
+                >
+                  <span>Buka Semua Laporan</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
