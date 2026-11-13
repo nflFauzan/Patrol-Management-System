@@ -1,13 +1,19 @@
 import { Controller, Post, Body, Get, Patch, Param, Query, UseGuards, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { AuthService } from './auth.service';
-import { LoginRequestDto, LoginResponseDto, User } from '@patrol/types';
+import { LoginRequestDto, LoginResponseDto, RegisterRequestDto, User } from '@patrol/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  async register(@Body() dto: RegisterRequestDto): Promise<User> {
+    return this.authService.register(dto);
+  }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)

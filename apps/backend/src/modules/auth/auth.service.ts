@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, ForbiddenException, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { DatabaseService } from '../../database/database.service';
-import { LoginRequestDto, LoginResponseDto, User } from '@patrol/types';
+import { LoginRequestDto, LoginResponseDto, RegisterRequestDto, User, UserRole, Division } from '@patrol/types';
 import * as bcrypt from 'bcryptjs';
 import * as ExcelJS from 'exceljs';
 
@@ -13,6 +13,63 @@ export class AuthService {
     private db: DatabaseService,
     private jwtService: JwtService,
   ) {}
+
+  async register(dto: RegisterRequestDto): Promise<User> {
+    // 0. Honeypot check
+    if (dto.hp_input && dto.hp_input.trim() !== '') {
+      this.logger.warn(`Spam bot register attempt blocked via hp_input: ${dto.username}`);
+      throw new BadRequestException('Security validation failed');
+    }
+
+    if (dto.password !== dto.passwordConfirm) {
+      throw new BadRequestException('Konfirmasi kata sandi tidak cocok');
+    }
+
+    if (!dto.password || dto.password.length < 6) {
+      throw new BadRequestException('Kata sandi minimal 6 karakter');
+    }
+
+    const existing = await this.db.queryOne(
+      `SELECT id FROM users WHERE LOWER(username) = $1 OR nik = $2 OR LOWER(email) = $3`,
+      [dto.username.trim().toLowerCase(), dto.nik.trim(), dto.email.trim().toLowerCase()],
+    );
+    if (existing) {
+      throw new BadRequestException('Username, NIK, atau Email sudah terdaftar');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const defaultRole = dto.divisionInterest === Division.SECURITY 
+      ? UserRole.SECURITY_OFFICER 
+      : dto.divisionInterest === Division.CLEANING 
+      ? UserRole.CLEANER 
+      : dto.divisionInterest === Division.DRIVER 
+      ? UserRole.DRIVER 
+      : UserRole.STAFF;
+
+    const row = await this.db.queryOne<any>(
+      `INSERT INTO users (
+        username, nik, password_hash, full_name, email, phone_number,
+        role, division, is_approved, is_active, created_at, updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      RETURNING id, username, nik, full_name as "fullName", email, phone_number as "phone",
+                role, division, is_approved as "isApproved", is_active as "isActive", created_at as "createdAt"`,
+      [
+        dto.username.trim().toLowerCase(),
+        dto.nik.trim(),
+        hashedPassword,
+        dto.fullName.trim(),
+        dto.email.trim().toLowerCase(),
+        dto.phone.trim(),
+        defaultRole,
+        dto.divisionInterest,
+        false, // is_approved = false
+        false, // is_active = false
+      ],
+    );
+
+    return row;
+  }
 
   async login(dto: LoginRequestDto): Promise<LoginResponseDto> {
     // 0. Honeypot check for spam/bot submissions (patroli.site parity)
@@ -36,6 +93,10 @@ export class AuthService {
         usa.site_id as "siteId", 
         s.name as "siteName",
         u.is_active, 
+        u.is_approved,
+        u.rejection_reason as "rejectionReason",
+        u.failed_login_attempts as "failedLoginAttempts",
+        u.locked_until as "lockedUntil",
         u.photo_key as "avatarUrl", 
         u.created_at, 
         u.updated_at
@@ -51,17 +112,74 @@ export class AuthService {
       throw new UnauthorizedException('Invalid username or password');
     }
 
-    if (!userRow.is_active) {
+    // 1. Check brute-force lockout
+    const lockedUntil = userRow.lockedUntil || userRow.locked_until;
+    if (lockedUntil && new Date(lockedUntil) > new Date()) {
+      const remainingMinutes = Math.max(1, Math.ceil((new Date(lockedUntil).getTime() - Date.now()) / 60000));
+      throw new HttpException(
+        `Akun terkunci sementara karena 5 kali percobaan gagal. Coba lagi dalam ${remainingMinutes} menit.`,
+        423,
+      );
+    }
+
+    // 2. Password verification
+    const isMatch = await bcrypt.compare(dto.password, userRow.password_hash);
+    if (!isMatch) {
+      const currentAttempts = userRow.failedLoginAttempts || userRow.failed_login_attempts || 0;
+      const attempts = currentAttempts + 1;
+      if (attempts >= 5) {
+        await this.db.query(
+          `UPDATE users SET failed_login_attempts = $1, locked_until = CURRENT_TIMESTAMP + INTERVAL '15 minutes' WHERE id = $2`,
+          [attempts, userRow.id],
+        );
+        throw new HttpException(
+          'Akun terkunci sementara karena 5 kali percobaan gagal. Coba lagi dalam 15 menit.',
+          423,
+        );
+      } else {
+        await this.db.query(
+          `UPDATE users SET failed_login_attempts = $1 WHERE id = $2`,
+          [attempts, userRow.id],
+        );
+        const remaining = 5 - attempts;
+        throw new UnauthorizedException(`Username atau kata sandi tidak valid. Sisa percobaan: ${remaining}`);
+      }
+    }
+
+    // 3. Approval status verification
+    const rejectionReason = userRow.rejectionReason || userRow.rejection_reason;
+    if (rejectionReason) {
+      throw new ForbiddenException(
+        `Pendaftaran Anda ditolak oleh Administrator: ${rejectionReason}`,
+      );
+    }
+
+    if (userRow.is_approved === false || userRow.isApproved === false) {
+      throw new ForbiddenException(
+        'Akun Anda sedang dalam antrean verifikasi Administrator. Silakan hubungi supervisor Anda.',
+      );
+    }
+
+    if (!userRow.is_active && !userRow.isActive) {
       throw new UnauthorizedException('This account has been deactivated. Contact Administrator.');
     }
 
-    const isMatch = await bcrypt.compare(dto.password, userRow.password_hash);
-    if (!isMatch) {
-      throw new UnauthorizedException('Invalid username or password');
-    }
+    // 4. Reset failed login attempts and update last login
+    await this.db.query(
+      `UPDATE users SET last_login_at = CURRENT_TIMESTAMP, failed_login_attempts = 0, locked_until = NULL WHERE id = $1`,
+      [userRow.id],
+    );
 
-    // Update last login
-    await this.db.query(`UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = $1`, [userRow.id]);
+    // 5. Query resolved permissions from user_roles -> role_permissions -> permissions
+    const permRows = await this.db.query<{ code: string }>(
+      `SELECT DISTINCT p.code
+       FROM user_roles ur
+       JOIN role_permissions rp ON rp.role_id = ur.role_id
+       JOIN permissions p ON p.id = rp.permission_id
+       WHERE ur.user_id = $1`,
+      [userRow.id],
+    );
+    const permissions: string[] = (permRows || []).map((r) => r.code);
 
     const user: User = {
       id: userRow.id,
@@ -74,12 +192,20 @@ export class AuthService {
       securityRank: userRow.securityRank,
       siteId: userRow.siteId,
       isActive: userRow.is_active,
+      isApproved: userRow.is_approved ?? true,
+      permissions,
       avatarUrl: userRow.avatarUrl,
       createdAt: userRow.created_at,
       updatedAt: userRow.updated_at,
     };
 
-    const payload = { sub: user.id, username: user.username, role: user.role, division: user.division };
+    const payload = { 
+      sub: user.id, 
+      username: user.username, 
+      role: user.role, 
+      division: user.division,
+      permissions: user.permissions,
+    };
     const token = this.jwtService.sign(payload);
 
     return {
@@ -119,6 +245,17 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
+
+    const permRows = await this.db.query<{ code: string }>(
+      `SELECT DISTINCT p.code
+       FROM user_roles ur
+       JOIN role_permissions rp ON rp.role_id = ur.role_id
+       JOIN permissions p ON p.id = rp.permission_id
+       WHERE ur.user_id = $1`,
+      [userId],
+    );
+    user.permissions = permRows.map((r) => r.code);
+    user.isApproved = user.is_approved ?? true;
 
     return user;
   }
