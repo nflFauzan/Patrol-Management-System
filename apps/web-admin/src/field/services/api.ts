@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { RegisterRequestDto, ApproveUserDto, RejectUserDto } from '@patrol/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
@@ -82,6 +83,10 @@ export const authApi = {
     }
     return res.data;
   },
+  register: async (payload: RegisterRequestDto) => {
+    const res = await apiClient.post('/auth/register', payload);
+    return res.data;
+  },
   getProfile: async () => {
     const res = await apiClient.get('/auth/me');
     return res.data;
@@ -92,6 +97,36 @@ export const authApi = {
   },
   updatePhoto: async (userId: string, photoKey: string) => {
     const res = await apiClient.patch(`/auth/users/${userId}/photo`, { photoKey });
+    return res.data;
+  },
+};
+
+export const approvalApi = {
+  getQueue: async () => {
+    const res = await apiClient.get('/users/approval-queue');
+    return res.data;
+  },
+  approve: async (id: string, payload: ApproveUserDto) => {
+    const res = await apiClient.post(`/users/${id}/approve`, payload);
+    return res.data;
+  },
+  reject: async (id: string, payload: RejectUserDto) => {
+    const res = await apiClient.post(`/users/${id}/reject`, payload);
+    return res.data;
+  },
+};
+
+export const rbacApi = {
+  getRoles: async () => {
+    const res = await apiClient.get('/rbac/roles');
+    return res.data;
+  },
+  createRole: async (payload: { code: string; name: string; description?: string; permissionIds?: string[] }) => {
+    const res = await apiClient.post('/rbac/roles', payload);
+    return res.data;
+  },
+  getPermissions: async () => {
+    const res = await apiClient.get('/rbac/permissions');
     return res.data;
   },
 };

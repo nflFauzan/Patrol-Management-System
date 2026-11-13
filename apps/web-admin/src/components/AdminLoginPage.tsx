@@ -282,12 +282,26 @@ export const AdminLoginPage: React.FC = () => {
 
               {/* Error Alert Banner */}
               {errorMessage && (
-                <div className="mb-4 p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl flex items-start space-x-2.5 text-rose-200 text-xs animate-in fade-in duration-200">
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                  <div className="flex-1 font-medium">{errorMessage}</div>
+                <div
+                  className={`mb-4 p-3.5 rounded-xl flex items-start space-x-2.5 text-xs animate-in fade-in duration-200 border ${
+                    errorMessage.toLowerCase().includes('terkunci')
+                      ? 'bg-amber-950/70 border-amber-500/60 text-amber-200'
+                      : errorMessage.toLowerCase().includes('persetujuan') || errorMessage.toLowerCase().includes('ditolak')
+                      ? 'bg-yellow-950/70 border-yellow-500/60 text-yellow-200'
+                      : 'bg-rose-950/70 border-rose-500/60 text-rose-200'
+                  }`}
+                >
+                  {errorMessage.toLowerCase().includes('terkunci') ? (
+                    <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  ) : errorMessage.toLowerCase().includes('persetujuan') || errorMessage.toLowerCase().includes('ditolak') ? (
+                    <AlertCircle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  )}
+                  <div className="flex-1 font-medium leading-relaxed">{errorMessage}</div>
                   <button
                     onClick={() => setErrorMessage(null)}
-                    className="text-rose-400 hover:text-white text-xs font-bold"
+                    className="opacity-70 hover:opacity-100 text-xs font-bold px-1"
                   >
                     ×
                   </button>
@@ -404,25 +418,32 @@ export const AdminLoginPage: React.FC = () => {
               {/* Bottom Support & Help */}
               <div className="mt-6 pt-4 border-t border-slate-800 text-center">
                 <p className="text-[11px] text-slate-400">
-                  Butuh bantuan akses atau registrasi personil baru?
+                  Belum memiliki akun atau personil baru?
                 </p>
-                <div className="mt-2 flex items-center justify-center space-x-3 text-xs">
+                <div className="mt-2.5 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-xs">
+                  <a
+                    href="/register"
+                    className="text-blue-400 hover:text-blue-300 font-bold underline underline-offset-4 flex items-center gap-1"
+                  >
+                    Registrasi Mandiri Personil
+                  </a>
+                  <span className="hidden sm:inline text-slate-700">•</span>
                   <button
                     type="button"
                     onClick={() => setIsHelpModalOpen(true)}
-                    className="text-blue-400 hover:text-blue-300 font-semibold underline underline-offset-2"
+                    className="text-slate-400 hover:text-slate-300 font-medium"
                   >
                     Prosedur Akun Korporat
                   </button>
-                  <span className="text-slate-700">•</span>
+                  <span className="hidden sm:inline text-slate-700">•</span>
                   <a
                     href="https://wa.me/6281215293593"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
+                    className="text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1"
                   >
                     <PhoneCall className="w-3 h-3" />
-                    Helpdesk WhatsApp
+                    Helpdesk WA
                   </a>
                 </div>
               </div>

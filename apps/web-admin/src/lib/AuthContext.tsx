@@ -82,6 +82,9 @@ interface AuthContextType {
   isLoading: boolean;
   login: (credentials: { username: string; password: string; hp_input?: string }) => Promise<User>;
   logout: () => void;
+  hasPermission: (permission: string) => boolean;
+  hasAnyPermission: (permissions: string[]) => boolean;
+  hasAllPermissions: (permissions: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -138,18 +141,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (isLoading) return;
 
-    const isLoginRoute = pathname === '/login' || pathname === '/login.php';
+    const isAuthRoute = pathname === '/login' || pathname === '/login.php' || pathname === '/register';
     const isPublicStatic = pathname.startsWith('/_next') || pathname.includes('.');
 
     if (isPublicStatic && !pathname.endsWith('.php')) {
       return;
     }
 
-    if (!user && !isLoginRoute) {
+    if (!user && !isAuthRoute) {
       // User is not authenticated -> redirect to login immediately
       const returnUrl = encodeURIComponent(pathname);
       router.replace(`/login?returnUrl=${returnUrl}`);
-    } else if (user && isLoginRoute) {
+    } else if (user && isAuthRoute) {
       // User is already authenticated -> redirect to appropriate home
       router.replace('/');
     }
@@ -245,6 +248,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [router]);
 
+  // 5. Dynamic RBAC Permission Evaluator
+  const hasPermission = useCallback(
+    (permission: string): boolean => {
+      if (!user) return false;
+      const roleStr = user.role as string;
+      if (roleStr === 'ADMIN_SUPER' || roleStr === 'SUPER_ADMIN') return true;
+      return Array.isArray(user.permissions) && user.permissions.includes(permission);
+    },
+    [user]
+  );
+
+  const hasAnyPermission = useCallback(
+    (permissionList: string[]): boolean => {
+      if (!user) return false;
+      const roleStr = user.role as string;
+      if (roleStr === 'ADMIN_SUPER' || roleStr === 'SUPER_ADMIN') return true;
+      if (!Array.isArray(user.permissions)) return false;
+      return permissionList.some((p) => user.permissions!.includes(p));
+    },
+    [user]
+  );
+
+  const hasAllPermissions = useCallback(
+    (permissionList: string[]): boolean => {
+      if (!user) return false;
+      const roleStr = user.role as string;
+      if (roleStr === 'ADMIN_SUPER' || roleStr === 'SUPER_ADMIN') return true;
+      if (!Array.isArray(user.permissions)) return false;
+      return permissionList.every((p) => user.permissions!.includes(p));
+    },
+    [user]
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -254,6 +290,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         logout,
+        hasPermission,
+        hasAnyPermission,
+        hasAllPermissions,
       }}
     >
       {children}
