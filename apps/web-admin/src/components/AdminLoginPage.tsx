@@ -69,7 +69,7 @@ export const AdminLoginPage: React.FC = () => {
       const role = loggedUser.role as string;
       const rank = loggedUser.securityRank as string | undefined;
 
-      if (
+      const dest =
         role === 'ADMIN_SUPER' ||
         role === 'SUPER_ADMIN' ||
         role === 'ADMIN' ||
@@ -77,16 +77,14 @@ export const AdminLoginPage: React.FC = () => {
         role === 'OPS_MANAGER' ||
         role === 'SITE_SUPERVISOR' ||
         rank === 'CHIEF'
-      ) {
-        router.push(returnUrl.startsWith('/') && returnUrl !== '/login' ? returnUrl : '/');
-      } else {
-        // Field personnel default to field view or dashboard if requested
-        if (returnUrl && returnUrl !== '/' && returnUrl !== '/login') {
-          router.push(returnUrl);
-        } else {
-          router.push('/validasi-patroli');
-        }
-      }
+          ? returnUrl.startsWith('/') && returnUrl !== '/login'
+            ? returnUrl
+            : '/'
+          : returnUrl && returnUrl !== '/' && returnUrl !== '/login'
+          ? returnUrl
+          : '/validasi-patroli';
+
+      window.location.href = dest;
     } catch (err: any) {
       setErrorMessage(err.message || 'Login gagal, periksa kredensial Anda.');
     } finally {

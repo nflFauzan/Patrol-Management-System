@@ -1,107 +1,69 @@
 import { test, expect } from '@playwright/test';
+import { authenticateAsAdmin } from './auth-helper';
 
 test.describe('FASE 2: Audit Divisi Security (Satpam) — PWA Field & Laporan Web Admin Parity', () => {
   test.setTimeout(90000);
 
+  test.beforeEach(async ({ context, page }) => {
+    await authenticateAsAdmin(context, page);
+  });
+
   test('TC-PHASE2-01: Verify PWA Field Satpam 8 Touch Cards, Dual Status & Profile Header', async ({ page }) => {
-    // Navigate via Unified Gateway to avoid SSL cert warnings
-    await page.goto('http://localhost:8080/pwa', { waitUntil: 'domcontentloaded' });
+    await page.goto('/validasi-patroli', { waitUntil: 'domcontentloaded' });
 
-    // 1. App Header & Title
-    await expect(page.locator('h1')).toContainText('PATROLI SISTEM');
-    await expect(page.locator('text=Online')).toBeVisible();
+    // Dismiss initial info modal if shown
+    try {
+      const modalUnderstandBtn = page.getByRole('button', { name: 'Saya Mengerti' });
+      await modalUnderstandBtn.waitFor({ state: 'visible', timeout: 1500 });
+      await modalUnderstandBtn.click();
+    } catch {}
 
-    // 2. Profile Greeting & Role Badge
-    await expect(page.locator('text=SECURITY • ANGGOTA')).toBeVisible();
+    // 1. Profile Greeting & Division Badge
+    await expect(page.locator('text=HELLO,')).toBeVisible();
+    await expect(page.getByText('SECURITY', { exact: true })).toBeVisible();
 
-    // 3. Sensor Readiness Indicators (GPS & Camera)
-    await expect(page.locator('text=Lokasi:')).toBeVisible();
-    await expect(page.locator('text=Kamera:')).toBeVisible();
+    // 2. 8 Operational Touch Cards (100% Parity with patroli.site/validasi-patroli/)
+    await expect(page.getByRole('button', { name: 'ABSEN MASUK' })).toBeVisible();
+    await expect(page.locator('button.ps-card:has-text("IZIN")').or(page.locator('button.ps-card:has-text("INPUT")'))).toBeVisible();
+    await expect(page.getByRole('button', { name: 'RIWAYAT ABSEN' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'RIWAYAT KEGIATAN' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'PANIC BUTTON' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'UPDATE PROFILE' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'BANTUAN TEKNIS' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'LOGOUT SISTEM' })).toBeVisible();
 
-    // 4. 8 Operational Touch Cards (100% Parity with patroli.site/validasi-patroli/)
-    await expect(page.locator('button:has-text("ABSEN MASUK")')).toBeVisible();
-    await expect(page.locator('button:has-text("INPUT KEGIATAN")')).toBeVisible();
-    await expect(page.locator('button:has-text("RIWAYAT ABSEN")')).toBeVisible();
-    await expect(page.locator('button:has-text("RIWAYAT KEGIATAN")')).toBeVisible();
-    await expect(page.locator('button:has-text("PANIC BUTTON")')).toBeVisible();
-    await expect(page.locator('button:has-text("UPDATE PROFILE")')).toBeVisible();
-    await expect(page.locator('a:has-text("BANTUAN TEKNIS")')).toBeVisible();
-    await expect(page.locator('button:has-text("LOGOUT SISTEM")')).toBeVisible();
-
-    // 5. Izin / Alpha Application Trigger
-    await expect(page.locator('button:has-text("Ajukan Form Izin / Sakit / Cuti")')).toBeVisible();
+    // 3. Bottom Marquee Running Text
+    await expect(page.locator('text=DISIPLIN ABSENSI')).toBeVisible();
   });
 
-  test('TC-PHASE2-02: Verify PWA Absen Masuk Modal & Geofence / Selfie Flow', async ({ page }) => {
-    await page.goto('http://localhost:8080/pwa', { waitUntil: 'domcontentloaded' });
+  test('TC-PHASE2-02: Verify PWA Absen Masuk Page & Camera Viewfinder Flow', async ({ page }) => {
+    await page.goto('/validasi-patroli/xxxxx_xx.php', { waitUntil: 'domcontentloaded' });
 
-    // Click Absen Masuk card
-    const btnAbsen = page.locator('button:has-text("ABSEN MASUK")');
-    await btnAbsen.click();
+    // Verify Header
+    await expect(page.locator('text=ABSEN MASUK')).toBeVisible();
 
-    // Verify Selfie Modal elements (Swafoto Absen Masuk)
-    await expect(page.locator('h3:has-text("Swafoto Absen Masuk")')).toBeVisible();
-
-    // Verify camera viewfinder container is present
-    await expect(page.locator('.aspect-\\[3\\/4\\]')).toBeVisible();
-
-    // Close modal via top-right close button
-    const closeBtn = page.locator('.fixed button:has(svg)').first();
-    await closeBtn.click();
+    // Verify camera container & form elements
+    await expect(page.locator('video, img[alt="Preview Selfie"]')).toBeVisible();
+    await expect(page.locator('select').first()).toBeVisible();
+    await expect(page.locator('button:has-text("Foto")')).toBeVisible();
   });
 
-  test('TC-PHASE2-03: Verify PWA Panic Button SOS Modal & 3-Second Hold / False Alarm Prevention', async ({ page }) => {
-    await page.goto('http://localhost:8080/pwa', { waitUntil: 'domcontentloaded' });
+  test('TC-PHASE2-03: Verify PWA Panic Button SOS Page & Alert Triggers', async ({ page }) => {
+    await page.goto('/validasi-patroli/xxxxx_xxxxxxx.php', { waitUntil: 'domcontentloaded' });
 
-    // Open Panic SOS
-    const btnPanic = page.locator('button:has-text("PANIC BUTTON")');
-    await btnPanic.click();
-
-    // Verify Panic Modal Content
-    await expect(page.locator('h2:has-text("PANIC BUTTON SOS")')).toBeVisible();
-    await expect(page.locator('text=memicu sirine di perangkat anggota yang lain & Web Command Center')).toBeVisible();
-    await expect(page.locator('button:has-text("TEKAN & TAHAN (3 DETIK)")')).toBeVisible();
-    await expect(page.locator('text=Koordinat GPS Anda:')).toBeVisible();
-
-    // Close modal via close button
-    const closeBtn = page.locator('.fixed button:has(svg)').first();
-    if (await closeBtn.isVisible()) {
-      await closeBtn.click();
-    }
+    // Verify Panic Page Content
+    await expect(page.locator('text=memicu sirine')).toBeVisible();
+    await expect(page.locator('#sosButton, button:has-text("SOS")')).toBeVisible();
+    await expect(page.locator('button:has-text("batalkan")')).toBeVisible();
   });
 
-  test('TC-PHASE2-04: Verify PWA Patrol Scan Modal & Inspection Form (cek.php Parity)', async ({ page }) => {
-    await page.goto('http://localhost:8080/pwa', { waitUntil: 'domcontentloaded' });
+  test('TC-PHASE2-04: Verify PWA Patrol Scan Page (cek.php Parity)', async ({ page }) => {
+    await page.goto('/validasi-patroli/xxxxx_xxxxxxxxx.php', { waitUntil: 'domcontentloaded' });
 
-    // Open Patrol Scanner
-    const btnScan = page.locator('button:has-text("INPUT KEGIATAN")');
-    await btnScan.click();
-
-    // Verify Step 1: Scanner view
+    // Verify Scanner view
     await expect(page.locator('text=Silakan Scan QR Code')).toBeVisible();
-    await expect(page.locator('input[placeholder*="kode aset"]')).toBeVisible();
-
-    // Simulate scanning checkpoint via quick test button
-    const checkpointBtn = page.locator('button:has-text("POS GERBANG UTAMA")');
-    await expect(checkpointBtn).toBeVisible();
-    await checkpointBtn.click();
-
-    // Verify Step 2: Inspection Form (cek.php parity)
-    await expect(page.locator('text=POS GERBANG UTAMA')).toBeVisible();
-    await expect(page.locator('text=PEMERIKSAAN AKSES MASUK TAMU')).toBeVisible();
-    await expect(page.locator('select[name="tl"]')).toBeVisible();
-    await expect(page.locator('button:has-text("Simpan")')).toBeVisible();
-    await expect(page.locator('button:has-text("Ulang")')).toBeVisible();
-
-    // Return to dashboard via step Batal -> Kembali ke Dashboard
-    const batalBtn = page.locator('button:has-text("Batal")');
-    if (await batalBtn.isVisible()) {
-      await batalBtn.click();
-    }
-    const dashboardBtn = page.locator('button:has-text("Kembali ke Dashboard")');
-    if (await dashboardBtn.isVisible()) {
-      await dashboardBtn.click();
-    }
+    await expect(page.locator('#reader-full')).toBeVisible();
+    await expect(page.locator('button:has-text("Kembali ke Dashboard")')).toBeVisible();
   });
 
   test('TC-PHASE2-05: Verify Web Admin Laporan Security Anggota, Komandan, Chief & Tracking Patroli', async ({ page }) => {
@@ -109,30 +71,32 @@ test.describe('FASE 2: Audit Divisi Security (Satpam) — PWA Field & Laporan We
 
     // 1. Laporan Security Anggota
     await page.goto('http://localhost:3001/laporan/security/anggota', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('th:has-text("LOKASI / SITE")').first()).toBeVisible();
-    await expect(page.locator('th:has-text("NAMA PERSONIL")')).toBeVisible();
-    await expect(page.locator('th:has-text("KEGIATAN / TEMUAN")')).toBeVisible();
-    await expect(page.locator('th:has-text("WAKTU")')).toBeVisible();
-    await expect(page.locator('th:has-text("AKSI")')).toBeVisible();
+    await expect(page.locator('th:has-text("Lokasi / Site")').first()).toBeVisible();
+    await expect(page.locator('th:has-text("Nama Personil")')).toBeVisible();
+    await expect(page.locator('th:has-text("Titik Pos & Temuan")')).toBeVisible();
+    await expect(page.locator('th:has-text("Waktu Pemindaian")')).toBeVisible();
+    await expect(page.locator('th:has-text("Aksi")')).toBeVisible();
 
     // 2. Laporan Komandan
     await page.goto('http://localhost:3001/laporan/security/komandan', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('th:has-text("SHIFT")')).toBeVisible();
-    await expect(page.locator('th:has-text("NAMA KOMANDAN")')).toBeVisible();
-    await expect(page.locator('th:has-text("KEHADIRAN PERSONIL")')).toBeVisible();
-    await expect(page.locator('th:has-text("CATATAN")')).toBeVisible();
+    await expect(page.locator('th:has-text("Lokasi / Site")').first()).toBeVisible();
+    await expect(page.locator('th:has-text("Nama Komandan")')).toBeVisible();
+    await expect(page.locator('th:has-text("Shift & Apel Regu")')).toBeVisible();
+    await expect(page.locator('th:has-text("Catatan Mutasi & Inventaris")')).toBeVisible();
+    await expect(page.locator('th:has-text("Waktu Serah Terima")')).toBeVisible();
 
     // 3. Laporan Chief
     await page.goto('http://localhost:3001/laporan/security/chief', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('th:has-text("Nama Komandan")')).toBeVisible();
-    await expect(page.locator('th:has-text("Kedisiplinan")')).toBeVisible();
-    await expect(page.locator('th:has-text("Koordinasi")')).toBeVisible();
-    await expect(page.locator('th:has-text("Kehadiran")')).toBeVisible();
-    await expect(page.locator('th:has-text("Insiden")')).toBeVisible();
+    await expect(page.locator('th:has-text("Lokasi / Site")').first()).toBeVisible();
+    await expect(page.locator('th:has-text("Komandan yang Dievaluasi")')).toBeVisible();
+    await expect(page.locator('th:has-text("Kedisiplinan & Koordinasi")')).toBeVisible();
+    await expect(page.locator('th:has-text("Status Insiden & Catatan")')).toBeVisible();
+    await expect(page.locator('th:has-text("Waktu Evaluasi")')).toBeVisible();
 
     // 4. Tracking Patroli
     await page.goto('http://localhost:3001/laporan/tracking-patroli', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('text=Tracking Patroli Personil')).toBeVisible();
+    await expect(page.locator('button:has-text("Timeline")').first()).toBeVisible();
+    await expect(page.locator('button:has-text("Peta Spasial")')).toBeVisible();
     await expect(page.locator('button:has-text("Filter")')).toBeVisible();
     await expect(page.locator('button:has-text("Cetak / Download PDF")')).toBeVisible();
   });

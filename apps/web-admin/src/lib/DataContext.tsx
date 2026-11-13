@@ -224,7 +224,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Connect Socket.io for Real-time SOS alerts
   useEffect(() => {
-    const socket: Socket = io('http://localhost:3000', {
+    const socketUrl =
+      typeof window !== 'undefined' && window.location.port === '8080'
+        ? window.location.origin
+        : 'http://localhost:3000';
+
+    const socket: Socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 3,
     });

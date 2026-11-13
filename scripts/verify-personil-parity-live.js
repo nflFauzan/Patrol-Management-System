@@ -2,6 +2,7 @@
  * Live PostGIS DB Verification: Data Induk Personil Parity (100% patroli.site)
  * Tests Users Table schema, Bcrypt password hashing, payroll fields, and password-protected delete
  */
+require('dotenv').config();
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 

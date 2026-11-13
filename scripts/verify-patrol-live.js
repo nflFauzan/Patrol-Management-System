@@ -7,6 +7,7 @@
  * 3. Anomaly Scan Insertion (Perlu Tindak Lanjut) & Incident Ticket Creation
  * 4. Cleaning Service Sanitation Checklist Insertion
  */
+require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({

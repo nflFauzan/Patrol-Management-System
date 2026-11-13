@@ -1,7 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { authenticateAsAdmin } from './auth-helper';
 
 test.describe('FASE 4: Audit Reporting Engine, HRIS Recap, Emergency SOS & Export Center Parity', () => {
   test.setTimeout(90000);
+
+  test.beforeEach(async ({ context, page }) => {
+    await authenticateAsAdmin(context, page);
+  });
 
   test('TC-PHASE4-01: Export Laporan 4-Card Cascading Layout & Filter Fields Parity', async ({ page }) => {
     await page.goto('http://localhost:3001/export-laporan', { waitUntil: 'domcontentloaded' });

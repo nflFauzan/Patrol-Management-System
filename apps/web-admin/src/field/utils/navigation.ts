@@ -17,10 +17,18 @@ export function useNavigate() {
         router.forward();
       }
     } else {
-      if (options?.replace) {
-        router.replace(to);
+      if (typeof window !== 'undefined') {
+        if (options?.replace) {
+          window.location.replace(to);
+        } else {
+          window.location.href = to;
+        }
       } else {
-        router.push(to);
+        if (options?.replace) {
+          router.replace(to);
+        } else {
+          router.push(to);
+        }
       }
     }
   };

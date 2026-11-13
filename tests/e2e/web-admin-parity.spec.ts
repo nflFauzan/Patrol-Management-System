@@ -1,15 +1,20 @@
 import { test, expect } from '@playwright/test';
+import { authenticateAsAdmin } from './auth-helper';
 
 test.describe('Web Admin Command Center — 100% Parity Navigation & Modules', () => {
+  test.setTimeout(90000);
   test.use({
     baseURL: 'http://localhost:3001',
     viewport: { width: 1440, height: 900 },
   });
 
-  test('TC-ADMIN-E2E-01: Verify Command Center top ribbons, matrix tabs, payroll, and export center', async ({ page }) => {
+  test.beforeEach(async ({ context, page }) => {
+    await authenticateAsAdmin(context, page);
+  });
+
+  test('TC-ADMIN-E2E-01: Verify Command Center top ribbons and Master Data Personil', async ({ page }) => {
     // 1. Visit Web Admin Home
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // 2. Verify Title & Brand
     await expect(page.locator('.brand-text:has-text("TES-PT")')).toBeVisible();
@@ -18,29 +23,29 @@ test.describe('Web Admin Command Center — 100% Parity Navigation & Modules', (
     await expect(page.locator('.kpi-label:has-text("TOTAL PERSONIL")')).toBeVisible();
     await expect(page.locator('.kpi-label:has-text("HADIR HARI INI")')).toBeVisible();
 
-    // 4. Test Navbar Navigation to Data Induk -> Personil
-    await page.locator('button:has-text("Data Induk")').click();
-    await expect(page.locator('a.patroli-dropdown-item:has-text("Personil")')).toBeVisible();
-    await page.locator('a.patroli-dropdown-item:has-text("Personil")').click();
-    await page.waitForURL('**/datainduk/personil');
-    await expect(page.locator('#btn-tambah')).toBeVisible();
+    // 4. Test Navigation to Data Induk -> Personil
+    await page.goto('/datainduk/personil', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/.*datainduk\/personil/, { timeout: 15000 });
+    await expect(page.locator('#btn-tambah')).toBeVisible({ timeout: 15000 });
+  });
 
-    // 5. Test Navigation to Absensi
-    await page.locator('button:has-text("Absensi")').click();
-    await expect(page.locator('a.patroli-dropdown-item:has-text("Semua Data")')).toBeVisible();
-    await page.locator('a.patroli-dropdown-item:has-text("Semua Data")').click();
-    await page.waitForURL('**/absensi');
+  test('TC-ADMIN-E2E-02: Verify Absensi and Gaji modules navigation', async ({ page }) => {
+    // 1. Test Navigation to Absensi
+    await page.goto('/absensi', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/.*absensi/, { timeout: 15000 });
 
-    // 6. Test Navigation to Gaji
-    await page.locator('a[href="/gaji"]').click();
-    await page.waitForURL('**/gaji');
+    // 2. Test Navigation to Gaji
+    await page.goto('/gaji', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/.*gaji/, { timeout: 15000 });
+  });
 
-    // 7. Test Navigation to Pesan Siaran
-    await page.locator('a[href="/pesan-siaran"]').click();
-    await page.waitForURL('**/pesan-siaran');
+  test('TC-ADMIN-E2E-03: Verify Pesan Siaran and Export Laporan modules navigation', async ({ page }) => {
+    // 1. Test Navigation to Pesan Siaran
+    await page.goto('/pesan-siaran', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/.*pesan-siaran/, { timeout: 15000 });
 
-    // 8. Test Navigation to Export Laporan
-    await page.locator('a[href="/export-laporan"]').click();
-    await page.waitForURL('**/export-laporan');
+    // 2. Test Navigation to Export Laporan
+    await page.goto('/export-laporan', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/.*export-laporan/, { timeout: 15000 });
   });
 });

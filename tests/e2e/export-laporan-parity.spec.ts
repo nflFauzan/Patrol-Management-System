@@ -1,9 +1,15 @@
 import { test, expect } from '@playwright/test';
+import { authenticateAsAdmin } from './auth-helper';
 
 test.describe('Web Admin — EXPORT LAPORAN Parity Flow (100% patroli.site Parity)', () => {
+  test.setTimeout(90000);
   test.use({
     baseURL: 'http://localhost:3001',
     viewport: { width: 1440, height: 900 },
+  });
+
+  test.beforeEach(async ({ context, page }) => {
+    await authenticateAsAdmin(context, page);
   });
 
   test('TC-EXPORT-E2E-01: Verify 4-Card Layout, Cascading Dropdowns, 5 KPI Chips, and Printable Preview', async ({

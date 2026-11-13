@@ -1,9 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { authenticateAsField } from './auth-helper';
 
 test.describe('PWA Field App — 100% Parity Touch-Card Grid & Operational Flows', () => {
+  test.setTimeout(120000);
+
+  test.beforeEach(async ({ context, page }) => {
+    await authenticateAsField(context, page);
+  });
+
   test('TC-PWA-E2E-01: Verify all 8 touch cards, greeting, navigation to pages, and panic button', async ({ page }) => {
     // 1. Visit PWA Field App (Unified on Port 3001)
-    await page.goto('/validasi-patroli');
+    await page.goto('/validasi-patroli', { waitUntil: 'domcontentloaded' });
 
     // 2. Verify Greeting Header
     await expect(page.locator('text=HELLO,')).toBeVisible();
@@ -27,24 +34,24 @@ test.describe('PWA Field App — 100% Parity Touch-Card Grid & Operational Flows
 
     // 4. Test Absen Masuk -> Navigates to xxxxx_xx.php
     await page.getByRole('button', { name: 'ABSEN MASUK' }).click({ force: true });
-    await page.waitForURL('**/validasi-patroli/xxxxx_xx.php');
+    await expect(page).toHaveURL(/validasi-patroli\/xxxxx_xx\.php/);
     await expect(page.locator('text=ABSEN MASUK')).toBeVisible();
 
     // 5. Test Return to Dashboard
-    await page.goto('/validasi-patroli');
+    await page.goto('/validasi-patroli', { waitUntil: 'domcontentloaded' });
     try {
       const modal2 = page.getByRole('button', { name: 'Saya Mengerti' });
-      await modal2.waitFor({ state: 'visible', timeout: 2000 });
+      await modal2.waitFor({ state: 'visible', timeout: 1500 });
       await modal2.click();
     } catch {}
 
     // 6. Test Panic Button SOS -> Navigates to xxxxx_xxxxxxx.php
     await page.getByRole('button', { name: 'PANIC BUTTON' }).click({ force: true });
-    await page.waitForURL('**/validasi-patroli/xxxxx_xxxxxxx.php');
+    await expect(page).toHaveURL(/validasi-patroli\/xxxxx_xxxxxxx\.php/);
     await expect(page.locator('text=memicu sirine')).toBeVisible();
 
     // 7. Test Return to Dashboard
-    await page.goto('/validasi-patroli');
+    await page.goto('/validasi-patroli', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('text=HELLO,')).toBeVisible();
   });
 });

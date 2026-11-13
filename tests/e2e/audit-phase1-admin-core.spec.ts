@@ -1,10 +1,15 @@
 import { test, expect } from '@playwright/test';
+import { authenticateAsAdmin } from './auth-helper';
 
 test.describe('FASE 1: Audit Fondasi Master Data & Web Admin Core (Parity vs patroli.site)', () => {
   test.setTimeout(60000);
   test.use({
     baseURL: 'http://localhost:3001',
     viewport: { width: 1440, height: 900 },
+  });
+
+  test.beforeEach(async ({ context, page }) => {
+    await authenticateAsAdmin(context, page);
   });
 
   test('TC-PHASE1-01: Verify Dashboard KPI Ribbons, Division Cards & Brand Header', async ({ page }) => {
@@ -111,12 +116,12 @@ test.describe('FASE 1: Audit Fondasi Master Data & Web Admin Core (Parity vs pat
     const detailBtn = page.locator('button:has-text("Detail")').first();
     if (await detailBtn.isVisible()) {
       await detailBtn.click();
-      await expect(page.locator('text=DETAIL ABSENSI')).toBeVisible();
-      await expect(page.locator('text=Detail Absen Masuk')).toBeVisible();
-      await expect(page.locator('.leaflet-container').first()).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'DETAIL ABSENSI' })).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('text=Detail Absen Masuk')).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 10000 });
 
       // Close modal
-      await page.locator('button:has-text("×")').click();
+      await page.locator('button:has-text("×")').first().click();
     }
 
     // 4. Switch to Monitoring Tab

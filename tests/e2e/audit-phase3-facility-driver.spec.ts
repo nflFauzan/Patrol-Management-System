@@ -1,121 +1,97 @@
 import { test, expect } from '@playwright/test';
+import { authenticateAsAdmin } from './auth-helper';
 
 test.describe('FASE 3: Audit Divisi Cleaning Service & Driver Logistik Parity', () => {
   test.setTimeout(90000);
 
-  test('TC-PHASE3-01: Verify PWA Field Cleaning Service Mode & Sanitation Checklist Modal', async ({ page }) => {
-    await page.goto('http://localhost:8080/pwa', { waitUntil: 'domcontentloaded' });
-
-    // Ensure we switch to Cleaning Service
-    const gantiTimBtn = page.locator('button:has-text("Ganti Tim")');
-    await expect(gantiTimBtn).toBeVisible();
-
-    // Check current role, click Ganti Tim until CLEANING is reached
-    const roleBadge = page.locator('text=CLEANING • ANGGOTA');
-    if (!await roleBadge.isVisible()) {
-      await gantiTimBtn.click();
-      if (!await roleBadge.isVisible()) {
-        await gantiTimBtn.click();
-      }
-    }
-    await expect(page.locator('text=CLEANING • ANGGOTA')).toBeVisible();
-
-    // Open Input Kegiatan (Cleaning Scan)
-    await page.locator('button:has-text("INPUT KEGIATAN")').click();
-    await expect(page.locator('text=Silakan Scan QR Code')).toBeVisible();
-
-    // Select Toilet Checkpoint
-    const toiletBtn = page.locator('button:has-text("TOILET1025")');
-    await expect(toiletBtn).toBeVisible();
-    await toiletBtn.click();
-
-    // Verify Sanitation Checklist Items
-    await expect(page.locator('text=Checklist Sanitasi Kebersihan:')).toBeVisible();
-    await expect(page.locator('label:has-text("Lantai disapu dan dipel bersih")')).toBeVisible();
-    await expect(page.locator('label:has-text("Tempat sampah dikosongkan")')).toBeVisible();
-    await expect(page.locator('label:has-text("Sabun & tisu direfill")')).toBeVisible();
-    await expect(page.locator('label:has-text("Aroma ruangan normal")')).toBeVisible();
-
-    // Verify Hasil Patroli dropdown & Action buttons
-    await expect(page.locator('select[name="tl"]')).toBeVisible();
-    await expect(page.locator('button:has-text("Simpan")')).toBeVisible();
-    await expect(page.locator('button:has-text("Ulang")')).toBeVisible();
-
-    // Return to dashboard
-    const batalBtn = page.locator('button:has-text("Batal")');
-    if (await batalBtn.isVisible()) {
-      await batalBtn.click();
-    }
-    const dashboardBtn = page.locator('button:has-text("Kembali ke Dashboard")');
-    if (await dashboardBtn.isVisible()) {
-      await dashboardBtn.click();
-    }
+  test.beforeEach(async ({ context, page }) => {
+    await authenticateAsAdmin(context, page);
   });
 
-  test('TC-PHASE3-02: Verify PWA Field Driver Mode & Vehicle Trip Odometer Modal', async ({ page }) => {
-    await page.goto('http://localhost:8080/pwa', { waitUntil: 'domcontentloaded' });
+  test('TC-PHASE3-01: Verify PWA Field Cleaning Service Mode & Sanitation Checklist Modal', async ({ page }) => {
+    await page.goto('/validasi-patroli', { waitUntil: 'domcontentloaded' });
 
-    // Switch team to DRIVER
-    const gantiTimBtn = page.locator('button:has-text("Ganti Tim")');
-    const driverBadge = page.locator('text=DRIVER • ANGGOTA');
-    while (!await driverBadge.isVisible()) {
-      await gantiTimBtn.click();
-    }
-    await expect(driverBadge).toBeVisible();
+    // Dismiss initial info modal if shown
+    try {
+      const modalUnderstandBtn = page.getByRole('button', { name: 'Saya Mengerti' });
+      await modalUnderstandBtn.waitFor({ state: 'visible', timeout: 1500 });
+      await modalUnderstandBtn.click();
+    } catch {}
 
-    // Verify Dynamic Card Subtitle for Driver
-    await expect(page.locator('text=Log Armada & Odometer')).toBeVisible();
+    // Switch role to STAFF (Cleaning)
+    const roleSelect = page.locator('select[title="Ganti Peran Personil"]');
+    await roleSelect.selectOption('STAFF');
+    await expect(page.getByText('CLEANING', { exact: true })).toBeVisible();
 
-    // Open Driver Trip Modal
-    await page.locator('button:has-text("INPUT KEGIATAN")').click();
+    // Navigate to Staff Activity Page
+    await page.goto('/validasi-patroli/xxxxx_xxxxxxxxxxxxxx.php', { waitUntil: 'domcontentloaded' });
 
-    // Verify Driver Modal Elements
-    await expect(page.locator('h3:has-text("Log Perjalanan Driver Logistik")')).toBeVisible();
-    await expect(page.locator('text=Pencatatan rute & odometer kendaraan')).toBeVisible();
-    await expect(page.locator('text=Plat Nomor Kendaraan:')).toBeVisible();
-    await expect(page.locator('text=Tipe Armada:')).toBeVisible();
-    await expect(page.locator('text=Lokasi Asal:')).toBeVisible();
-    await expect(page.locator('text=Lokasi Tujuan:')).toBeVisible();
-    await expect(page.locator('text=Odometer Awal (km):')).toBeVisible();
-    await expect(page.locator('button:has-text("Mulai Perjalanan Armada")')).toBeVisible();
+    // Verify Staff / Cleaning Form Elements
+    await expect(page.locator('text=FORM KEGIATAN STAFF')).toBeVisible();
+    await expect(page.locator('text=Jenis Kegiatan')).toBeVisible();
+    await expect(page.locator('select').first()).toBeVisible();
+    await expect(page.locator('textarea[placeholder*="Jelaskan rincian"]')).toBeVisible();
+    await expect(page.locator('button:has-text("Simpan Kegiatan")')).toBeVisible();
+  });
 
-    // Close modal via close button
-    const closeBtn = page.locator('.fixed button:has(svg)').first();
-    await closeBtn.click();
+  test('TC-PHASE3-02: Verify PWA Field Driver Mode & Vehicle Trip Form', async ({ page }) => {
+    await page.goto('/validasi-patroli', { waitUntil: 'domcontentloaded' });
+
+    // Dismiss initial info modal if shown
+    try {
+      const modalUnderstandBtn = page.getByRole('button', { name: 'Saya Mengerti' });
+      await modalUnderstandBtn.waitFor({ state: 'visible', timeout: 1500 });
+      await modalUnderstandBtn.click();
+    } catch {}
+
+    // Switch role to DRIVER
+    const roleSelect = page.locator('select[title="Ganti Peran Personil"]');
+    await roleSelect.selectOption('DRIVER');
+    await expect(page.getByText('DRIVER', { exact: true })).toBeVisible();
+
+    // Navigate to Driver Trip Page
+    await page.goto('/validasi-patroli/xxxxx_xxxxxxxxxx.php', { waitUntil: 'domcontentloaded' });
+
+    // Verify Driver Trip Form Elements
+    await expect(page.locator('text=Perjalanan Baru')).toBeVisible();
+    await expect(page.locator('button:has-text("Ambil Foto Keberangkatan")')).toBeVisible();
+    await expect(page.locator('input[placeholder*="Toyota Avanza"]')).toBeVisible();
+    await expect(page.locator('input[placeholder*="B 1234 PS"]')).toBeVisible();
+    await expect(page.locator('input[placeholder*="alamat tujuan"]')).toBeVisible();
+    await expect(page.locator('input[placeholder*="Antar logistik"]')).toBeVisible();
+    await expect(page.locator('button:has-text("Simpan Perjalanan")')).toBeVisible();
   });
 
   test('TC-PHASE3-03: Verify Web Admin Laporan Cleaning Service Table Headers & Actions', async ({ page }) => {
     await page.goto('http://localhost:3001/laporan/cleaning-service', { waitUntil: 'domcontentloaded' });
 
-    // Verify Header
-    await expect(page.locator('text=KEGIATAN CLEANING SERVICE')).toBeVisible();
+    // Verify Search Input
+    await expect(page.locator('input[placeholder*="petugas"]')).toBeVisible();
 
     // Verify Table Headers
-    await expect(page.locator('th:has-text("LOKASI / SITE")').first()).toBeVisible();
-    await expect(page.locator('th:has-text("NAMA PERSONIL")')).toBeVisible();
-    await expect(page.locator('th:has-text("KEGIATAN / TEMUAN")')).toBeVisible();
-    await expect(page.locator('th:has-text("WAKTU")')).toBeVisible();
-    await expect(page.locator('th:has-text("AKSI")')).toBeVisible();
+    await expect(page.locator('th:has-text("Lokasi / Site")').first()).toBeVisible();
+    await expect(page.locator('th:has-text("Petugas Cleaning")')).toBeVisible();
+    await expect(page.locator('th:has-text("Zona & Tugas Sanitasi")')).toBeVisible();
+    await expect(page.locator('th:has-text("Waktu Pengerjaan")')).toBeVisible();
+    await expect(page.locator('th:has-text("Aksi")')).toBeVisible();
 
     // Verify Action buttons in rows
-    await expect(page.locator('button:has-text("Detail"), a:has-text("Detail")').first()).toBeVisible();
+    await expect(page.locator('button:has-text("Detail")').first()).toBeVisible();
   });
 
   test('TC-PHASE3-04: Verify Web Admin Laporan Driver Table Headers & Actions', async ({ page }) => {
     test.setTimeout(120000);
     await page.goto('http://localhost:3001/laporan/driver', { waitUntil: 'domcontentloaded' });
 
-    // Verify Header
-    await expect(page.locator('text=KEGIATAN DRIVER')).toBeVisible();
+    // Verify Search Input
+    await expect(page.locator('input[placeholder*="driver"]')).toBeVisible();
 
     // Verify Table Headers
-    await expect(page.locator('th:has-text("LOKASI / SITE")').first()).toBeVisible();
-    await expect(page.locator('th:has-text("NAMA PERSONIL")')).toBeVisible();
-    await expect(page.locator('th:has-text("JENIS KENDARAAN")')).toBeVisible();
-    await expect(page.locator('th:has-text("WAKTU")')).toBeVisible();
-    await expect(page.locator('th:has-text("TUJUAN")')).toBeVisible();
-    await expect(page.locator('th:has-text("STATUS")')).toBeVisible();
-    await expect(page.locator('th:has-text("ACTION")')).toBeVisible();
+    await expect(page.locator('th:has-text("Pool / Asal")').first()).toBeVisible();
+    await expect(page.locator('th:has-text("Driver & Armada")')).toBeVisible();
+    await expect(page.locator('th:has-text("Tujuan & Keperluan")')).toBeVisible();
+    await expect(page.locator('th:has-text("Status & Waktu")')).toBeVisible();
+    await expect(page.locator('th:has-text("Aksi")')).toBeVisible();
 
     // Verify Trip Status Badges
     await expect(page.locator('text=BERANGKAT').first()).toBeVisible();

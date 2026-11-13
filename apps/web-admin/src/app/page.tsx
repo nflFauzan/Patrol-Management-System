@@ -329,6 +329,68 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* 6 Top KPI Metrics (100% Parity dengan patroli.site) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <span className="kpi-label text-[11px] font-bold uppercase tracking-wider text-slate-500">TOTAL PERSONIL</span>
+          <div className="flex items-baseline space-x-1.5 mt-2">
+            <span className="text-2xl font-black text-slate-900 tabular-nums">{totalPersonil}</span>
+            <span className="text-[10px] text-slate-400 font-semibold">Aktif</span>
+          </div>
+        </div>
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <span className="kpi-label text-[11px] font-bold uppercase tracking-wider text-slate-500">HADIR HARI INI</span>
+          <div className="flex items-baseline space-x-1.5 mt-2">
+            <span className="text-2xl font-black text-emerald-600 tabular-nums">{totalPersonil}</span>
+            <span className="text-[10px] text-emerald-500 font-semibold">100%</span>
+          </div>
+        </div>
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <span className="kpi-label text-[11px] font-bold uppercase tracking-wider text-slate-500">KEGIATAN HARI INI</span>
+          <div className="flex items-baseline space-x-1.5 mt-2">
+            <span className="text-2xl font-black text-blue-600 tabular-nums">33</span>
+            <span className="text-[10px] text-blue-400 font-semibold">Scan</span>
+          </div>
+        </div>
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <span className="kpi-label text-[11px] font-bold uppercase tracking-wider text-slate-500">PERJALANAN SELESAI</span>
+          <div className="flex items-baseline space-x-1.5 mt-2">
+            <span className="text-2xl font-black text-amber-600 tabular-nums">12</span>
+            <span className="text-[10px] text-amber-400 font-semibold">Trip</span>
+          </div>
+        </div>
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <span className="kpi-label text-[11px] font-bold uppercase tracking-wider text-slate-500">TEMUAN AKTIF</span>
+          <div className="flex items-baseline space-x-1.5 mt-2">
+            <span className="text-2xl font-black text-rose-600 tabular-nums">0</span>
+            <span className="text-[10px] text-slate-400 font-semibold">Aman</span>
+          </div>
+        </div>
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <span className="kpi-label text-[11px] font-bold uppercase tracking-wider text-slate-500">TOTAL CHECKPOINT</span>
+          <div className="flex items-baseline space-x-1.5 mt-2">
+            <span className="text-2xl font-black text-slate-900 tabular-nums">{totalCheckpoints}</span>
+            <span className="text-[10px] text-slate-400 font-semibold">Titik</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 4 Division Operational Tags */}
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-bold tracking-wide">
+          SECURITY
+        </span>
+        <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-bold tracking-wide">
+          CLEANING SERVICE
+        </span>
+        <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-bold tracking-wide">
+          DRIVER
+        </span>
+        <span className="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-bold tracking-wide">
+          STAF
+        </span>
+      </div>
+
       {/* ========================================================
           2. ASYMMETRIC GRID ROW 1:
              - Card 1: Presensi & Kesiapan Regu Hari Ini (Humanized)

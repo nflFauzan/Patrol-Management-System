@@ -628,6 +628,11 @@ const server = http.createServer(async (req, res) => {
     return proxyHttpRequest(req, res, BACKEND_PORT);
   }
 
+  // 4b. Routing Uploads Statis Backend (/uploads/*)
+  if (pathname.startsWith('/uploads/') || pathname === '/uploads') {
+    return proxyHttpRequest(req, res, BACKEND_PORT);
+  }
+
   // 5. Routing Socket.io HTTP Polling (/socket.io/*)
   if (pathname.startsWith('/socket.io/')) {
     return proxyHttpRequest(req, res, BACKEND_PORT);

@@ -2,6 +2,7 @@
  * scripts/verify-sos-live.js
  * Live PostGIS integration verification for Panic Button SOS & WhatsApp Gateway (Tahap 4)
  */
+require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -33,7 +34,7 @@ async function runLiveSosVerification() {
     console.log(`   WA Notifications: ${comp.is_wa_notifications_enabled ? 'ENABLED' : 'DISABLED'}`);
 
     // 2. Fetch Sample Officer & Site
-    const officerRes = await client.query(`SELECT id, full_name, division FROM users WHERE role = 'PETUGAS' LIMIT 1`);
+    const officerRes = await client.query(`SELECT id, full_name, division FROM users WHERE division = 'SECURITY' OR role = 'SECURITY_OFFICER' LIMIT 1`);
     const officer = officerRes.rows[0];
     const siteRes = await client.query(`SELECT id, name FROM sites WHERE name ILIKE '%Sudirman%' LIMIT 1`);
     const site = siteRes.rows[0];
@@ -78,7 +79,7 @@ async function runLiveSosVerification() {
 
     // 4. Test Escalation to ACKNOWLEDGED
     console.log('\n3. Testing Escalation Lifecycle: ACKNOWLEDGED...');
-    const supervisorRes = await client.query(`SELECT id, full_name FROM users WHERE role = 'CHIEF_SECURITY' OR role = 'SUPERADMIN' LIMIT 1`);
+    const supervisorRes = await client.query(`SELECT id, full_name FROM users WHERE role IN ('ADMIN_SUPER', 'ADMIN_SITE', 'SECURITY_OFFICER') LIMIT 1`);
     const supervisor = supervisorRes.rows[0];
 
     const ackRes = await client.query(`

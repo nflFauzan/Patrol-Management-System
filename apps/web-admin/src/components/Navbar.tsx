@@ -62,8 +62,13 @@ export const Navbar: React.FC = () => {
     setActiveDropdown((prev) => (prev === menu ? null : menu));
   };
 
-  const handleLinkClick = () => {
+  // Close dropdowns when clicking outside or upon route change
+  useEffect(() => {
     setActiveDropdown(null);
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  const handleLinkClick = () => {
     setIsMobileMenuOpen(false);
   };
 
@@ -118,7 +123,7 @@ export const Navbar: React.FC = () => {
               <Building2 className="w-5 h-5 text-slate-950 font-bold" />
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-sm tracking-wider text-white">TES-PT</span>
+              <span className="brand-text font-extrabold text-sm tracking-wider text-white">TES-PT</span>
               <span className="text-[10px] text-teal-200/80 font-medium tracking-tight">Enterprise Ops</span>
             </div>
           </Link>

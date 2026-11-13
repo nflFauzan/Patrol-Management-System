@@ -1,45 +1,50 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
+import fs from 'fs';
+import { authenticateAsAdmin } from './auth-helper';
 
 test.describe('Laporan Security Chief & Detail Modal 100% Parity', () => {
+  test.setTimeout(90000);
   test.use({
     baseURL: 'http://localhost:3001',
     viewport: { width: 1440, height: 900 },
   });
 
+  test.beforeEach(async ({ context, page }) => {
+    await authenticateAsAdmin(context, page);
+  });
+
   test('TC-CHF-E2E-01: Verify Laporan Security Chief table and Detail Modal parity', async ({ page }) => {
     const screenshotDir = path.join(__dirname, '../../docs/superpowers/screenshots');
+    if (!fs.existsSync(screenshotDir)) {
+      fs.mkdirSync(screenshotDir, { recursive: true });
+    }
 
     // 1. Visit Laporan Security Chief page
     await page.goto('/laporan/security/chief', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('.card-header.alert.bg-dark', { timeout: 10000 });
+    await expect(page.locator('text=Evaluasi Chief')).toBeVisible();
 
-    // 2. Verify Container & Header Alert
-    const header = page.locator('.card-header.alert.bg-dark');
-    await expect(header).toBeVisible();
-    await expect(header).toContainText('KEGIATAN CHIEF');
+    // 2. Verify Table Columns & Search Filter
+    await expect(page.locator('input[placeholder*="Cari komandan"]')).toBeVisible();
+    await expect(page.locator('th:has-text("Lokasi / Site")')).toBeVisible();
+    await expect(page.locator('th:has-text("Komandan yang Dievaluasi")')).toBeVisible();
+    await expect(page.locator('th:has-text("Kedisiplinan & Koordinasi")')).toBeVisible();
+    await expect(page.locator('th:has-text("Status Insiden & Catatan")')).toBeVisible();
+    await expect(page.locator('th:has-text("Waktu Evaluasi")')).toBeVisible();
+    await expect(page.locator('th:has-text("Aksi")')).toBeVisible();
 
-    // 3. Verify Table Columns & Filter
-    await expect(page.locator('#filterAreaChief')).toBeVisible();
-    await expect(page.locator('th:has-text("Nama Komandan")')).toBeVisible();
-    await expect(page.locator('th:has-text("Kedisiplinan")')).toBeVisible();
-    await expect(page.locator('th:has-text("Koordinasi")')).toBeVisible();
-    await expect(page.locator('th:has-text("Kehadiran")')).toBeVisible();
-    await expect(page.locator('th:has-text("Insiden")')).toBeVisible();
-    await expect(page.locator('th:has-text("AKSI")')).toBeVisible();
-
-    // 4. Verify Badges in Table Row
+    // 3. Verify Badges & Content in Table Row
     const row = page.locator('table tbody tr').first();
     await expect(row).toBeVisible();
-    await expect(row.locator('.badge-secondary')).toContainText('DANDAN KOMANDAN');
-    await expect(row.locator('.badge-success').first()).toContainText('Baik');
-    await expect(row.locator('.badge-primary')).toContainText('Lengkap');
+    await expect(row).toContainText('DANDAN KOMANDAN');
+    await expect(row).toContainText('Baik');
+    await expect(row).toContainText('Lengkap');
 
     // Screenshot Table
     await page.screenshot({ path: path.join(screenshotDir, 'local_laporan_chief_table.png'), fullPage: false });
 
-    // 5. Click Detail Button
-    const detailBtn = row.locator('a.detail-record, a:has-text("Detail")');
+    // 4. Click Detail Button
+    const detailBtn = row.locator('button:has-text("Detail")');
     await expect(detailBtn).toBeVisible();
     await detailBtn.click();
 

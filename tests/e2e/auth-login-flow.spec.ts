@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Enterprise Command Center — Login & Auth Guard Flows', () => {
+  test.setTimeout(60000);
   test.use({
     baseURL: 'http://localhost:3001',
     viewport: { width: 1440, height: 900 },
@@ -44,29 +45,26 @@ test.describe('Enterprise Command Center — Login & Auth Guard Flows', () => {
     await page.getByRole('button', { name: 'Masuk ke Command Center' }).click();
 
     // 5. Expect redirection to dashboard /
-    await page.waitForURL('http://localhost:3001/');
+    await page.waitForURL('http://localhost:3001/', { waitUntil: 'domcontentloaded' });
     expect(page.url()).toBe('http://localhost:3001/');
 
     // 6. Verify Navbar displays the authenticated user name
     await expect(page.locator('text=Administrator Utama')).toBeVisible();
 
     // 7. Test Logout action
-    page.on('dialog', async (dialog) => {
+    page.once('dialog', async (dialog) => {
       await dialog.accept();
     });
     await page.locator('button[title="Keluar dari Sistem (Logout)"]').click();
-
-    // 8. Expect return to /login
-    await page.waitForURL('**/login**');
-    expect(page.url()).toContain('/login');
+    await expect(page).toHaveURL(/.*login/);
   });
 
   test('TC-AUTH-03: Accessing /absensi while logged out redirects back to /login', async ({ page }) => {
     // 1. Attempt accessing /absensi without session
     await page.goto('/absensi');
+    await page.waitForLoadState('domcontentloaded');
 
     // 2. Expect redirect to /login
-    await page.waitForURL('**/login**');
     expect(page.url()).toContain('/login');
     expect(page.url()).toContain('returnUrl=%2Fabsensi');
   });

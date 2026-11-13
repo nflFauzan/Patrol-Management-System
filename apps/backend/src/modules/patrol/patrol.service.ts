@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { EventsGateway } from '../gateway/events.gateway';
+import { saveBase64Image, normalizePhotoUrl } from '../../common/utils/file-upload.util';
 import { 
   HourlyPatrolMatrixResponse, 
   HourlyPatrolMatrixRow, 
@@ -107,6 +108,7 @@ export class PatrolService {
 
     // 3. Insert patrol log
     const statusResult = data.statusResult || 'Situasi Aman Terkendali';
+    const savedPhotoKey = data.photoKey ? saveBase64Image(data.photoKey, 'patrol', userId) : null;
     const row = await this.db.queryOne<any>(
       `
       INSERT INTO patrol_logs (
@@ -132,7 +134,7 @@ export class PatrolService {
         data.longitude,
         statusResult,
         data.notes || null,
-        data.photoKey || null,
+        savedPhotoKey,
       ],
     );
 
@@ -420,7 +422,7 @@ export class PatrolService {
         dateTimeFull,
         latitude: Number(r.latitude) || 0,
         longitude: Number(r.longitude) || 0,
-        photoUrl: r.photoKey,
+        photoUrl: normalizePhotoUrl(r.photoKey),
         tindakLanjutStatus: r.ticketStatus === 'RESOLVED' ? 'Sudah di TL' : null,
       };
     });
@@ -489,7 +491,7 @@ export class PatrolService {
       latitude: lat,
       longitude: lng,
       googleMapsUrl,
-      photoUrl: r.photoKey,
+      photoUrl: normalizePhotoUrl(r.photoKey),
       tindakLanjutStatus: r.ticketStatus === 'RESOLVED' ? 'Sudah di TL' : null,
     };
   }

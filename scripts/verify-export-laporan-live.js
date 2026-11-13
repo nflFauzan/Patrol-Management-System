@@ -2,6 +2,7 @@
  * scripts/verify-export-laporan-live.js
  * Live PostGIS DB Verification for EXPORT LAPORAN Parity (100% Parity dengan patroli.site)
  */
+require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -58,7 +59,7 @@ async function runLiveExportVerification() {
       FROM users u 
       JOIN user_site_assignments usa ON u.id = usa.user_id
       JOIN sites s ON usa.site_id = s.id
-      WHERE u.role = 'PETUGAS' AND u.division = 'Security' 
+      WHERE (u.role = 'SECURITY_OFFICER' OR u.role = 'PETUGAS') AND u.division ILIKE '%security%' 
       LIMIT 1
     `);
     const officer = officerRes.rows[0];

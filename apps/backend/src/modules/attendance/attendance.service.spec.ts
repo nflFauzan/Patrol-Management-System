@@ -1,6 +1,6 @@
 import { AttendanceService } from './attendance.service';
 import { DatabaseService } from '../../database/database.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AttendanceStatus } from '@patrol/types';
 
 describe('AttendanceService (HRIS Attendance & Shift Engine)', () => {
@@ -165,6 +165,100 @@ describe('AttendanceService (HRIS Attendance & Shift Engine)', () => {
 
       expect(durationMinutes).toBe(480);
       expect(overtimeMinutes).toBe(0);
+    });
+  });
+
+  describe('TC-ATT-11: Clock-in duplicate & Clock-out without clock-in', () => {
+    it('TC-ATT-11a: should throw BadRequestException when already clocked in today', async () => {
+      // getTodayStatus returns existing record with clockInTime set
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({
+        id: 'att-existing',
+        userId: 'user-01',
+        siteId: 'site-01',
+        date: '2026-10-12',
+        statusType: 1,
+        clockInTime: '2026-10-12T06:55:00Z',
+        clockInLatitude: -6.2215,
+        clockInLongitude: 106.8055,
+        clockInDistanceMeters: 35,
+        isLate: false,
+        lateMinutes: 0,
+        geofenceRadiusMeters: 100,
+        division: 'SECURITY',
+      });
+
+      await expect(
+        service.clockIn('user-01', {
+          siteId: 'site-01',
+          latitude: -6.2215,
+          longitude: 106.8055,
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('TC-ATT-11b: should throw NotFoundException when clocking out without prior clock-in record', async () => {
+      // The clockOut method queries attendance by attendanceId + userId → null means not found
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce(null);
+
+      await expect(
+        service.clockOut('user-01', {
+          attendanceId: 'non-existent-att-id',
+          latitude: -6.2215,
+          longitude: 106.8055,
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('TC-ATT-12: calculateWorkingHours edge cases', () => {
+    it('TC-ATT-12a: standard 8-hour shift returns 480 minutes, 0 overtime', () => {
+      const clockIn = new Date('2026-10-12T07:00:00');
+      const clockOut = new Date('2026-10-12T15:00:00');
+      const { durationMinutes, overtimeMinutes } = service.calculateWorkingHours(clockIn, clockOut);
+      expect(durationMinutes).toBe(480);
+      expect(overtimeMinutes).toBe(0);
+    });
+
+    it('TC-ATT-12b: 10-hour shift yields 600 minutes total and 120 minutes overtime', () => {
+      const clockIn = new Date('2026-10-12T07:00:00');
+      const clockOut = new Date('2026-10-12T17:00:00');
+      const { durationMinutes, overtimeMinutes } = service.calculateWorkingHours(clockIn, clockOut);
+      expect(durationMinutes).toBe(600);
+      expect(overtimeMinutes).toBe(120);
+    });
+
+    it('TC-ATT-12c: night shift crossing midnight (23:00 → 07:00) = 480 minutes, NOT negative', () => {
+      const clockIn = new Date('2026-10-12T23:00:00');
+      const clockOut = new Date('2026-10-13T07:00:00');
+      const { durationMinutes, overtimeMinutes } = service.calculateWorkingHours(clockIn, clockOut);
+      expect(durationMinutes).toBe(480);
+      expect(overtimeMinutes).toBe(0);
+    });
+  });
+
+  describe('TC-ATT-13: calculateLateMinutes grace period boundary', () => {
+    it('TC-ATT-13a: arriving exactly at grace period boundary (15 mins) → 0 late minutes', () => {
+      const checkInTime = new Date('2026-10-12T07:15:00'); // exactly 15 mins late
+      const lateMins = service.calculateLateMinutes(checkInTime, '07:00:00', 15);
+      expect(lateMins).toBe(0);
+    });
+
+    it('TC-ATT-13b: arriving 1 minute within grace period (14 mins late) → 0 late minutes', () => {
+      const checkInTime = new Date('2026-10-12T07:14:00');
+      const lateMins = service.calculateLateMinutes(checkInTime, '07:00:00', 15);
+      expect(lateMins).toBe(0);
+    });
+
+    it('TC-ATT-13c: arriving 30 minutes late (> 15 grace) → 15 charged late minutes', () => {
+      const checkInTime = new Date('2026-10-12T07:30:00');
+      const lateMins = service.calculateLateMinutes(checkInTime, '07:00:00', 15);
+      expect(lateMins).toBe(15);
+    });
+
+    it('TC-ATT-13d: arriving on time → 0 late minutes', () => {
+      const checkInTime = new Date('2026-10-12T07:00:00');
+      const lateMins = service.calculateLateMinutes(checkInTime, '07:00:00', 15);
+      expect(lateMins).toBe(0);
     });
   });
 

@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (tokenValue) {
       document.cookie = `patrol_session=${tokenValue}; path=/; max-age=86400; SameSite=Lax`;
     } else {
-      document.cookie = 'patrol_session=; path=/; max-age=0; SameSite=Lax';
+      document.cookie = 'patrol_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; SameSite=Lax';
     }
   };
 
@@ -238,7 +238,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('patrol_auth_token');
     localStorage.removeItem('patrol_user');
     setAuthCookie(null);
-    router.replace('/login');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    } else {
+      router.replace('/login');
+    }
   }, [router]);
 
   return (

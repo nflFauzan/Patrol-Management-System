@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get('patrol_session')?.value;
+  const rawToken = request.cookies.get('patrol_session')?.value?.trim();
+  const isAuthenticated = !!(rawToken && rawToken.length > 20);
 
   const isPublicRoute =
     pathname === '/login' ||
@@ -15,14 +16,14 @@ export function middleware(request: NextRequest) {
     pathname.includes('.');
 
   // 1. Unauthenticated user trying to access protected route (e.g. '/' or '/absensi')
-  if (!token && !isPublicRoute) {
+  if (!isAuthenticated && !isPublicRoute) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('returnUrl', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   // 2. Already authenticated user trying to access /login -> redirect to dashboard
-  if (token && (pathname === '/login' || pathname === '/login.php')) {
+  if (isAuthenticated && (pathname === '/login' || pathname === '/login.php')) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 

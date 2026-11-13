@@ -2,6 +2,7 @@
  * Live Verification Script for patroli.site Parity Features
  * Tests Attendance Matrix (1-31), Hourly Patrol Matrix (24h), Payroll engine, Bulk Import, and Division Logs
  */
+require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({

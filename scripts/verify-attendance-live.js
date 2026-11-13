@@ -1,6 +1,7 @@
 /**
  * Live PostGIS DB Verification Script for Attendance & Geofencing (Tahap 2)
  */
+require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -16,8 +17,8 @@ async function main() {
   
   try {
     // 1. Get test user and site
-    const userRes = await pool.query(`SELECT id, username, full_name, division FROM users WHERE username = 'testi'`);
-    if (userRes.rows.length === 0) throw new Error('User testi not found');
+    const userRes = await pool.query(`SELECT id, username, full_name, division FROM users WHERE username IN ('satpamtest', 'testi') LIMIT 1`);
+    if (userRes.rows.length === 0) throw new Error('User satpamtest not found');
     const user = userRes.rows[0];
 
     const siteRes = await pool.query(`SELECT id, name, geofence_radius_meters, ST_AsText(coordinates) as coords FROM sites WHERE name = 'Head Office Sudirman'`);

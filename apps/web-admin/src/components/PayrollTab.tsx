@@ -284,9 +284,10 @@ export const PayrollTab: React.FC<PayrollTabProps> = ({ selectedSiteId: initialS
     });
   }, [payrollRows, searchQuery, selectedSite, selectedPosisi]);
 
-  const formatRupiah = (val?: number | string) => {
-    const num = typeof val === 'string' ? parseInt(val, 10) : val;
-    return 'Rp ' + (num || 0).toLocaleString('id-ID');
+  const formatRupiah = (val?: number | string | null) => {
+    if (val === null || val === undefined) return 'Rp 0';
+    const num = typeof val === 'string' ? parseFloat(val) : Number(val);
+    return 'Rp ' + (isNaN(num) ? 0 : num).toLocaleString('id-ID');
   };
 
   // Print Slip Gaji A4 (100% Parity with patroli.site .btn-cetak-gaji)

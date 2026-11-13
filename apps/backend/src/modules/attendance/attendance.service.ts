@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException, Optional, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { EventsGateway } from '../gateway/events.gateway';
+import { saveBase64Image, normalizePhotoUrl } from '../../common/utils/file-upload.util';
 import { 
   ClockInRequestDto, 
   ClockOutRequestDto, 
@@ -62,13 +63,13 @@ export class AttendanceService {
       clockInTime: row.clockInTime || null,
       clockInLatitude: row.clockInLatitude ? Number(row.clockInLatitude) : null,
       clockInLongitude: row.clockInLongitude ? Number(row.clockInLongitude) : null,
-      clockInPhotoUrl: row.clockInPhotoUrl || null,
+      clockInPhotoUrl: normalizePhotoUrl(row.clockInPhotoUrl),
       clockInWithinGeofence: isClockInWithinGeofence,
       clockInDistanceMeters: row.clockInDistanceMeters !== null ? Number(row.clockInDistanceMeters) : null,
       clockOutTime: row.clockOutTime || null,
       clockOutLatitude: row.clockOutLatitude ? Number(row.clockOutLatitude) : null,
       clockOutLongitude: row.clockOutLongitude ? Number(row.clockOutLongitude) : null,
-      clockOutPhotoUrl: row.clockOutPhotoUrl || null,
+      clockOutPhotoUrl: normalizePhotoUrl(row.clockOutPhotoUrl),
       clockOutWithinGeofence: isClockOutWithinGeofence,
       clockOutDistanceMeters: row.clockOutDistanceMeters !== null ? Number(row.clockOutDistanceMeters) : null,
       status,
@@ -178,7 +179,7 @@ export class AttendanceService {
     const isLate = lateMinutes > 0;
 
     // 4. Save photo key if provided
-    const photoKey = dto.photoBase64 ? `selfie_in_${userId}_${Date.now()}.jpg` : null;
+    const photoKey = dto.photoBase64 ? saveBase64Image(dto.photoBase64, 'selfie_in', userId) : null;
 
     // 5. Insert attendance record
     const insertSql = `
@@ -268,7 +269,7 @@ export class AttendanceService {
     const now = new Date();
     const { durationMinutes, overtimeMinutes } = this.calculateWorkingHours(clockInDate, now);
 
-    const photoKey = dto.photoBase64 ? `selfie_out_${userId}_${Date.now()}.jpg` : null;
+    const photoKey = dto.photoBase64 ? saveBase64Image(dto.photoBase64, 'selfie_out', userId) : null;
 
     const updateSql = `
       UPDATE attendances
@@ -335,7 +336,7 @@ export class AttendanceService {
     const user = await this.db.queryOne<any>(`SELECT division FROM users WHERE id = $1`, [userId]);
     if (!user) throw new NotFoundException('User not found');
 
-    const attachmentKey = dto.attachmentBase64 ? `leave_${userId}_${Date.now()}.jpg` : null;
+    const attachmentKey = dto.attachmentBase64 ? saveBase64Image(dto.attachmentBase64, 'leave', userId) : null;
 
     const sql = `
       INSERT INTO attendances (
@@ -694,7 +695,7 @@ export class AttendanceService {
         clockInWithinGeofence,
         clockInLatitude: r.clockInLatitude ? Number(r.clockInLatitude) : null,
         clockInLongitude: r.clockInLongitude ? Number(r.clockInLongitude) : null,
-        clockInPhotoUrl: r.clockInPhotoUrl || null,
+        clockInPhotoUrl: normalizePhotoUrl(r.clockInPhotoUrl),
         clockInDistanceMeters: clockInDist,
         isClockedOut,
         isLupaAbsenPulang,
@@ -703,7 +704,7 @@ export class AttendanceService {
         clockOutWithinGeofence,
         clockOutLatitude: r.clockOutLatitude ? Number(r.clockOutLatitude) : null,
         clockOutLongitude: r.clockOutLongitude ? Number(r.clockOutLongitude) : null,
-        clockOutPhotoUrl: r.clockOutPhotoUrl || null,
+        clockOutPhotoUrl: normalizePhotoUrl(r.clockOutPhotoUrl),
         clockOutDistanceMeters: clockOutDist,
         siteLatitude: r.siteLatitude ? Number(r.siteLatitude) : null,
         siteLongitude: r.siteLongitude ? Number(r.siteLongitude) : null,

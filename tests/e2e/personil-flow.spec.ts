@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { authenticateAsAdmin } from './auth-helper';
 
 test.describe('Web Admin — Data Induk Personil Flow & Parity (100% patroli.site)', () => {
   test.use({
@@ -6,12 +7,15 @@ test.describe('Web Admin — Data Induk Personil Flow & Parity (100% patroli.sit
     viewport: { width: 1440, height: 900 },
   });
 
+  test.beforeEach(async ({ context, page }) => {
+    await authenticateAsAdmin(context, page);
+  });
+
   test('TC-PERSONIL-E2E-01: Verify 2-Panel Form Tambah, Cascading ID Card Filter, and Password-Protected Deletion', async ({
     page,
   }) => {
     // 1. Visit Web Admin Data Induk Personil
-    await page.goto('/datainduk/personil');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/datainduk/personil', { waitUntil: 'domcontentloaded' });
 
     // Verify Title & Header Action Buttons
     await expect(page.locator('#btn-tambah')).toBeVisible();
@@ -43,7 +47,7 @@ test.describe('Web Admin — Data Induk Personil Flow & Parity (100% patroli.sit
 
     // 3. Test ID Card Modal & 5-Theme Ribbon Switcher
     await btnCetak.click();
-    await expect(page.locator('text=Cetak Kartu Tanda Anggota (ID Card Resmi)')).toBeVisible();
+    await expect(page.locator('text=Cetak Kartu Tanda Anggota (ID Card Resmi)')).toBeVisible({ timeout: 15000 });
     await expect(page.getByRole('button', { name: 'B1 Navy', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'B2 Blue', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'B3 Red', exact: true })).toBeVisible();

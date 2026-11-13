@@ -2,6 +2,7 @@
  * Verification Script: Live Database Testing for Driver Fleet Trip Logs & HRIS Attendance Recap
  * PostGIS 3.5 + PostgreSQL 17 in Docker (patrol_postgres)
  */
+require('dotenv').config();
 const { Client } = require('pg');
 
 async function verifyDriverAndHris() {

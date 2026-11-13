@@ -21,12 +21,13 @@ export default defineConfig({
   projects: [
     {
       name: 'Mobile Chrome (PWA)',
-      testMatch: '**/pwa-field-flow.spec.ts',
+      testMatch: '**/pwa-*.spec.ts',
       use: { ...devices['Pixel 5'], baseURL: 'http://localhost:3001', ignoreHTTPSErrors: true },
     },
     {
       name: 'Desktop Chrome (Web Admin)',
-      testMatch: '**/*{admin,personil,chief,export,security,audit,phase,auth}*.spec.ts',
+      testMatch: '**/*.spec.ts',
+      testIgnore: '**/pwa-*.spec.ts',
       use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:3001' },
     },
   ],
