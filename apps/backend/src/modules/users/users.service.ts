@@ -37,7 +37,11 @@ export class UsersService {
       potonganBpjs: Number(row.potongan_bpjs || 0),
       potonganAlpa: Number(row.potongan_alpa || 0),
       potonganLupaAbsen: Number(row.potongan_lupa_absen || 0),
-      isActive: row.is_active ?? true,
+      isActive: row.is_active !== undefined ? row.is_active : row.isActive !== undefined ? row.isActive : true,
+      isApproved: row.is_approved !== undefined ? row.is_approved : row.isApproved !== undefined ? row.isApproved : false,
+      approvedBy: row.approved_by || row.approvedBy || null,
+      approvedAt: row.approved_at || row.approvedAt || null,
+      rejectionReason: row.rejection_reason || row.rejectionReason || null,
       avatarUrl: row.photo_key || row.avatarUrl || null,
       lastLoginAt: row.last_login_at || null,
       createdAt: row.created_at || new Date().toISOString(),
@@ -407,6 +411,8 @@ export class UsersService {
         tunjangan = COALESCE($5, tunjangan), 
         approved_by = $6, 
         approved_at = CURRENT_TIMESTAMP,
+        failed_login_attempts = 0,
+        locked_until = NULL,
         updated_at = CURRENT_TIMESTAMP
        WHERE id = $7
        RETURNING id, username, full_name as "fullName", role, division, is_approved as "isApproved", is_active as "isActive"`,
