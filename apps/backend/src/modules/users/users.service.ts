@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
-import { User, UserRole, Division, SecurityRank } from '@patrol/types';
+import { User, UserRole, Division, SecurityRank, ApproveUserDto, RejectUserDto, RoleDefinition, PermissionDefinition } from '@patrol/types';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { VerifyDeleteDto } from './dto/verify-delete.dto';
@@ -355,5 +355,175 @@ export class UsersService {
       siteId: u.siteId,
       qrToken: `USER-${u.id.substring(0, 8).toUpperCase()}`,
     }));
+  }
+
+  async getApprovalQueue(): Promise<any[]> {
+    const rows = await this.db.query<any>(
+      `SELECT 
+        u.id, 
+        u.nik, 
+        u.username, 
+        u.full_name as "fullName", 
+        u.email, 
+        u.phone_number as "phone", 
+        u.division, 
+        u.created_at as "createdAt", 
+        u.is_approved as "isApproved", 
+        u.is_active as "isActive"
+       FROM users u 
+       WHERE u.is_approved = false AND u.rejection_reason IS NULL 
+       ORDER BY u.created_at DESC`
+    );
+    return rows;
+  }
+
+  async approveUser(userId: string, dto: ApproveUserDto, adminId?: string): Promise<User> {
+    const existing = await this.db.queryOne<any>(`SELECT id, username, role FROM users WHERE id = $1`, [userId]);
+    if (!existing) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Resolve role: could be role UUID or code
+    let roleCode: string = dto.roleId;
+    let roleId: string = dto.roleId;
+    const roleRow = await this.db.queryOne<any>(
+      `SELECT id, code FROM roles WHERE id::text = $1 OR code = $1 LIMIT 1`,
+      [dto.roleId]
+    );
+    if (roleRow) {
+      roleCode = roleRow.code;
+      roleId = roleRow.id;
+    }
+
+    // Update users table
+    const updated = await this.db.queryOne<any>(
+      `UPDATE users SET 
+        is_approved = true, 
+        is_active = true, 
+        role = $1, 
+        division = $2, 
+        security_rank = $3, 
+        gaji_pokok = COALESCE($4, gaji_pokok), 
+        tunjangan = COALESCE($5, tunjangan), 
+        approved_by = $6, 
+        approved_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+       WHERE id = $7
+       RETURNING id, username, full_name as "fullName", role, division, is_approved as "isApproved", is_active as "isActive"`,
+      [
+        roleCode,
+        dto.division,
+        dto.securityRank || null,
+        dto.gajiPokok || null,
+        dto.tunjangan || null,
+        adminId || null,
+        userId,
+      ]
+    );
+
+    // Assign to user_roles
+    await this.db.query(`DELETE FROM user_roles WHERE user_id = $1`, [userId]);
+    await this.db.query(`INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [userId, roleId]);
+
+    // Assign to user_site_assignments
+    if (dto.siteId) {
+      await this.db.query(`DELETE FROM user_site_assignments WHERE user_id = $1`, [userId]);
+      await this.db.query(`INSERT INTO user_site_assignments (user_id, site_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [userId, dto.siteId]);
+    }
+
+    this.logger.log(`User ${userId} (${existing.username}) approved by admin ${adminId} as ${roleCode}`);
+    return this.mapUser(updated);
+  }
+
+  async rejectUser(userId: string, dto: RejectUserDto, adminId?: string): Promise<any> {
+    if (!dto.reason || dto.reason.trim() === '') {
+      throw new BadRequestException('Alasan penolakan wajib diisi');
+    }
+
+    const existing = await this.db.queryOne<any>(`SELECT id, username FROM users WHERE id = $1`, [userId]);
+    if (!existing) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const updated = await this.db.queryOne<any>(
+      `UPDATE users SET 
+        is_approved = false, 
+        is_active = false, 
+        rejection_reason = $1, 
+        approved_by = $2, 
+        approved_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+       WHERE id = $3
+       RETURNING id, username, rejection_reason as "rejectionReason", is_approved as "isApproved", is_active as "isActive"`,
+      [dto.reason.trim(), adminId || null, userId]
+    );
+
+    this.logger.log(`User ${userId} (${existing.username}) rejected by admin ${adminId}: ${dto.reason}`);
+    return updated;
+  }
+
+  async getAllRoles(): Promise<RoleDefinition[]> {
+    const roles = await this.db.query<any>(
+      `SELECT r.id, r.code, r.name, r.description, r.is_system as "isSystem", r.is_active as "isActive", r.created_at as "createdAt"
+       FROM roles r
+       ORDER BY r.is_system DESC, r.name ASC`
+    );
+
+    const rolePerms = await this.db.query<any>(
+      `SELECT rp.role_id, p.code as permission_code
+       FROM role_permissions rp
+       JOIN permissions p ON p.id = rp.permission_id`
+    );
+
+    const permsByRole = new Map<string, string[]>();
+    for (const rp of rolePerms) {
+      const list = permsByRole.get(rp.role_id) || [];
+      list.push(rp.permission_code);
+      permsByRole.set(rp.role_id, list);
+    }
+
+    return roles.map((r) => ({
+      ...r,
+      permissions: permsByRole.get(r.id) || [],
+    }));
+  }
+
+  async createRole(dto: { code: string; name: string; description?: string; permissions?: string[] }): Promise<RoleDefinition> {
+    const code = dto.code.trim().toUpperCase();
+    const existing = await this.db.queryOne(`SELECT id FROM roles WHERE code = $1`, [code]);
+    if (existing) {
+      throw new BadRequestException(`Role with code ${code} already exists`);
+    }
+
+    const role = await this.db.queryOne<any>(
+      `INSERT INTO roles (code, name, description, is_system, is_active, created_at, updated_at)
+       VALUES ($1, $2, $3, false, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       RETURNING id, code, name, description, is_system as "isSystem", is_active as "isActive"`,
+      [code, dto.name.trim(), dto.description || null]
+    );
+
+    if (dto.permissions && dto.permissions.length > 0) {
+      for (const permCode of dto.permissions) {
+        await this.db.query(
+          `INSERT INTO role_permissions (role_id, permission_id)
+           SELECT $1, id FROM permissions WHERE code = $2
+           ON CONFLICT DO NOTHING`,
+          [role.id, permCode]
+        );
+      }
+    }
+
+    return {
+      ...role,
+      permissions: dto.permissions || [],
+    };
+  }
+
+  async getAllPermissions(): Promise<PermissionDefinition[]> {
+    return this.db.query<PermissionDefinition>(
+      `SELECT id, code, name, category, description, created_at as "createdAt"
+       FROM permissions
+       ORDER BY category ASC, name ASC`
+    );
   }
 }

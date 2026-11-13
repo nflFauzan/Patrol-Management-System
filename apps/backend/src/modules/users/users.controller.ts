@@ -16,12 +16,42 @@ import { VerifyDeleteDto } from './dto/verify-delete.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { UserRole, User } from '@patrol/types';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
+import { Permissions } from '../../common/decorators/permissions.decorator';
+import { UserRole, User, ApproveUserDto, RejectUserDto } from '@patrol/types';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get('approval-queue')
+  @Permissions('USER:APPROVE')
+  async getApprovalQueue(): Promise<any[]> {
+    return this.usersService.getApprovalQueue();
+  }
+
+  @Post(':id/approve')
+  @Permissions('USER:APPROVE')
+  async approveUser(
+    @Param('id') id: string,
+    @Body() dto: ApproveUserDto,
+    @Request() req: any,
+  ): Promise<any> {
+    const adminId = req.user?.id || req.user?.sub;
+    return this.usersService.approveUser(id, dto, adminId);
+  }
+
+  @Post(':id/reject')
+  @Permissions('USER:APPROVE')
+  async rejectUser(
+    @Param('id') id: string,
+    @Body() dto: RejectUserDto,
+    @Request() req: any,
+  ): Promise<any> {
+    const adminId = req.user?.id || req.user?.sub;
+    return this.usersService.rejectUser(id, dto, adminId);
+  }
 
   @Get('id-card-batch')
   async getIdCardBatch(
