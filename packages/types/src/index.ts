@@ -111,6 +111,12 @@ export interface User {
   potonganAlpa?: number;
   potonganLupaAbsen?: number;
   isActive: boolean;
+  isApproved?: boolean;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  rejectionReason?: string | null;
+  permissions?: string[];
+  customRoleIds?: string[];
   avatarUrl?: string | null;
   lastLoginAt?: string | null;
   createdAt: string;
@@ -714,6 +720,52 @@ export interface PaginatedResponse<T = unknown> {
 }
 
 // Auth DTOs
+export interface RoleDefinition {
+  id: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isSystem: boolean;
+  isActive: boolean;
+  permissions?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PermissionDefinition {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  description?: string | null;
+  createdAt?: string;
+}
+
+export interface RegisterRequestDto {
+  fullName: string;
+  nik: string;
+  username: string;
+  email: string;
+  phone: string;
+  password: string;
+  passwordConfirm: string;
+  divisionInterest: Division;
+  hp_input?: string;
+}
+
+export interface ApproveUserDto {
+  roleId: string;
+  division: Division;
+  siteId: string;
+  securityRank?: SecurityRank | null;
+  gajiPokok?: number;
+  tunjangan?: number;
+}
+
+export interface RejectUserDto {
+  reason: string;
+}
+
 export interface LoginRequestDto {
   username: string;
   password: string;
