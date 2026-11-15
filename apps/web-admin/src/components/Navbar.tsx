@@ -63,7 +63,7 @@ export const Navbar: React.FC = () => {
   }, []);
 
   // Check active routes
-  const isHomeActive = pathname === '/';
+  const isDashboardActive = pathname === '/dashboard' || pathname === '/';
   const isDataIndukActive = pathname.startsWith('/datainduk');
   const isAbsensiActive = pathname.startsWith('/absensi');
   const isLaporanActive = pathname.startsWith('/laporan');
@@ -131,7 +131,7 @@ export const Navbar: React.FC = () => {
             ======================================================== */}
         <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
           {/* BRAND LOGO & TITLE */}
-          <Link href="/" onClick={handleLinkClick} className="flex items-center space-x-3 group">
+          <Link href="/dashboard" onClick={handleLinkClick} className="flex items-center space-x-3 group">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/20 group-hover:scale-105 transition-all">
               <Building2 className="w-5 h-5 text-slate-950 font-bold" />
             </div>
@@ -145,13 +145,12 @@ export const Navbar: React.FC = () => {
           <nav className="hidden lg:flex items-center bg-white/10 backdrop-blur-xl border border-white/15 rounded-full p-1.5 shadow-2xl shadow-slate-950/20 space-x-0.5">
             {/* OVERVIEW */}
             <Link
-              href="/"
+              href="/dashboard"
               onClick={handleLinkClick}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                isHomeActive
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${isDashboardActive
                   ? 'bg-white/25 text-white shadow-sm font-bold backdrop-blur-md'
                   : 'text-slate-200 hover:text-white hover:bg-white/10'
-              }`}
+                }`}
             >
               Overview
             </Link>
@@ -162,17 +161,15 @@ export const Navbar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => toggleDropdown('DATA_INDUK')}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                    isDataIndukActive || activeDropdown === 'DATA_INDUK'
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${isDataIndukActive || activeDropdown === 'DATA_INDUK'
                       ? 'bg-white/25 text-white shadow-sm font-bold'
                       : 'text-slate-200 hover:text-white hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   <span>Data Induk</span>
                   <ChevronDown
-                    className={`w-3 h-3 transition-transform ${
-                      activeDropdown === 'DATA_INDUK' ? 'rotate-180' : ''
-                    }`}
+                    className={`w-3 h-3 transition-transform ${activeDropdown === 'DATA_INDUK' ? 'rotate-180' : ''
+                      }`}
                   />
                 </button>
 
@@ -186,11 +183,10 @@ export const Navbar: React.FC = () => {
                         <Link
                           href="/datainduk/area"
                           onClick={handleLinkClick}
-                          className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
-                            pathname === '/datainduk/area'
+                          className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${pathname === '/datainduk/area'
                               ? 'bg-white/20 text-white font-bold'
                               : 'text-slate-300 hover:text-white hover:bg-white/10'
-                          }`}
+                            }`}
                         >
                           <Globe className="w-4 h-4 text-cyan-400" />
                           <span>Area & Geofence</span>
@@ -198,11 +194,10 @@ export const Navbar: React.FC = () => {
                         <Link
                           href="/datainduk/checkpoint"
                           onClick={handleLinkClick}
-                          className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
-                            pathname === '/datainduk/checkpoint'
+                          className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${pathname === '/datainduk/checkpoint'
                               ? 'bg-white/20 text-white font-bold'
                               : 'text-slate-300 hover:text-white hover:bg-white/10'
-                          }`}
+                            }`}
                         >
                           <Building className="w-4 h-4 text-emerald-400" />
                           <span>Titik Checkpoint QR</span>
@@ -210,11 +205,10 @@ export const Navbar: React.FC = () => {
                         <Link
                           href="/datainduk/personil"
                           onClick={handleLinkClick}
-                          className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
-                            pathname === '/datainduk/personil'
+                          className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${pathname === '/datainduk/personil'
                               ? 'bg-white/20 text-white font-bold'
                               : 'text-slate-300 hover:text-white hover:bg-white/10'
-                          }`}
+                            }`}
                         >
                           <Users className="w-4 h-4 text-amber-400" />
                           <span>Data Personil</span>
@@ -225,11 +219,10 @@ export const Navbar: React.FC = () => {
                       <Link
                         href="/datainduk/approval"
                         onClick={handleLinkClick}
-                        className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
-                          pathname === '/datainduk/approval'
+                        className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${pathname === '/datainduk/approval'
                             ? 'bg-white/20 text-white font-bold'
                             : 'text-slate-300 hover:text-white hover:bg-white/10'
-                        }`}
+                          }`}
                       >
                         <UserCheck className="w-4 h-4 text-blue-400" />
                         <div className="flex items-center justify-between flex-1">
@@ -242,11 +235,10 @@ export const Navbar: React.FC = () => {
                       <Link
                         href="/datainduk/rbac"
                         onClick={handleLinkClick}
-                        className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
-                          pathname === '/datainduk/rbac'
+                        className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${pathname === '/datainduk/rbac'
                             ? 'bg-white/20 text-white font-bold'
                             : 'text-slate-300 hover:text-white hover:bg-white/10'
-                        }`}
+                          }`}
                       >
                         <Shield className="w-4 h-4 text-purple-400" />
                         <span>Hak Akses & Role</span>
@@ -262,11 +254,10 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/absensi"
                 onClick={handleLinkClick}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  isAbsensiActive
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${isAbsensiActive
                     ? 'bg-white/25 text-white shadow-sm font-bold backdrop-blur-md'
                     : 'text-slate-200 hover:text-white hover:bg-white/10'
-                }`}
+                  }`}
               >
                 Absensi
               </Link>
@@ -277,11 +268,10 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/laporan"
                 onClick={handleLinkClick}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  isLaporanActive
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${isLaporanActive
                     ? 'bg-white/25 text-white shadow-sm font-bold backdrop-blur-md'
                     : 'text-slate-200 hover:text-white hover:bg-white/10'
-                }`}
+                  }`}
               >
                 Laporan
               </Link>
@@ -292,11 +282,10 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/gaji"
                 onClick={handleLinkClick}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  isGajiActive
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${isGajiActive
                     ? 'bg-white/25 text-white shadow-sm font-bold backdrop-blur-md'
                     : 'text-slate-200 hover:text-white hover:bg-white/10'
-                }`}
+                  }`}
               >
                 Gaji
               </Link>
@@ -307,11 +296,10 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/pesan-siaran"
                 onClick={handleLinkClick}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  isBroadcastActive
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${isBroadcastActive
                     ? 'bg-white/25 text-white shadow-sm font-bold backdrop-blur-md'
                     : 'text-slate-200 hover:text-white hover:bg-white/10'
-                }`}
+                  }`}
               >
                 Pesan Siaran
               </Link>
@@ -322,11 +310,10 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/emergency"
                 onClick={handleLinkClick}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  isEmergencyActive
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${isEmergencyActive
                     ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30'
                     : 'text-rose-200 hover:text-white hover:bg-rose-500/25'
-                }`}
+                  }`}
               >
                 <ShieldAlert className="w-3.5 h-3.5 text-rose-300" />
                 <span>SOS</span>
@@ -406,11 +393,10 @@ export const Navbar: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="lg:hidden max-w-[1440px] mx-auto mt-3 bg-slate-900/95 backdrop-blur-2xl border border-white/15 rounded-3xl p-4 shadow-2xl space-y-2 animate-in fade-in zoom-in-95 duration-150">
             <Link
-              href="/"
+              href="/dashboard"
               onClick={handleLinkClick}
-              className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
-                isHomeActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
-              }`}
+              className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${isDashboardActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`}
             >
               Overview
             </Link>
@@ -472,9 +458,8 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/absensi"
                 onClick={handleLinkClick}
-                className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
-                  isAbsensiActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`}
+                className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${isAbsensiActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  }`}
               >
                 Absensi
               </Link>
@@ -484,9 +469,8 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/laporan"
                 onClick={handleLinkClick}
-                className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
-                  isLaporanActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`}
+                className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${isLaporanActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  }`}
               >
                 Laporan Operasional
               </Link>
@@ -496,9 +480,8 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/gaji"
                 onClick={handleLinkClick}
-                className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
-                  isGajiActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`}
+                className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${isGajiActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  }`}
               >
                 Gaji & Rekap
               </Link>
@@ -508,9 +491,8 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/pesan-siaran"
                 onClick={handleLinkClick}
-                className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
-                  isBroadcastActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`}
+                className={`block px-4 py-2.5 rounded-xl text-xs font-semibold transition ${isBroadcastActive ? 'bg-white/20 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  }`}
               >
                 Pesan Siaran
               </Link>
@@ -529,9 +511,8 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/emergency"
                 onClick={handleLinkClick}
-                className={`block px-4 py-2.5 rounded-xl text-xs font-bold text-rose-300 hover:bg-rose-500/20 transition ${
-                  isEmergencyActive ? 'bg-rose-600 text-white' : ''
-                }`}
+                className={`block px-4 py-2.5 rounded-xl text-xs font-bold text-rose-300 hover:bg-rose-500/20 transition ${isEmergencyActive ? 'bg-rose-600 text-white' : ''
+                  }`}
               >
                 Pusat SOS Darurat
               </Link>

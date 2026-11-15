@@ -16,64 +16,64 @@ export const DEMO_ACCOUNTS: Array<{
   siteName: string;
   badgeColor: string;
 }> = [
-  {
-    username: 'admin',
-    password: 'admin123',
-    fullName: 'Administrator Utama',
-    role: 'ADMIN_SUPER',
-    division: 'STAFF',
-    siteName: 'Head Office Sudirman',
-    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-  },
-  {
-    username: 'hendra.chief',
-    password: 'hendra123',
-    fullName: 'Hendra Wijaya',
-    role: 'SECURITY_OFFICER',
-    division: 'SECURITY',
-    securityRank: 'CHIEF',
-    siteName: 'Head Office Sudirman',
-    badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  },
-  {
-    username: 'satpamtest',
-    password: 'satpam123',
-    fullName: 'Ahmad Fauzi',
-    role: 'SECURITY_OFFICER',
-    division: 'SECURITY',
-    securityRank: 'KOMANDAN',
-    siteName: 'Head Office Sudirman',
-    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  },
-  {
-    username: 'buditest',
-    password: 'budi123',
-    fullName: 'Budi Santoso',
-    role: 'SECURITY_OFFICER',
-    division: 'SECURITY',
-    securityRank: 'ANGGOTA',
-    siteName: 'Head Office Sudirman',
-    badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-  },
-  {
-    username: 'akmal',
-    password: 'akmal123',
-    fullName: 'Akmal Subagja',
-    role: 'CLEANER',
-    division: 'CLEANING',
-    siteName: 'Head Office Sudirman',
-    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  },
-  {
-    username: 'dedi.driver',
-    password: 'driver123',
-    fullName: 'Dedi Supriyadi',
-    role: 'DRIVER',
-    division: 'DRIVER',
-    siteName: 'Warehouse & Logistics Cikarang',
-    badgeColor: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
-  },
-];
+    {
+      username: 'admin',
+      password: 'admin123',
+      fullName: 'Administrator Utama',
+      role: 'ADMIN_SUPER',
+      division: 'STAFF',
+      siteName: 'Head Office Sudirman',
+      badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    },
+    {
+      username: 'hendra.chief',
+      password: 'hendra123',
+      fullName: 'Hendra Wijaya',
+      role: 'SECURITY_OFFICER',
+      division: 'SECURITY',
+      securityRank: 'CHIEF',
+      siteName: 'Head Office Sudirman',
+      badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    },
+    {
+      username: 'satpamtest',
+      password: 'satpam123',
+      fullName: 'Ahmad Fauzi',
+      role: 'SECURITY_OFFICER',
+      division: 'SECURITY',
+      securityRank: 'KOMANDAN',
+      siteName: 'Head Office Sudirman',
+      badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    },
+    {
+      username: 'buditest',
+      password: 'budi123',
+      fullName: 'Budi Santoso',
+      role: 'SECURITY_OFFICER',
+      division: 'SECURITY',
+      securityRank: 'ANGGOTA',
+      siteName: 'Head Office Sudirman',
+      badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    },
+    {
+      username: 'akmal',
+      password: 'akmal123',
+      fullName: 'Akmal Subagja',
+      role: 'CLEANER',
+      division: 'CLEANING',
+      siteName: 'Head Office Sudirman',
+      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    },
+    {
+      username: 'dedi.driver',
+      password: 'driver123',
+      fullName: 'Dedi Supriyadi',
+      role: 'DRIVER',
+      division: 'DRIVER',
+      siteName: 'Warehouse & Logistics Cikarang',
+      badgeColor: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+    },
+  ];
 
 interface AuthContextType {
   user: User | null;
@@ -142,19 +142,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isLoading) return;
 
     const isAuthRoute = pathname === '/login' || pathname === '/login.php' || pathname === '/register';
+    const isPublicPortalRoute = pathname === '/' || isAuthRoute;
     const isPublicStatic = pathname.startsWith('/_next') || pathname.includes('.');
 
     if (isPublicStatic && !pathname.endsWith('.php')) {
       return;
     }
 
-    if (!user && !isAuthRoute) {
-      // User is not authenticated -> redirect to login immediately
+    if (!user && !isPublicPortalRoute) {
+      // User is not authenticated accessing protected route -> redirect to login
       const returnUrl = encodeURIComponent(pathname);
       router.replace(`/login?returnUrl=${returnUrl}`);
     } else if (user && isAuthRoute) {
-      // User is already authenticated -> redirect to appropriate home
-      router.replace('/');
+      // User is already authenticated on login/register -> redirect to dashboard
+      router.replace('/dashboard');
     }
   }, [user, isLoading, pathname, router]);
 
