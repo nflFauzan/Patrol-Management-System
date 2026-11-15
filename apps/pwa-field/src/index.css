@@ -16,8 +16,8 @@ html, body {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-  background-color: #f4f7fa;
-  color: #333;
+  background-color: #E5E9EE;
+  color: #1E293B;
 }
 
 /* Authentic Container: Grid layout auto-fit across mobile (2 cols), tablet (4 cols), desktop (8 cols) */

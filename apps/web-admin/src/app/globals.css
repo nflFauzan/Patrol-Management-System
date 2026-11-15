@@ -1,36 +1,41 @@
 @import 'leaflet/dist/leaflet.css';
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #E5E9EE;
+  --foreground: #1E293B;
 
-  /* PATROLI.SITE EXACT AREA THEME VARIABLES */
-  --area-primary: #1769aa;
-  --area-primary-dark: #104b7a;
-  --area-primary-soft: #eaf4ff;
-  --area-accent: #198754;
-  --area-text: #243447;
-  --area-muted: #6b7b8c;
-  --area-border: #d8e5f1;
-  --area-surface: #ffffff;
+  /* Modern Skeuomorphic Surface Variables */
+  --canvas-base: #E5E9EE;
+  --surface-card: #FFFFFF;
+  --surface-sub: #F5F7FA;
+  --surface-inset: #F8FAFC;
+  --sidebar-base: #263442;
+  --sidebar-surface: #1E2B37;
+  --primary-blue: #0284C7;
+  --sky-accent: #38BDF8;
+
+  /* Legacy aliases for backward compatibility */
+  --area-primary: #0284C7;
+  --area-primary-dark: #0369A1;
+  --area-primary-soft: #E0F2FE;
+  --area-accent: #16A36A;
+  --area-text: #1E293B;
+  --area-muted: #64748B;
+  --area-border: #E2E8F0;
+  --area-surface: #FFFFFF;
 }
 
 body {
   color: var(--foreground);
-  background-color: #f1f5f9;
-  background-image: 
-    radial-gradient(100% 500px at 50% 0px, #0b2f3d 0%, #0d3847 38%, #08212b 75%, transparent 100%),
-    radial-gradient(circle 500px at 85% 80px, rgba(20, 184, 166, 0.16) 0%, transparent 70%),
-    radial-gradient(circle 450px at 15% 140px, rgba(6, 182, 212, 0.14) 0%, transparent 70%);
-  background-repeat: no-repeat;
+  background-color: var(--canvas-base);
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-jakarta), 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* =====================================================
