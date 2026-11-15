@@ -1,7 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Division, Attendance } from '@patrol/types';
+import { 
+  Shield, 
+  Bell, 
+  Users, 
+  MapPin, 
+  Building2, 
+  CheckCircle2, 
+  ChevronRight, 
+  AlertTriangle, 
+  Clock, 
+  Info, 
+  QrCode, 
+  LogOut, 
+  Calendar, 
+  User, 
+  FileText, 
+  Home,
+  Sparkles,
+  Car
+} from 'lucide-react';
+import { Attendance } from '@patrol/types';
 import { attendanceApi } from '../services/api';
+import { SurfaceCard } from '../components/ui/SurfaceCard';
+import { SkeuomorphicButton } from '../components/ui/SkeuomorphicButton';
+import { StatusBadge } from '../components/ui/StatusBadge';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -9,24 +32,16 @@ export const DashboardPage: React.FC = () => {
   // User Profile
   const [userProfile, setUserProfile] = useState({
     id: '1447',
-    fullName: 'HENDRA CHIEF',
-    username: 'hendra.chief',
-    role: 'CHIEF',
+    fullName: 'Muhamad Naufal',
+    username: 'muhamad.naufal',
+    role: 'ADMIN',
     division: 'SECURITY',
     badgeNumber: 'NIK-SEC-1447',
     rank: 'CHIEF',
   });
 
   const [activeAttendance, setActiveAttendance] = useState<Attendance | null>(null);
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-
-  // Show Info Modal initially matching patroli.site #modalPanduanAwal
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInfoModalOpen(true);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, []);
+  const [activeTab, setActiveTab] = useState<'beranda' | 'patroli' | 'laporan' | 'profil'>('beranda');
 
   // Check today's attendance status
   useEffect(() => {
@@ -60,49 +75,20 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#f4f7fa] pb-16 select-none relative">
-      {/* Top Greeting Header (100% patroli.site parity, exactly 77px height) */}
-      <header
-        style={{
-          background: 'linear-gradient(135deg,#0d6efd,#4dabf7)',
-          color: '#fff',
-          padding: '12px 10px',
-          textAlign: 'center',
-          boxShadow: '0 4px 10px rgba(0,0,0,.4)',
-          position: 'relative',
-        }}
-      >
-        <div style={{ fontSize: '16px', fontWeight: 600, letterSpacing: '.5px' }}>
-          👋 HELLO, {userProfile.fullName}
-        </div>
-        <div style={{ marginTop: '6px' }}>
-          <span
-            style={{
-              background: 'rgba(255,255,255,.1)',
-              padding: '4px 10px',
-              fontSize: '12px',
-              display: 'inline-block',
-              border: '1px solid rgba(255,255,255,.2)',
-            }}
-          >
-            {userProfile.division}
-          </span>
-          <span
-            style={{
-              background: 'rgba(255,255,255,.15)',
-              padding: '4px 10px',
-              fontSize: '12px',
-              display: 'inline-block',
-              marginLeft: '5px',
-              border: '1px solid rgba(255,255,255,.2)',
-            }}
-          >
-            📍 KANTOR PUSAT
+    <div className="w-full min-h-screen bg-[#E5E9EE] pb-24 text-slate-800 font-sans select-none">
+      {/* Top Header App Bar */}
+      <header className="sticky top-0 z-30 bg-[#E5E9EE]/90 backdrop-blur-md px-4 py-3 border-b border-slate-300/60 flex items-center justify-between">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center text-white shadow-soft-xs border border-white/40">
+            <Shield className="w-4 h-4 fill-white/20" />
+          </div>
+          <span className="font-extrabold text-sm text-slate-800 tracking-tight">
+            Patroli <span className="text-sky-600 font-black">Site</span>
           </span>
         </div>
 
-        {/* Discreet Role Switcher dropdown toggle */}
-        <div className="absolute top-2 right-2 opacity-30 hover:opacity-100 transition-opacity">
+        <div className="flex items-center space-x-2">
+          {/* Role selector dropdown */}
           <select
             value={userProfile.role}
             onChange={(e) => {
@@ -110,7 +96,7 @@ export const DashboardPage: React.FC = () => {
               if (role === 'CHIEF') {
                 setUserProfile({
                   id: '1447',
-                  fullName: 'HENDRA CHIEF',
+                  fullName: 'Hendra Chief',
                   username: 'hendra.chief',
                   role: 'CHIEF',
                   division: 'SECURITY',
@@ -120,7 +106,7 @@ export const DashboardPage: React.FC = () => {
               } else if (role === 'COMMANDER') {
                 setUserProfile({
                   id: '1430',
-                  fullName: 'DANDAN KOMANDAN',
+                  fullName: 'Dandan Komandan',
                   username: 'dandan.danru',
                   role: 'COMMANDER',
                   division: 'SECURITY',
@@ -130,7 +116,7 @@ export const DashboardPage: React.FC = () => {
               } else if (role === 'DRIVER') {
                 setUserProfile({
                   id: '1501',
-                  fullName: 'JOKO DRIVER',
+                  fullName: 'Joko Driver',
                   username: 'joko.driver',
                   role: 'DRIVER',
                   division: 'DRIVER',
@@ -140,7 +126,7 @@ export const DashboardPage: React.FC = () => {
               } else if (role === 'STAFF') {
                 setUserProfile({
                   id: '1601',
-                  fullName: 'SITI CLEANING',
+                  fullName: 'Siti Cleaning',
                   username: 'siti.cleaning',
                   role: 'STAFF',
                   division: 'CLEANING',
@@ -150,193 +136,301 @@ export const DashboardPage: React.FC = () => {
               } else {
                 setUserProfile({
                   id: '1436',
-                  fullName: 'BUDI SANTOSO',
-                  username: 'budi.santoso',
-                  role: 'SECURITY_OFFICER',
+                  fullName: 'Muhamad Naufal',
+                  username: 'muhamad.naufal',
+                  role: 'ADMIN',
                   division: 'SECURITY',
                   badgeNumber: 'NIK-SEC-1436',
-                  rank: 'ANGGOTA',
+                  rank: 'ADMIN',
                 });
               }
             }}
-            className="bg-black/40 text-white border border-white/20 rounded px-1.5 py-0.5 text-[10px] font-semibold cursor-pointer outline-none"
-            title="Ganti Peran Personil"
+            className="text-[10px] font-bold bg-white/80 border border-slate-300 rounded-lg px-2 py-1 text-slate-700 outline-none shadow-xs"
           >
-            <option value="CHIEF" className="text-black">Chief (Hendra)</option>
-            <option value="COMMANDER" className="text-black">Danru (Dandan)</option>
-            <option value="SECURITY_OFFICER" className="text-black">Satpam (Budi)</option>
-            <option value="DRIVER" className="text-black">Driver (Joko)</option>
-            <option value="STAFF" className="text-black">Staff (Siti)</option>
+            <option value="ADMIN">Admin / Naufal</option>
+            <option value="CHIEF">Chief Security</option>
+            <option value="COMMANDER">Danru Security</option>
+            <option value="DRIVER">Driver Armada</option>
+            <option value="STAFF">Cleaning Service</option>
           </select>
+
+          {/* Notification Bell */}
+          <button
+            type="button"
+            onClick={() => navigate('/validasi-patroli/xxxxx_xxxxxx.php')}
+            className="relative p-2 rounded-xl bg-white border border-slate-300/80 shadow-skeuo-button-secondary text-slate-600 hover:text-slate-900 active:scale-95 transition"
+            aria-label="Notifikasi"
+          >
+            <Bell className="w-4 h-4" />
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 animate-pulse ring-2 ring-white" />
+          </button>
         </div>
       </header>
 
-      {/* 8-Card Touch Grid: Navigating to Individual PHP Pages */}
-      <main className="container" style={{ marginTop: '15px' }}>
-        {/* CARD 1: ABSEN MASUK (#198754) vs ABSEN PULANG (#ffc107) */}
-        {!isClockedIn ? (
-          <button
-            onClick={() => navigate('/validasi-patroli/xxxxx_xx.php')}
-            style={{ backgroundColor: '#198754' }}
-            className="card text ps-card"
-          >
-            <span className="ps-card-text">
-              ABSEN<br />MASUK
-            </span>
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate('/validasi-patroli/xxxxx_xxx.php')}
-            style={{ backgroundColor: '#ffc107', color: '#000' }}
-            className="card text ps-card"
-          >
-            <span className="ps-card-text" style={{ color: '#000' }}>
-              ABSEN<br />PULANG
-            </span>
-          </button>
-        )}
-
-        {/* CARD 2: IZIN ALPHA (#0d6efd) vs INPUT KEGIATAN (#0d6efd) */}
-        {!isClockedIn ? (
-          <button
-            onClick={() => navigate('/validasi-patroli/xxxxx_xxxx.php')}
-            style={{ backgroundColor: '#0d6efd' }}
-            className="card text ps-card"
-          >
-            <span className="ps-card-text">
-              IZIN<br />ALPHA
-            </span>
-          </button>
-        ) : (
-          <button
-            onClick={handleOpenInputKegiatan}
-            style={{ backgroundColor: '#0d6efd' }}
-            className="card text ps-card"
-          >
-            <span className="ps-card-text">
-              INPUT<br />KEGIATAN
-            </span>
-          </button>
-        )}
-
-        {/* CARD 3: RIWAYAT ABSEN (#6f42c1) */}
-        <button
-          onClick={() => navigate('/validasi-patroli/xxxxx_xxxxx.php')}
-          style={{ backgroundColor: '#6f42c1' }}
-          className="card text ps-card"
-        >
-          <span className="ps-card-text">
-            RIWAYAT<br />ABSEN
-          </span>
-        </button>
-
-        {/* CARD 4: RIWAYAT KEGIATAN (#6f42c1) */}
-        <button
-          onClick={() => navigate('/validasi-patroli/xxxxx_xxxxxx.php')}
-          style={{ backgroundColor: '#6f42c1' }}
-          className="card text ps-card"
-        >
-          <span className="ps-card-text">
-            RIWAYAT<br />KEGIATAN
-          </span>
-        </button>
-
-        {/* CARD 5: PANIC BUTTON (#dc3545) */}
-        <button
-          onClick={() => navigate('/validasi-patroli/xxxxx_xxxxxxx.php')}
-          style={{ backgroundColor: '#dc3545' }}
-          className="card text ps-card"
-        >
-          <span className="ps-card-text">
-            PANIC<br />BUTTON
-          </span>
-        </button>
-
-        {/* CARD 6: UPDATE PROFILE (#17a2b8) */}
-        <button
-          onClick={() => navigate('/validasi-patroli/xxxxx_xxxxxxxx.php')}
-          style={{ backgroundColor: '#17a2b8' }}
-          className="card text ps-card"
-        >
-          <span className="ps-card-text">
-            UPDATE<br />PROFILE
-          </span>
-        </button>
-
-        {/* CARD 7: BANTUAN TEKNIS (#20c997) */}
-        <a
-          href="https://api.whatsapp.com/send?phone=6281215293593&text=Halo%21%20Admin%20Patroli%20Site.%20(patroli.site)%20"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ backgroundColor: '#20c997' }}
-          className="card text ps-card"
-        >
-          <span className="ps-card-text">
-            BANTUAN<br />TEKNIS
-          </span>
-        </a>
-
-        {/* CARD 8: LOGOUT SISTEM (#000000) */}
-        <button
-          onClick={() => {
-            if (window.confirm('Apakah Anda yakin akan keluar dari sistem?')) {
-              localStorage.removeItem('patrol_auth_token');
-              navigate('/login.php');
-            }
-          }}
-          style={{ backgroundColor: '#000000' }}
-          className="card text ps-card"
-        >
-          <span className="ps-card-text">
-            LOGOUT<br />SISTEM
-          </span>
-        </button>
-      </main>
-
-      {/* Floating WhatsApp Action Button */}
-      <a
-        href="https://api.whatsapp.com/send?phone=6281215293593&text=Halo%21%20Admin%20Patroli%20Site.%20(patroli.site)%20"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="whatsapp-float"
-        title="Hubungi Admin WhatsApp"
-      >
-        <img src="/admin.png" alt="Contact Center" />
-      </a>
-
-      {/* Bottom Marquee Running Text (18s linear animation) */}
-      <footer className="marquee-container">
-        <div className="marquee-text">
-          <span className="text-red-500 font-bold mr-2">**</span>
-          DISIPLIN ABSENSI MASUK DAN PULANG KERJA ADALAH BAGIAN PENTING DARI BUDAYA KERJA YANG BAIK
-          <span className="text-red-500 font-bold mx-2">**</span>
-          PEMBERITAHUAN OPERASIONAL KANTOR PUSAT: SELURUH PERSONIL FRONT DESK DAN SATPAM WAJIB MEMASTIKAN PINTU AKSES LOBI UTAMA TERKUNCI TEPAT PUKUL 21:00 WIB.
-          <span className="text-red-500 font-bold ml-2">**</span>
+      {/* Main Content Area */}
+      <main className="px-4 pt-4 space-y-4 max-w-md mx-auto">
+        {/* Hero Greeting Section */}
+        <div className="pt-1">
+          <h1 className="text-lg font-extrabold text-slate-900 tracking-tight">
+            Selamat Pagi, {userProfile.fullName} 👋
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Semoga hari ini operasional berjalan lancar.
+          </p>
         </div>
-      </footer>
 
-      {/* Initial Info Popup matching #modalPanduanAwal */}
-      {isInfoModalOpen && (
-        <div className="custom-modal show">
-          <div className="custom-modal-box">
-            <div className="custom-modal-header">
-              📌 Informasi Sistem
-              <span className="close-btn" onClick={() => setIsInfoModalOpen(false)}>×</span>
+        {/* 2x2 Bento Stat Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Card 1: Personel */}
+          <SurfaceCard className="p-3.5 flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 shrink-0">
+              <Users className="w-4 h-4" />
             </div>
-            <div className="custom-modal-body flex justify-center items-center">
-              <div className="info-box text-center w-full">
-                ⚠️ Silakan absen masuk terlebih dahulu untuk dapat input kegiatan. Jangan lupa absen pulang saat selesai shift/jaga.
-              </div>
+            <div>
+              <p className="text-[11px] font-medium text-slate-500">Personel</p>
+              <p className="text-base font-extrabold text-slate-800 tracking-tight">124</p>
             </div>
-            <div className="custom-modal-footer">
-              <button onClick={() => setIsInfoModalOpen(false)}>
-                Saya Mengerti
-              </button>
+          </SurfaceCard>
+
+          {/* Card 2: Area */}
+          <SurfaceCard className="p-3.5 flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 shrink-0">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-slate-500">Area</p>
+              <p className="text-base font-extrabold text-slate-800 tracking-tight">12</p>
+            </div>
+          </SurfaceCard>
+
+          {/* Card 3: Site */}
+          <SurfaceCard className="p-3.5 flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 shrink-0">
+              <Building2 className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-slate-500">Site</p>
+              <p className="text-base font-extrabold text-slate-800 tracking-tight">48</p>
+            </div>
+          </SurfaceCard>
+
+          {/* Card 4: Absensi Hari Ini */}
+          <SurfaceCard className="p-3.5 flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-slate-500">Absensi Hari Ini</p>
+              <p className="text-base font-extrabold text-slate-800 tracking-tight">96%</p>
+            </div>
+          </SurfaceCard>
+        </div>
+
+        {/* Hero Active Patrol Pill Card */}
+        <button
+          type="button"
+          onClick={() => navigate('/validasi-patroli/xxxxx_xxxxxxxxx.php')}
+          className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-sky-500 via-sky-600 to-sky-700 text-white shadow-sky-glow border-t border-white/30 border-b border-sky-800 flex items-center justify-between transition hover:brightness-105 active:scale-[0.99]"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white border border-white/30">
+              <Shield className="w-4 h-4" />
+            </div>
+            <div className="text-left">
+              <div className="text-xs font-extrabold tracking-wide">Patroli Aktif</div>
+              <div className="text-[11px] text-sky-100 font-medium">7 Personel Bertugas</div>
             </div>
           </div>
-        </div>
-      )}
+          <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+            <ChevronRight className="w-4 h-4 text-white" />
+          </div>
+        </button>
+
+        {/* Primary Operational Action Grid */}
+        <SurfaceCard className="p-4 space-y-3">
+          <div className="flex items-center justify-between pb-1">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Menu Operasional Lapangan
+            </h2>
+            <StatusBadge variant={isClockedIn ? 'success' : 'warning'} dot={true}>
+              {isClockedIn ? 'Sedang Shift' : 'Belum Absen'}
+            </StatusBadge>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5">
+            {/* Action 1: Presensi Masuk / Pulang */}
+            {!isClockedIn ? (
+              <button
+                type="button"
+                onClick={() => navigate('/validasi-patroli/xxxxx_xx.php')}
+                className="p-3 rounded-xl bg-gradient-to-b from-emerald-500 to-emerald-600 text-white font-bold text-xs flex flex-col items-center justify-center gap-1.5 shadow-soft-xs border-t border-white/30 active:scale-95 transition"
+              >
+                <Clock className="w-5 h-5" />
+                <span>Absen Masuk</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate('/validasi-patroli/xxxxx_xxx.php')}
+                className="p-3 rounded-xl bg-gradient-to-b from-amber-500 to-amber-600 text-white font-bold text-xs flex flex-col items-center justify-center gap-1.5 shadow-soft-xs border-t border-white/30 active:scale-95 transition"
+              >
+                <Clock className="w-5 h-5" />
+                <span>Absen Pulang</span>
+              </button>
+            )}
+
+            {/* Action 2: Scan QR / Input Kegiatan */}
+            <button
+              type="button"
+              onClick={handleOpenInputKegiatan}
+              className="p-3 rounded-xl bg-gradient-to-b from-sky-500 to-sky-600 text-white font-bold text-xs flex flex-col items-center justify-center gap-1.5 shadow-soft-xs border-t border-white/30 active:scale-95 transition"
+            >
+              <QrCode className="w-5 h-5" />
+              <span>
+                {userProfile.division === 'DRIVER' 
+                  ? 'Log Armada' 
+                  : userProfile.division === 'CLEANING' 
+                  ? 'Checklist Zona' 
+                  : 'Scan Patroli'}
+              </span>
+            </button>
+
+            {/* Action 3: Riwayat Absen */}
+            <button
+              type="button"
+              onClick={() => navigate('/validasi-patroli/xxxxx_xxxxx.php')}
+              className="p-3 rounded-xl bg-white border border-slate-200/90 text-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-1.5 shadow-skeuo-button-secondary hover:bg-slate-50 active:scale-95 transition"
+            >
+              <Calendar className="w-5 h-5 text-sky-600" />
+              <span>Riwayat Absen</span>
+            </button>
+
+            {/* Action 4: Panic Button SOS */}
+            <button
+              type="button"
+              onClick={() => navigate('/validasi-patroli/xxxxx_xxxxxxx.php')}
+              className="p-3 rounded-xl bg-gradient-to-b from-rose-500 to-rose-600 text-white font-bold text-xs flex flex-col items-center justify-center gap-1.5 shadow-soft-xs border-t border-white/30 active:scale-95 transition"
+            >
+              <AlertTriangle className="w-5 h-5 text-white" />
+              <span>Panic SOS</span>
+            </button>
+          </div>
+        </SurfaceCard>
+
+        {/* Aktivitas Terbaru (Recent Activity Feed matching reference image) */}
+        <SurfaceCard className="p-4 space-y-3">
+          <div className="flex items-center justify-between pb-1">
+            <h2 className="text-xs font-bold text-slate-800">
+              Aktivitas Terbaru
+            </h2>
+            <button
+              type="button"
+              onClick={() => navigate('/validasi-patroli/xxxxx_xxxxxx.php')}
+              className="text-[11px] font-bold text-sky-600 hover:text-sky-700 flex items-center space-x-0.5"
+            >
+              <span>Lihat Semua</span>
+              <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+
+          <div className="space-y-2.5">
+            {/* Feed 1: Patroli Selesai */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/70">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800">Patroli Selesai</p>
+                  <p className="text-[10px] text-slate-500">Site Produksi • 08:50</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Feed 2: Absensi Masuk */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/70">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 shrink-0">
+                  <Info className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800">Absensi Masuk</p>
+                  <p className="text-[10px] text-slate-500">Area Utama • 08:40</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Feed 3: Panic Alert */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/70">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 shrink-0">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800">Panic Alert</p>
+                  <p className="text-[10px] text-slate-500">Area Gudang • 09:12</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </SurfaceCard>
+      </main>
+
+      {/* Pinned Bottom Navigation Bar matching visual reference image */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-soft-lg px-6 py-2 flex items-center justify-around max-w-md mx-auto">
+        <button
+          type="button"
+          onClick={() => setActiveTab('beranda')}
+          className={`flex flex-col items-center space-y-0.5 transition ${
+            activeTab === 'beranda' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <Home className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Beranda</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('patroli');
+            handleOpenInputKegiatan();
+          }}
+          className={`flex flex-col items-center space-y-0.5 transition ${
+            activeTab === 'patroli' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <Shield className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Patroli</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('laporan');
+            navigate('/validasi-patroli/xxxxx_xxxxxx.php');
+          }}
+          className={`flex flex-col items-center space-y-0.5 transition ${
+            activeTab === 'laporan' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <FileText className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Laporan</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('profil');
+            navigate('/validasi-patroli/xxxxx_xxxxxxxx.php');
+          }}
+          className={`flex flex-col items-center space-y-0.5 transition ${
+            activeTab === 'profil' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <User className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Profil</span>
+        </button>
+      </nav>
     </div>
   );
 };
-

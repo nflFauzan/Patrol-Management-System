@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import React, { useState } from 'react';
 import { useNavigate } from '../utils/navigation';
 import { authApi } from '../services/api';
@@ -75,7 +75,7 @@ export const LoginPage: React.FC = () => {
             <label className="block text-xs font-bold text-slate-700 mb-1">Username</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                ðŸ‘¤
+                👤
               </span>
               <input
                 type="text"
@@ -92,7 +92,7 @@ export const LoginPage: React.FC = () => {
             <label className="block text-xs font-bold text-slate-700 mb-1">Password</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                ðŸ”’
+                🔒
               </span>
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -107,7 +107,7 @@ export const LoginPage: React.FC = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600"
               >
-                {showPassword ? 'ðŸ™ˆ' : 'ðŸ‘ï¸'}
+                {showPassword ? '🙈' : '👁️'}
               </button>
             </div>
           </div>
@@ -153,7 +153,7 @@ export const LoginPage: React.FC = () => {
           <div className="custom-modal-box">
             <div className="custom-modal-header">
               Buat Akun Personil
-              <span className="close-btn" onClick={() => setIsRegisterModalOpen(false)}>Ã—</span>
+              <span className="close-btn" onClick={() => setIsRegisterModalOpen(false)}>×</span>
             </div>
             <div className="custom-modal-body text-slate-700 text-xs leading-relaxed">
               <p className="mb-2">

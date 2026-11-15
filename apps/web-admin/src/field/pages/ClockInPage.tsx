@@ -1,7 +1,17 @@
-﻿'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from '../utils/navigation';
+import { 
+  ArrowLeft, 
+  Camera, 
+  RefreshCw, 
+  CheckCircle2, 
+  RotateCcw,
+  Send
+} from 'lucide-react';
 import { attendanceApi } from '../services/api';
+import { SurfaceCard } from '../components/ui/SurfaceCard';
+import { SkeuomorphicButton } from '../components/ui/SkeuomorphicButton';
+import { StatusBadge } from '../components/ui/StatusBadge';
 
 export const ClockInPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,8 +26,9 @@ export const ClockInPage: React.FC = () => {
   const [alasan, setAlasan] = useState('1'); // 1: Piket Rutin, 2: Lembur, 3: Penugasan lain
   const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successTimestamp, setSuccessTimestamp] = useState<string>('');
 
-  // 60-second Idle Timer matching patroli.site xxxxx_xx.php
   useEffect(() => {
     const timer = setTimeout(() => {
       navigate('/validasi-patroli/');
@@ -25,7 +36,6 @@ export const ClockInPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [navigate]);
 
-  // Request GPS
   const getLocation = () => {
     setLocationInitializing(true);
     setLocationDetected(false);
@@ -37,20 +47,17 @@ export const ClockInPage: React.FC = () => {
           setLocationInitializing(false);
           startCamera();
         },
-        (err) => {
+        () => {
           setLocationInitializing(false);
           setLocationDetected(false);
-          alert('Gagal mendapatkan lokasi GPS. Pastikan izin lokasi aktif.');
         },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 5000 },
       );
     } else {
       setLocationInitializing(false);
-      alert('Browser tidak mendukung GPS.');
     }
   };
 
-  // Start Camera
   const startCamera = async () => {
     setCameraInitializing(true);
     setCameraActive(false);
@@ -59,7 +66,7 @@ export const ClockInPage: React.FC = () => {
         streamRef.current.getTracks().forEach((t) => t.stop());
       }
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 320 } },
+        video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 480 } },
         audio: false,
       });
       streamRef.current = stream;
@@ -76,7 +83,6 @@ export const ClockInPage: React.FC = () => {
     }
   };
 
-  // Lifecycle
   useEffect(() => {
     getLocation();
     return () => {
@@ -87,18 +93,14 @@ export const ClockInPage: React.FC = () => {
   }, []);
 
   const handleSnap = () => {
-    if (!locationDetected) {
-      alert('Tunggu lokasi selesai terdeteksi!');
-      return;
-    }
     if (!videoRef.current) return;
     const canvas = document.createElement('canvas');
-    canvas.width = 320;
-    canvas.height = 320;
+    canvas.width = 480;
+    canvas.height = 480;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.drawImage(videoRef.current, 0, 0, 320, 320);
-      const dataUri = canvas.toDataURL('image/jpeg', 0.2); // 20% compression
+      ctx.drawImage(videoRef.current, 0, 0, 480, 480);
+      const dataUri = canvas.toDataURL('image/jpeg', 0.6);
       setPhotoDataUrl(dataUri);
     }
   };
@@ -123,8 +125,13 @@ export const ClockInPage: React.FC = () => {
         photoBase64: photoDataUrl,
         notes: alasan === '2' ? 'Lembur' : alasan === '3' ? 'Penugasan lain' : 'Piket Rutin',
       });
-      alert('Absensi masuk berhasil disimpan!');
-      navigate('/validasi-patroli/');
+      
+      const now = new Date();
+      const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' };
+      const dateStr = now.toLocaleDateString('id-ID', options);
+      const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+      setSuccessTimestamp(`${dateStr} � ${timeStr}`);
+      setShowSuccessModal(true);
     } catch (err: any) {
       alert(err.response?.data?.message || err.message || 'Gagal menyimpan absensi');
     } finally {
@@ -132,120 +139,143 @@ export const ClockInPage: React.FC = () => {
     }
   };
 
-  const locText = locationDetected ? 'Terdeteksi âœ…' : locationInitializing ? 'Mencari lokasi...' : 'Belum aktif âŒ';
-  const locColor = locationDetected ? 'green' : locationInitializing ? '#ff9900' : 'red';
-  const camText = cameraActive ? 'Aktif âœ…' : cameraInitializing ? 'Mencari kamera...' : 'Belum aktif âŒ';
-  const camColor = cameraActive ? 'green' : cameraInitializing ? '#ff9900' : 'red';
-
   return (
-    <div className="min-h-screen bg-[#f5f5f5] flex flex-col font-sans select-none pb-16">
-      {/* Header */}
-      <div className="bg-[#006400] text-white h-10 flex items-center justify-center font-bold text-sm tracking-wide">
-        ABSEN MASUK
-      </div>
+    <div className="min-h-screen bg-[#E5E9EE] flex flex-col font-sans select-none pb-8 text-slate-800">
+      <header className="sticky top-0 z-30 bg-[#E5E9EE]/90 backdrop-blur-md px-4 py-3 border-b border-slate-300/60 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => navigate('/validasi-patroli/')}
+          className="p-1.5 rounded-xl bg-white border border-slate-300 shadow-skeuo-button-secondary text-slate-700 active:scale-95 transition"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <span className="font-extrabold text-sm text-slate-800 tracking-tight">
+          Presensi Masuk (Clock-In)
+        </span>
+        <div className="w-8" />
+      </header>
 
-      <div className="flex flex-col items-center px-4 pt-3 flex-1">
-        <form onSubmit={handleSubmit} className="w-full max-w-[340px] flex flex-col items-center">
-          {/* Camera Frame (320x320) */}
-          <div className="w-[320px] h-[320px] border border-[#006400] rounded-md overflow-hidden bg-black relative flex items-center justify-center">
+      <main className="px-4 pt-4 max-w-md mx-auto w-full flex-1 flex flex-col justify-between">
+        <SurfaceCard className="p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <StatusBadge variant={locationDetected ? 'success' : locationInitializing ? 'warning' : 'danger'}>
+              GPS: {locationDetected ? 'Terdeteksi' : locationInitializing ? 'Mencari...' : 'Gagal'}
+            </StatusBadge>
+            <StatusBadge variant={cameraActive ? 'success' : cameraInitializing ? 'warning' : 'danger'}>
+              Kamera: {cameraActive ? 'Aktif' : cameraInitializing ? 'Memuat...' : 'Mati'}
+            </StatusBadge>
+          </div>
+
+          <div className="relative w-full aspect-square bg-slate-900 rounded-2xl overflow-hidden shadow-skeuo-inset border-2 border-slate-300 flex items-center justify-center">
             {photoDataUrl ? (
-              <img src={photoDataUrl} alt="Preview Selfie" className="w-[320px] h-[320px] object-cover" />
+              <img src={photoDataUrl} alt="Preview Selfie" className="w-full h-full object-cover" />
             ) : (
               <video
                 ref={videoRef}
                 playsInline
                 autoPlay
                 muted
-                className="w-[320px] h-[320px] object-cover"
+                className="w-full h-full object-cover"
               />
+            )}
+
+            {!photoDataUrl && (
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="w-48 h-60 rounded-[50%] border-2 border-dashed border-sky-400/70" />
+              </div>
             )}
           </div>
 
-          {/* Reason Select */}
-          <div className="w-full my-3">
-            <select
-              value={alasan}
-              onChange={(e) => setAlasan(e.target.value)}
-              required
-              className="w-full text-green-700 font-medium p-3 text-sm border border-green-700 rounded-md bg-white focus:outline-none"
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700">
+                Pilih Alasan Presensi / Tipe Shift
+              </label>
+              <select
+                value={alasan}
+                onChange={(e) => setAlasan(e.target.value)}
+                required
+                className="w-full bg-[#F8FAFC] border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 font-medium shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] focus:outline-none focus:bg-white focus:border-sky-500"
+              >
+                <option value="1">Piket Rutin Harian</option>
+                <option value="2">Shift Lembur Tambahan</option>
+                <option value="3">Penugasan Khusus / Bantuan</option>
+              </select>
+            </div>
+
+            {!photoDataUrl ? (
+              <div className="grid grid-cols-2 gap-2.5 pt-2">
+                <SkeuomorphicButton
+                  type="button"
+                  variant="secondary"
+                  onClick={getLocation}
+                  icon={RefreshCw}
+                >
+                  Refresh GPS
+                </SkeuomorphicButton>
+                <SkeuomorphicButton
+                  type="button"
+                  variant="primary"
+                  onClick={handleSnap}
+                  disabled={!cameraActive}
+                  icon={Camera}
+                >
+                  Ambil Foto
+                </SkeuomorphicButton>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2.5 pt-2">
+                <SkeuomorphicButton
+                  type="button"
+                  variant="secondary"
+                  onClick={handleRetake}
+                  icon={RotateCcw}
+                >
+                  Ulangi
+                </SkeuomorphicButton>
+                <SkeuomorphicButton
+                  type="submit"
+                  variant="primary"
+                  disabled={isSubmitting}
+                  icon={Send}
+                >
+                  {isSubmitting ? 'Mengirim...' : 'Kirim Presensi'}
+                </SkeuomorphicButton>
+              </div>
+            )}
+          </form>
+        </SurfaceCard>
+      </main>
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-soft-xl border border-slate-200">
+            <div className="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-md">
+              <CheckCircle2 className="w-9 h-9" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                Absensi Berhasil!
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                {successTimestamp}
+              </p>
+            </div>
+
+            <SkeuomorphicButton
+              variant="primary"
+              className="w-full"
+              onClick={() => {
+                setShowSuccessModal(false);
+                navigate('/validasi-patroli/');
+              }}
             >
-              <option value="1">Piket Rutin</option>
-              <option value="2">Lembur</option>
-              <option value="3">Penugasan lain</option>
-            </select>
+              OK
+            </SkeuomorphicButton>
           </div>
-
-          {/* Action Buttons */}
-          {!photoDataUrl ? (
-            <div className="flex justify-center gap-2 flex-wrap mb-3 w-full">
-              <button
-                type="button"
-                onClick={handleSnap}
-                className="px-4 py-2 bg-[#007bff] hover:bg-blue-600 text-white rounded font-medium text-sm transition"
-              >
-                Foto
-              </button>
-              <button
-                type="button"
-                onClick={getLocation}
-                className="px-4 py-2 bg-[#ff8000] hover:bg-orange-600 text-white rounded font-medium text-sm transition"
-              >
-                Refresh
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/validasi-patroli/')}
-                className="px-4 py-2 bg-[#555] hover:bg-slate-600 text-white rounded font-medium text-sm transition"
-              >
-                Batal
-              </button>
-            </div>
-          ) : (
-            <div className="flex justify-center gap-2 flex-wrap mb-3 w-full">
-              <button
-                type="button"
-                onClick={handleRetake}
-                className="px-4 py-2 bg-[#8000ff] hover:bg-purple-700 text-white rounded font-medium text-sm transition"
-              >
-                Ulangi
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-[#28a745] hover:bg-green-700 text-white rounded font-medium text-sm transition disabled:opacity-50"
-              >
-                {isSubmitting ? 'Menyimpan...' : 'Simpan'}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/validasi-patroli/')}
-                className="px-4 py-2 bg-[#555] hover:bg-slate-600 text-white rounded font-medium text-sm transition"
-              >
-                Batal
-              </button>
-            </div>
-          )}
-        </form>
-
-        {/* Status Notification */}
-        <div className="text-center my-2 text-xs font-bold leading-relaxed text-slate-700">
-          <div>
-            Lokasi: <span style={{ color: locColor }}>{locText}</span> | Kamera: <span style={{ color: camColor }}>{camText}</span>
-          </div>
-          {locationDetected && (
-            <div className="text-[#0066cc] font-bold mt-2 text-sm">
-              Silahkan klik Foto dan Simpan..!
-            </div>
-          )}
         </div>
-      </div>
-
-      {/* Footer Info */}
-      <div className="bg-[#e74c3c] text-white py-2 px-3 fixed bottom-0 left-0 w-full text-center text-xs">
-        Pastikan izin lokasi aktif. Jika belum <br />silahkan aktifkan izin lokasi dan klik tombol refresh!
-      </div>
+      )}
     </div>
   );
 };
-
-
