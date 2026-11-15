@@ -6,17 +6,21 @@ import {
   Trash2, 
   Pencil, 
   Search, 
-  Ban, 
-  Save, 
-  CheckCircle2, 
-  AlertCircle, 
   RefreshCw, 
   X,
   AlertTriangle,
-  Radio
+  CheckCircle2,
+  AlertCircle,
+  Radio,
+  Building2,
+  Send
 } from 'lucide-react';
 import { BroadcastMessage } from '@patrol/types';
 import { useData } from '../lib/DataContext';
+import { SurfaceCard } from './ui/SurfaceCard';
+import { SkeuomorphicButton } from './ui/SkeuomorphicButton';
+import { InsetInput } from './ui/InsetInput';
+import { StatusBadge } from './ui/StatusBadge';
 
 interface BroadcastTabProps {
   selectedSiteId?: string;
@@ -30,50 +34,56 @@ export const BroadcastTab: React.FC<BroadcastTabProps> = ({ selectedSiteId }) =>
   // Data states
   const [history, setHistory] = useState<BroadcastMessage[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [pageSize, setPageSize] = useState<number>(5);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Flash message (.pesan matching patroli.site)
+  // Flash message
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Modal Tambah (#exampleModalCenter)
+  // Modal Tambah
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [newIsiPesan, setNewIsiPesan] = useState<string>('');
   const [newLokasiArea, setNewLokasiArea] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Modal Edit (#myModalx)
+  // Modal Edit
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [editingItem, setEditingItem] = useState<BroadcastMessage | null>(null);
   const [editIsiPesan, setEditIsiPesan] = useState<string>('');
   const [editLokasiArea, setEditLokasiArea] = useState<string>('');
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
-  // Modal Hapus (hapus-pesan.php confirmation)
+  // Modal Hapus
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
-  // Site options list matching patroli.site 100%
+  // Site options list
   const siteList = useMemo(() => {
+    if (sites && sites.length > 0) {
+      return sites.map((s) => ({
+        name: s.name.toLowerCase(),
+        label: s.name,
+        id: s.id,
+      }));
+    }
     return [
-      { name: 'kantor pusat', label: 'kantor pusat', id: '11111111-1111-1111-1111-111111111111' },
-      { name: 'pabrik bekasi', label: 'pabrik bekasi', id: '22222222-2222-2222-2222-222222222222' },
-      { name: 'gudang cakung', label: 'gudang cakung', id: '33333333-3333-3333-3333-333333333333' },
-      { name: 'pool kendaraan', label: 'pool kendaraan', id: '44444444-4444-4444-4444-444444444444' },
+      { name: 'kantor pusat', label: 'Kantor Pusat', id: '11111111-1111-1111-1111-111111111111' },
+      { name: 'pabrik bekasi', label: 'Pabrik Bekasi', id: '22222222-2222-2222-2222-222222222222' },
+      { name: 'gudang cakung', label: 'Gudang Cakung', id: '33333333-3333-3333-3333-333333333333' },
+      { name: 'pool kendaraan', label: 'Pool Kendaraan', id: '44444444-4444-4444-4444-444444444444' },
     ];
-  }, []);
+  }, [sites]);
 
   useEffect(() => {
     fetchHistory();
   }, [selectedSiteId]);
 
-  // Auto-dismiss alert after 15 seconds matching patroli.site setTimeout
   useEffect(() => {
     if (statusMsg) {
       const timer = setTimeout(() => {
         setStatusMsg(null);
-      }, 15000);
+      }, 8000);
       return () => clearTimeout(timer);
     }
   }, [statusMsg]);
@@ -98,14 +108,13 @@ export const BroadcastTab: React.FC<BroadcastTabProps> = ({ selectedSiteId }) =>
     }
   };
 
-  // Submit Tambah Pesan Siaran (100% Parity with insert-info.php)
+  // Submit Tambah Pesan Siaran
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newIsiPesan.trim() || !newLokasiArea) return;
 
     setIsSubmitting(true);
     try {
-      // Find matching siteId from siteList
       const matchedSite = siteList.find(s => s.name.toLowerCase() === newLokasiArea.toLowerCase());
       const siteId = matchedSite ? matchedSite.id : null;
 
@@ -118,13 +127,13 @@ export const BroadcastTab: React.FC<BroadcastTabProps> = ({ selectedSiteId }) =>
         body: JSON.stringify({
           siteId,
           title: `Pengumuman ${newLokasiArea.toUpperCase()}`,
-          content: newIsiPesan.trim().toLowerCase(), // patroli.site backend normalizes to lowercase
+          content: newIsiPesan.trim(),
           priority: 'NORMAL',
         }),
       });
 
       if (res.ok) {
-        setStatusMsg({ type: 'success', text: 'Data pengumuman berhasil ditambah' });
+        setStatusMsg({ type: 'success', text: 'Data pesan siaran berhasil ditambahkan' });
         setNewIsiPesan('');
         setNewLokasiArea('');
         setIsAddModalOpen(false);
@@ -139,11 +148,10 @@ export const BroadcastTab: React.FC<BroadcastTabProps> = ({ selectedSiteId }) =>
     }
   };
 
-  // Open Edit Modal (100% Parity with pesan_edit.php)
+  // Open Edit Modal
   const openEditModal = (item: BroadcastMessage) => {
     setEditingItem(item);
     setEditIsiPesan(item.content || item.message || '');
-    // Find site name
     let foundName = 'kantor pusat';
     if (item.siteName) {
       foundName = item.siteName.toLowerCase();
@@ -155,7 +163,7 @@ export const BroadcastTab: React.FC<BroadcastTabProps> = ({ selectedSiteId }) =>
     setIsEditModalOpen(true);
   };
 
-  // Submit Update Pesan Siaran (100% Parity with pesan_update.php)
+  // Submit Update Pesan Siaran
   const handleUpdateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem || !editIsiPesan.trim()) return;
@@ -173,13 +181,13 @@ export const BroadcastTab: React.FC<BroadcastTabProps> = ({ selectedSiteId }) =>
         },
         body: JSON.stringify({
           siteId,
-          content: editIsiPesan.trim().toLowerCase(),
+          content: editIsiPesan.trim(),
           priority: 'NORMAL',
         }),
       });
 
       if (res.ok) {
-        setStatusMsg({ type: 'success', text: 'Data pengumuman berhasil diubah' });
+        setStatusMsg({ type: 'success', text: 'Pesan siaran berhasil diperbarui' });
         setIsEditModalOpen(false);
         setEditingItem(null);
         fetchHistory();
@@ -187,13 +195,13 @@ export const BroadcastTab: React.FC<BroadcastTabProps> = ({ selectedSiteId }) =>
         throw new Error('Gagal mengubah data pesan siaran');
       }
     } catch (err: any) {
-      alert(`Gagal update: ${err.message}`);
+      setStatusMsg({ type: 'error', text: err.message || 'Gagal update pesan siaran' });
     } finally {
       setIsUpdating(false);
     }
   };
 
-  // Submit Delete Pesan Siaran (100% Parity with hapus-pesan.php?kd_pesan=...)
+  // Submit Delete Pesan Siaran
   const handleDeleteSubmit = async () => {
     if (!deletingId) return;
 
@@ -207,14 +215,14 @@ export const BroadcastTab: React.FC<BroadcastTabProps> = ({ selectedSiteId }) =>
       });
 
       if (res.ok) {
-        setStatusMsg({ type: 'success', text: 'Data pengumuman berhasil dihapus' });
+        setStatusMsg({ type: 'success', text: 'Pesan siaran berhasil dihapus' });
         setDeletingId(null);
         fetchHistory();
       } else {
         throw new Error('Gagal menghapus pesan siaran');
       }
     } catch (err: any) {
-      alert(`Gagal hapus: ${err.message}`);
+      setStatusMsg({ type: 'error', text: err.message || 'Gagal hapus pesan siaran' });
     } finally {
       setIsDeleting(false);
     }
@@ -237,481 +245,440 @@ export const BroadcastTab: React.FC<BroadcastTabProps> = ({ selectedSiteId }) =>
   }, [filteredItems, currentPage, pageSize]);
 
   return (
-    <div className="content font-sans text-uppercase">
-      <div className="container-fluid max-w-full p-0">
-        <div className="row">
-          <div className="col-12 w-full space-y-3">
-
-            {/* Flash Message (.pesan matching patroli.site with auto-fade) */}
-            {statusMsg && (
-              <div 
-                className={`pesan alert alert-dismissible p-3 rounded-lg flex items-center justify-between text-white shadow-md transition-all duration-300 ${
-                  statusMsg.type === 'success' ? 'bg-[#28a745] border border-green-600' : 'bg-[#dc3545] border border-red-600'
-                }`}
-                role="alert"
-              >
-                <div className="flex items-center space-x-2">
-                  {statusMsg.type === 'success' ? (
-                    <CheckCircle2 className="w-5 h-5 shrink-0" />
-                  ) : (
-                    <AlertCircle className="w-5 h-5 shrink-0" />
-                  )}
-                  <h5 className="m-0 text-xs md:text-sm font-bold tracking-wide">
-                    {statusMsg.text}
-                  </h5>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setStatusMsg(null)}
-                  className="text-white hover:text-slate-200 p-1 text-lg leading-none"
-                  aria-label="Close"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+    <div className="space-y-6">
+      {/* Toast / Status Alert */}
+      {statusMsg && (
+        <div 
+          className={`p-4 rounded-xl flex items-center justify-between shadow-soft-sm transition-all animate-in fade-in duration-200 border ${
+            statusMsg.type === 'success' 
+              ? 'bg-emerald-50/90 border-emerald-200 text-emerald-800' 
+              : 'bg-rose-50/90 border-rose-200 text-rose-800'
+          }`}
+          role="alert"
+        >
+          <div className="flex items-center space-x-3">
+            {statusMsg.type === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
             )}
+            <p className="text-xs sm:text-sm font-semibold">
+              {statusMsg.text}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStatusMsg(null)}
+            className="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
-            {/* Card Header Alert (100% Parity with patroli.site card-header alert bg-info) */}
-            <div className="card-header alert bg-[#17a2b8] p-3 rounded-t-xl flex items-center justify-between shadow-xs">
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(true)}
-                className="btn btn-dark bg-[#343a40] hover:bg-[#23272b] text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center space-x-2 transition active:scale-95 shadow-xs"
-                data-toggle="modal"
-                data-target="#exampleModalCenter"
-              >
-                <Megaphone className="w-4 h-4 text-white" />
-                <small className="tracking-wider">TAMBAH PESAN SIARAN</small>
-              </button>
-
-              <button
-                type="button"
-                onClick={fetchHistory}
-                disabled={isLoading}
-                className="text-white hover:text-slate-200 px-2 py-1 rounded text-xs flex items-center space-x-1"
-                title="Refresh Data"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                <small className="hidden sm:inline">REFRESH</small>
-              </button>
-            </div>
-
-            {/* Card Body Border (100% Parity with patroli.site card-body border border-info rounded) */}
-            <div className="card-body bg-white border border-[#17a2b8] rounded-b-xl shadow-xs p-4 -mt-3">
-              <div id="pesan_wrapper" className="dataTables_wrapper space-y-4">
-                
-                {/* DataTables Controls: Show entries & Search */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-700">
-                  <div className="dataTables_length flex items-center space-x-2">
-                    <label className="flex items-center space-x-1 m-0">
-                      <span>Show</span>
-                      <select
-                        name="pesan_length"
-                        value={pageSize}
-                        onChange={(e) => {
-                          setPageSize(Number(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                        className="border border-slate-300 rounded px-2 py-1 bg-white focus:outline-none focus:border-[#17a2b8]"
-                      >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={20}>20</option>
-                        <option value={50}>50</option>
-                        <option value={100}>100</option>
-                        <option value={1000}>1,000</option>
-                      </select>
-                      <span>entries</span>
-                    </label>
-                  </div>
-
-                  <div className="dataTables_filter flex items-center space-x-2 w-full sm:w-auto">
-                    <label className="flex items-center space-x-1 m-0 w-full sm:w-auto">
-                      <span>Search:</span>
-                      <input
-                        type="search"
-                        value={searchTerm}
-                        onChange={(e) => {
-                          setSearchTerm(e.target.value);
-                          setCurrentPage(1);
-                        }}
-                        placeholder=""
-                        className="border border-slate-300 rounded px-2 py-1 text-xs w-full sm:w-48 bg-white focus:outline-none focus:border-[#17a2b8]"
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                {/* Table (100% Parity with table-info bg-info dataTable) */}
-                <div className="overflow-x-auto rounded-lg border border-[#17a2b8]/30">
-                  <table
-                    id="pesan"
-                    className="w-full text-xs text-left border-collapse bg-white"
-                    style={{ width: '100%' }}
-                  >
-                    <thead>
-                      <tr className="bg-[#17a2b8] text-white text-center font-bold text-[11px] tracking-wider uppercase">
-                        <th className="py-2.5 px-3 border-r border-[#17a2b8]/40 w-3/5 text-center">
-                          ISI PESAN SIARAN
-                        </th>
-                        <th className="py-2.5 px-3 border-r border-[#17a2b8]/40 w-1/5 text-center">
-                          LOKASI PESAN SIARAN
-                        </th>
-                        <th className="py-2.5 px-3 w-1/5 text-center">
-                          AKSI
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {paginatedItems.length === 0 ? (
-                        <tr>
-                          <td colSpan={3} className="py-8 text-center text-slate-400 italic">
-                            Tidak ada data pesan siaran tersedia
-                          </td>
-                        </tr>
-                      ) : (
-                        paginatedItems.map((b, idx) => (
-                          <tr 
-                            key={b.id} 
-                            className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50' : 'bg-slate-50/50 hover:bg-slate-100/80'}
-                          >
-                            {/* Column 1: ISI PESAN SIARAN (lowercase paragraph matching patroli.site) */}
-                            <td className="py-2.5 px-3 align-middle">
-                              <small>
-                                <p className="text-center text-slate-600 m-0 leading-relaxed font-normal">
-                                  {b.content || b.message}
-                                </p>
-                              </small>
-                            </td>
-
-                            {/* Column 2: LOKASI PESAN SIARAN (green text-success matching patroli.site) */}
-                            <td className="py-2.5 px-3 align-middle text-center">
-                              <small>
-                                <p className="text-center text-[#28a745] font-bold m-0 uppercase">
-                                  {b.siteName || (siteList.find(s => s.id === b.siteId)?.name) || 'KANTOR PUSAT'}
-                                </p>
-                              </small>
-                            </td>
-
-                            {/* Column 3: AKSI (btn-group btn-group-sm matching patroli.site) */}
-                            <td className="py-2.5 px-3 align-middle text-center">
-                              <center>
-                                <div className="btn-group btn-group-sm inline-flex items-center justify-center space-x-1" role="group">
-                                  {/* Hapus button (btn-danger matching hapus-pesan.php) */}
-                                  <button
-                                    type="button"
-                                    onClick={() => setDeletingId(b.id)}
-                                    className="btn btn-danger px-2.5 py-1 bg-[#dc3545] hover:bg-[#c82333] text-white rounded text-xs inline-flex items-center space-x-1 font-semibold transition active:scale-95"
-                                    title="Hapus Pesan Siaran"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                    <small className="capitalize">Hapus</small>
-                                  </button>
-
-                                  {/* Edit button (pesan-record btn-info matching pesan_edit.php) */}
-                                  <button
-                                    type="button"
-                                    onClick={() => openEditModal(b)}
-                                    className="pesan-record btn btn-info px-2.5 py-1 bg-[#17a2b8] hover:bg-[#138496] text-white rounded text-xs inline-flex items-center space-x-1 font-semibold transition active:scale-95"
-                                    title="Edit Pesan Siaran"
-                                    data-id={b.id}
-                                  >
-                                    <Pencil className="w-3 h-3" />
-                                    <small className="capitalize">Edit</small>
-                                  </button>
-                                </div>
-                              </center>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* DataTables Pagination & Info footer */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600 pt-2">
-                  <div className="dataTables_info">
-                    {filteredItems.length === 0 ? (
-                      'Showing 0 to 0 of 0 entries'
-                    ) : (
-                      `Showing ${(currentPage - 1) * pageSize + 1} to ${Math.min(currentPage * pageSize, filteredItems.length)} of ${filteredItems.length} entries`
-                    )}
-                  </div>
-
-                  <div className="dataTables_paginate inline-flex rounded-lg border border-slate-200 overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                      disabled={currentPage === 1}
-                      className="px-3 py-1 bg-white hover:bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 text-slate-700 border-r border-slate-200 font-medium transition"
-                    >
-                      Previous
-                    </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        type="button"
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-3 py-1 font-medium transition border-r border-slate-200 last:border-r-0 ${
-                          currentPage === page
-                            ? 'bg-[#17a2b8] text-white'
-                            : 'bg-white hover:bg-slate-50 text-slate-700'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                      disabled={currentPage === totalPages || totalPages === 0}
-                      className="px-3 py-1 bg-white hover:bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 text-slate-700 font-medium transition"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-
+      {/* Main Surface Card */}
+      <SurfaceCard className="p-6">
+        {/* Header toolbar */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-200/80">
+          <div>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600">
+                <Megaphone className="w-4 h-4" />
               </div>
+              <h2 className="text-base sm:text-lg font-bold text-slate-800 tracking-tight">
+                Pesan Siaran & Pengumuman
+              </h2>
             </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Kirimkan pengumuman serentak kepada seluruh personel di lapangan per lokasi / site
+            </p>
+          </div>
 
+          <div className="flex items-center space-x-3 w-full sm:w-auto">
+            <SkeuomorphicButton
+              variant="secondary"
+              onClick={fetchHistory}
+              disabled={isLoading}
+              icon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
+            >
+              Refresh
+            </SkeuomorphicButton>
+
+            <SkeuomorphicButton
+              variant="primary"
+              onClick={() => setIsAddModalOpen(true)}
+              icon={<Megaphone className="w-3.5 h-3.5" />}
+            >
+              + Tambah Pesan Siaran
+            </SkeuomorphicButton>
           </div>
         </div>
-      </div>
+
+        {/* Filters and search row */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 pb-4">
+          <div className="w-full sm:w-80">
+            <InsetInput
+              icon={<Search className="w-4 h-4 text-slate-400" />}
+              placeholder="Cari isi pesan siaran atau lokasi..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+
+          <div className="flex items-center space-x-2 text-xs text-slate-500 w-full sm:w-auto justify-end">
+            <span>Tampilkan</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-medium focus:outline-none focus:border-sky-500"
+            >
+              <option value={5}>5 baris</option>
+              <option value={10}>10 baris</option>
+              <option value={20}>20 baris</option>
+              <option value={50}>50 baris</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-white">
+          <table className="w-full text-xs text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-100/70 border-b border-slate-200/80 text-slate-600 font-semibold text-[11px] tracking-wider uppercase">
+                <th className="py-3 px-4 text-left w-3/5">
+                  Isi Pesan Siaran
+                </th>
+                <th className="py-3 px-4 text-center w-1/5">
+                  Lokasi / Site Target
+                </th>
+                <th className="py-3 px-4 text-center w-1/5">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={3} className="py-12 text-center text-slate-400">
+                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-sky-500" />
+                    Memuat data pesan siaran...
+                  </td>
+                </tr>
+              ) : paginatedItems.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="py-12 text-center text-slate-400">
+                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-2 text-slate-400">
+                      <Megaphone className="w-6 h-6" />
+                    </div>
+                    Tidak ada data pesan siaran yang ditemukan
+                  </td>
+                </tr>
+              ) : (
+                paginatedItems.map((b) => (
+                  <tr 
+                    key={b.id} 
+                    className="hover:bg-slate-50/80 transition-colors"
+                  >
+                    {/* Content Column */}
+                    <td className="py-3.5 px-4 align-top">
+                      <p className="text-slate-800 text-xs leading-relaxed font-normal whitespace-pre-line">
+                        {b.content || b.message}
+                      </p>
+                      {b.createdAt && (
+                        <span className="text-[10px] text-slate-400 mt-1 inline-block">
+                          Dibuat: {new Date(b.createdAt).toLocaleString('id-ID')}
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Site Target Column */}
+                    <td className="py-3.5 px-4 align-middle text-center">
+                      <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+                        <Building2 className="w-3 h-3 text-sky-500" />
+                        <span className="capitalize">
+                          {b.siteName || (siteList.find(s => s.id === b.siteId)?.label) || 'Semua Site'}
+                        </span>
+                      </span>
+                    </td>
+
+                    {/* Actions Column */}
+                    <td className="py-3.5 px-4 align-middle text-center">
+                      <div className="inline-flex items-center justify-center space-x-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(b)}
+                          className="p-1.5 rounded-lg text-sky-600 hover:text-sky-700 hover:bg-sky-50 transition border border-transparent hover:border-sky-200 active:scale-95"
+                          title="Edit Pesan"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeletingId(b.id)}
+                          className="p-1.5 rounded-lg text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition border border-transparent hover:border-rose-200 active:scale-95"
+                          title="Hapus Pesan"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination & Summary */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 pt-4">
+          <div>
+            {filteredItems.length === 0 ? (
+              'Menampilkan 0 data'
+            ) : (
+              `Menampilkan ${(currentPage - 1) * pageSize + 1} - ${Math.min(currentPage * pageSize, filteredItems.length)} dari ${filteredItems.length} pesan siaran`
+            )}
+          </div>
+
+          <div className="inline-flex items-center space-x-1 rounded-lg border border-slate-200/80 bg-white p-1">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-2.5 py-1 text-xs rounded hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition text-slate-600"
+            >
+              Sebelumnya
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                className={`w-7 h-7 text-xs rounded font-medium transition ${
+                  currentPage === page
+                    ? 'bg-sky-500 text-white shadow-xs'
+                    : 'hover:bg-slate-100 text-slate-700'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="px-2.5 py-1 text-xs rounded hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition text-slate-600"
+            >
+              Selanjutnya
+            </button>
+          </div>
+        </div>
+      </SurfaceCard>
 
       {/* ========================================================
-          MODAL TAMBAH PESAN SIARAN (#exampleModalCenter)
-          100% PARITY DENGAN patroli.site insert-info.php
+          MODAL TAMBAH PESAN SIARAN
           ======================================================== */}
       {isAddModalOpen && (
-        <div 
-          className="modal fade show fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
-          id="exampleModalCenter" 
-          tabIndex={-1} 
-          role="dialog"
-        >
-          <div className="modal-dialog modal-dialog-centered max-w-lg w-full bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-150">
-            <div className="modal-content">
-              {/* Modal Header (bg-info text-light) */}
-              <div className="modal-header bg-[#17a2b8] text-white p-3.5 flex items-center justify-between font-bold text-sm tracking-wide">
-                <span>Form Pesan Siaran</span>
-                <button 
-                  type="button" 
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="close text-white hover:text-slate-200 text-xl font-bold p-1 leading-none"
-                  aria-label="Close"
-                >
-                  <span aria-hidden="true">×</span>
-                </button>
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full border border-slate-200/80 shadow-soft-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600">
+                  <Megaphone className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-800 tracking-tight">
+                  Buat Pesan Siaran Baru
+                </h3>
               </div>
-
-              {/* Modal Body */}
-              <div className="modal-body p-4">
-                <form onSubmit={handleAddSubmit} method="post" className="space-y-4">
-                  {/* Form Group 1: isi_pesan */}
-                  <div className="form-group" title="Input informasi/berita/pesan untuk personel">
-                    <textarea 
-                      className="form-control border border-[#17a2b8] rounded-lg p-3 text-xs w-full text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#17a2b8] leading-relaxed" 
-                      id="isi_pesan" 
-                      required 
-                      name="isi_pesan" 
-                      rows={4} 
-                      placeholder="Tulis pengumuman / informasi pesan siaran"
-                      value={newIsiPesan}
-                      onChange={(e) => setNewIsiPesan(e.target.value)}
-                    />
-                  </div>
-
-                  {/* Form Group 2: lokasi_area */}
-                  <div className="form-group" title="Pilih Lokasi/site informasi/berita/pesan akan dikirim">
-                    <select 
-                      id="lokasi_area" 
-                      name="lokasi_area" 
-                      required 
-                      value={newLokasiArea}
-                      onChange={(e) => setNewLokasiArea(e.target.value)}
-                      className="custom-select text-uppercase border border-[#17a2b8] rounded-lg p-2.5 text-xs w-full bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#17a2b8]"
-                    >
-                      <option value="">Pilih Area / Site</option>
-                      {siteList.map((s) => (
-                        <option key={s.name} value={s.name}>{s.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Modal Footer (Batal & Kirim Pesan) */}
-                  <div className="modal-footer pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
-                    <button 
-                      type="button" 
-                      onClick={() => setIsAddModalOpen(false)}
-                      className="btn btn-info bg-[#17a2b8] hover:bg-[#138496] text-white px-3.5 py-2 rounded-lg text-xs font-bold inline-flex items-center space-x-1 transition"
-                    >
-                      <Ban className="w-3.5 h-3.5" />
-                      <span>Batal</span>
-                    </button>
-                    <button 
-                      type="submit" 
-                      disabled={isSubmitting}
-                      className="btn btn-primary bg-[#007bff] hover:bg-[#0069d9] text-white px-4 py-2 rounded-lg text-xs font-bold inline-flex items-center space-x-1.5 transition active:scale-95"
-                    >
-                      {isSubmitting ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Save className="w-3.5 h-3.5" />
-                      )}
-                      <span>Kirim Pesan</span>
-                    </button>
-                  </div>
-                </form>
-              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsAddModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleAddSubmit} className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">
+                  Isi Pesan Siaran <span className="text-rose-500">*</span>
+                </label>
+                <textarea 
+                  className="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs text-slate-800 placeholder-slate-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] focus:outline-none focus:bg-white focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 leading-relaxed transition"
+                  required 
+                  rows={4} 
+                  placeholder="Tuliskan pengumuman atau instruksi operasional untuk personel lapangan..."
+                  value={newIsiPesan}
+                  onChange={(e) => setNewIsiPesan(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">
+                  Lokasi / Site Sasaran <span className="text-rose-500">*</span>
+                </label>
+                <select 
+                  required 
+                  value={newLokasiArea}
+                  onChange={(e) => setNewLokasiArea(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs text-slate-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] focus:outline-none focus:bg-white focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
+                >
+                  <option value="">-- Pilih Lokasi / Site --</option>
+                  {siteList.map((s) => (
+                    <option key={s.name} value={s.name}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end space-x-2.5">
+                <SkeuomorphicButton 
+                  type="button" 
+                  variant="secondary"
+                  onClick={() => setIsAddModalOpen(false)}
+                >
+                  Batal
+                </SkeuomorphicButton>
+                <SkeuomorphicButton 
+                  type="submit" 
+                  variant="primary"
+                  disabled={isSubmitting}
+                  icon={isSubmitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                >
+                  {isSubmitting ? 'Mengirim...' : 'Kirim Siaran'}
+                </SkeuomorphicButton>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
       {/* ========================================================
-          MODAL EDIT PESAN SIARAN (#myModalx)
-          100% PARITY DENGAN patroli.site pesan_edit.php / pesan_update.php
+          MODAL EDIT PESAN SIARAN
           ======================================================== */}
       {isEditModalOpen && editingItem && (
-        <div 
-          className="modal fade show fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
-          id="myModalx" 
-          tabIndex={-1} 
-          role="dialog"
-        >
-          <div className="modal-dialog modal-dialog-centered max-w-lg w-full bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-150">
-            <div className="modal-content">
-              {/* Modal Header (bg-info text-light) */}
-              <div className="modal-header bg-[#17a2b8] text-white p-3.5 flex items-center justify-between font-bold text-sm tracking-wide">
-                <h4 className="modal-title m-0 text-sm font-bold tracking-wide" id="myModalLabelx">
-                  Form Edit Pesan Siaran
-                </h4>
-                <button 
-                  type="button" 
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="close text-white hover:text-slate-200 text-xl font-bold p-1 leading-none"
-                  aria-label="Close"
-                >
-                  <span aria-hidden="true">×</span>
-                </button>
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full border border-slate-200/80 shadow-soft-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-800 tracking-tight">
+                  Edit Pesan Siaran
+                </h3>
               </div>
-
-              {/* Modal Body (.modal-body-pesan matching pesan_edit.php exact output) */}
-              <div className="modal-body-pesan p-4">
-                <form onSubmit={handleUpdateSubmit} method="post" className="space-y-4">
-                  <small>
-                    <div className="card-body p-0 space-y-4">
-                      {/* Form Group 1: ISI PESAN INFORMASI SEKARANG */}
-                      <div className="form-group space-y-1">
-                        <label className="text-xs font-bold text-slate-700 tracking-wider">
-                          ISI PESAN INFORMASI SEKARANG
-                        </label>
-                        <textarea 
-                          className="form-control border border-slate-300 rounded-lg p-3 text-xs w-full text-slate-800 focus:outline-none focus:border-[#17a2b8] leading-relaxed" 
-                          id="isi_pesan" 
-                          required 
-                          name="isi_pesan" 
-                          rows={4}
-                          value={editIsiPesan}
-                          onChange={(e) => setEditIsiPesan(e.target.value)}
-                        />
-                        <input type="hidden" value={editingItem.id} name="kd_pesan" />
-                      </div>
-
-                      {/* Form Group 2: LOKASI PESAN / INFORMASI SEKARANG */}
-                      <div className="form-group space-y-1">
-                        <label className="text-xs font-bold text-slate-700 tracking-wider">
-                          LOKASI PESAN / INFORMASI SEKARANG
-                        </label>
-                        <select 
-                          id="lokasi_area" 
-                          name="lokasi_area" 
-                          value={editLokasiArea}
-                          onChange={(e) => setEditLokasiArea(e.target.value)}
-                          className="form-control select2 border border-slate-300 rounded-lg p-2.5 text-xs w-full bg-white text-slate-800 focus:outline-none focus:border-[#17a2b8] text-uppercase"
-                        >
-                          {siteList.map((s) => (
-                            <option key={s.name} value={s.name}>{s.label}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Modal Footer (Batal & Simpan) */}
-                      <div className="modal-footer pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
-                        <button 
-                          type="button" 
-                          onClick={() => setIsEditModalOpen(false)}
-                          className="btn btn-secondary bg-[#6c757d] hover:bg-[#5a6268] text-white px-3.5 py-2 rounded-lg text-xs font-bold inline-flex items-center space-x-1 transition"
-                        >
-                          <Ban className="w-3.5 h-3.5" />
-                          <span>Batal</span>
-                        </button>
-                        <button 
-                          type="submit" 
-                          disabled={isUpdating}
-                          className="btn btn-primary bg-[#007bff] hover:bg-[#0069d9] text-white px-4 py-2 rounded-lg text-xs font-bold inline-flex items-center space-x-1.5 transition active:scale-95"
-                        >
-                          {isUpdating ? (
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Save className="w-3.5 h-3.5" />
-                          )}
-                          <span>Simpan</span>
-                        </button>
-                      </div>
-                    </div>
-                  </small>
-                </form>
-              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleUpdateSubmit} className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">
+                  Isi Pesan Siaran <span className="text-rose-500">*</span>
+                </label>
+                <textarea 
+                  className="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs text-slate-800 placeholder-slate-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] focus:outline-none focus:bg-white focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 leading-relaxed transition"
+                  required 
+                  rows={4}
+                  value={editIsiPesan}
+                  onChange={(e) => setEditIsiPesan(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">
+                  Lokasi / Site Sasaran <span className="text-rose-500">*</span>
+                </label>
+                <select 
+                  value={editLokasiArea}
+                  onChange={(e) => setEditLokasiArea(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs text-slate-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] focus:outline-none focus:bg-white focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
+                >
+                  {siteList.map((s) => (
+                    <option key={s.name} value={s.name}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end space-x-2.5">
+                <SkeuomorphicButton 
+                  type="button" 
+                  variant="secondary"
+                  onClick={() => setIsEditModalOpen(false)}
+                >
+                  Batal
+                </SkeuomorphicButton>
+                <SkeuomorphicButton 
+                  type="submit" 
+                  variant="primary"
+                  disabled={isUpdating}
+                  icon={isUpdating ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                >
+                  {isUpdating ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </SkeuomorphicButton>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
       {/* ========================================================
-          MODAL KONFIRMASI HAPUS (hapus-pesan.php?kd_pesan=...)
+          MODAL KONFIRMASI HAPUS
           ======================================================== */}
       {deletingId && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-sm w-full border border-slate-200 shadow-2xl p-5 space-y-4 animate-in fade-in zoom-in duration-150">
-            <div className="flex items-center space-x-3 text-[#dc3545]">
-              <div className="p-2.5 bg-red-50 rounded-xl">
-                <AlertTriangle className="w-5 h-5 text-[#dc3545]" />
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full border border-slate-200/80 shadow-soft-xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center space-x-3 text-rose-600">
+              <div className="p-2.5 bg-rose-50 rounded-xl border border-rose-100">
+                <AlertTriangle className="w-5 h-5 text-rose-600" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-slate-900 tracking-wide">Konfirmasi Hapus</h4>
-                <p className="text-xs text-slate-500 font-normal">Hapus Pesan Siaran</p>
+                <h4 className="text-sm font-bold text-slate-900 tracking-tight">Hapus Pesan Siaran</h4>
+                <p className="text-xs text-slate-500">Konfirmasi Penghapusan</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed font-normal">
-              Apakah Anda yakin ingin menghapus data pesan siaran ini? Tindakan ini bersifat permanen seperti di <span className="font-mono text-rose-600">hapus-pesan.php</span>.
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Apakah Anda yakin ingin menghapus data pesan siaran ini? Tindakan ini bersifat permanen dan tidak dapat dibatalkan.
             </p>
 
-            <div className="flex items-center justify-end space-x-2 pt-2">
-              <button
-                type="button"
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+              <SkeuomorphicButton
+                variant="secondary"
                 onClick={() => setDeletingId(null)}
-                className="px-3.5 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
               >
                 Batal
-              </button>
-              <button
-                type="button"
+              </SkeuomorphicButton>
+              <SkeuomorphicButton
+                variant="danger"
                 disabled={isDeleting}
                 onClick={handleDeleteSubmit}
-                className="px-4 py-2 bg-[#dc3545] hover:bg-[#c82333] text-white rounded-lg text-xs font-bold transition flex items-center space-x-1.5 shadow-xs active:scale-95"
+                icon={isDeleting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
               >
-                {isDeleting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                <span>Ya, Hapus</span>
-              </button>
+                {isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
+              </SkeuomorphicButton>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };

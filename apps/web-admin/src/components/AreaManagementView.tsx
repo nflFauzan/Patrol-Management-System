@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import {
-  Globe,
   Plus,
   Pencil,
   Trash2,
@@ -15,19 +14,23 @@ import {
   Info,
   Check,
   X,
-  Save,
-  Ban,
   Search,
   ChevronLeft,
   ChevronRight,
-  ShieldAlert
+  Shield,
+  Layers,
+  ChevronDown,
 } from 'lucide-react';
+import { SurfaceCard } from './ui/SurfaceCard';
+import { SkeuomorphicButton } from './ui/SkeuomorphicButton';
+import { InsetInput } from './ui/InsetInput';
+import { StatusBadge } from './ui/StatusBadge';
 
 // Dynamically import Leaflet Map to avoid SSR errors
 const AreaLeafletMap = dynamic(() => import('./AreaLeafletMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[40vh] min-h-[280px] bg-slate-100 flex items-center justify-center text-slate-400 text-xs rounded-md border border-slate-200">
+    <div className="w-full h-[320px] bg-slate-100 flex items-center justify-center text-slate-400 text-xs rounded-xl border border-slate-200">
       <span>Memuat Peta Interaktif Leaflet...</span>
     </div>
   ),
@@ -62,9 +65,7 @@ interface AreaManagementViewProps {
   personnelCount?: Record<string, number>;
 }
 
-// Hours options: 00 to 23
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
-// Minutes options: 00, 05, 10, ... 55
 const MINUTES = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
 
 function parseTime(timeStr?: string): { jam: string; menit: string } {
@@ -97,6 +98,7 @@ export const AreaManagementView: React.FC<AreaManagementViewProps> = ({
 
   // DataTable filtering & pagination
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE'>('ALL');
   const [pageSize, setPageSize] = useState<number>(5);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -107,8 +109,11 @@ export const AreaManagementView: React.FC<AreaManagementViewProps> = ({
 
   // Form states for Tambah Area
   const [tambahName, setTambahName] = useState('');
-  const [tambahLat, setTambahLat] = useState<number | null>(-6.200000);
-  const [tambahLng, setTambahLng] = useState<number | null>(106.816666);
+  const [tambahLokasi, setTambahLokasi] = useState('Jakarta Pusat');
+  const [tambahDeskripsi, setTambahDeskripsi] = useState('');
+  const [showAdvancedMap, setShowAdvancedMap] = useState(false);
+  const [tambahLat, setTambahLat] = useState<number | null>(-6.2088);
+  const [tambahLng, setTambahLng] = useState<number | null>(106.8456);
   const [tambahShifts, setTambahShifts] = useState({
     pagiMasukJam: '07',
     pagiMasukMenit: '00',
@@ -134,8 +139,8 @@ export const AreaManagementView: React.FC<AreaManagementViewProps> = ({
 
   // Form states for Edit Area
   const [editName, setEditName] = useState('');
-  const [editLat, setEditLat] = useState<number>(-6.200000);
-  const [editLng, setEditLng] = useState<number>(106.816666);
+  const [editLat, setEditLat] = useState<number>(-6.2088);
+  const [editLng, setEditLng] = useState<number>(106.8456);
   const [editShifts, setEditShifts] = useState({
     pagiMasukJam: '07',
     pagiMasukMenit: '00',
@@ -163,11 +168,12 @@ export const AreaManagementView: React.FC<AreaManagementViewProps> = ({
   const filteredSites = useMemo(() => {
     return sites.filter((s) => {
       const q = searchTerm.toLowerCase();
-      return (
+      const matchSearch =
         s.name.toLowerCase().includes(q) ||
+        (s.address && s.address.toLowerCase().includes(q)) ||
         String(s.latitude).includes(q) ||
-        String(s.longitude).includes(q)
-      );
+        String(s.longitude).includes(q);
+      return matchSearch;
     });
   }, [sites, searchTerm]);
 
@@ -230,16 +236,16 @@ export const AreaManagementView: React.FC<AreaManagementViewProps> = ({
       alert('Nama Area / Site wajib diisi!');
       return;
     }
-    if (tambahLat === null || tambahLng === null) {
-      alert('Tentukan koordinat Latitude dan Longitude pada peta!');
-      return;
-    }
+
+    const lat = tambahLat ?? -6.2088;
+    const lng = tambahLng ?? 106.8456;
 
     const newSite: AreaSiteData = {
       id: `site-${Date.now()}`,
       name: tambahName.trim(),
-      latitude: tambahLat,
-      longitude: tambahLng,
+      address: tambahLokasi.trim(),
+      latitude: lat,
+      longitude: lng,
       geofenceRadiusMeters: 50,
       shiftPagiIn: formatTime(tambahShifts.pagiMasukJam, tambahShifts.pagiMasukMenit),
       shiftPagiOut: formatTime(tambahShifts.pagiPulangJam, tambahShifts.pagiPulangMenit),
@@ -256,6 +262,7 @@ export const AreaManagementView: React.FC<AreaManagementViewProps> = ({
     onAddSite(newSite);
     setIsTambahModalOpen(false);
     setTambahName('');
+    setTambahDeskripsi('');
     setSuccessToast(`Data Area "${newSite.name}" berhasil ditambahkan!`);
   };
 
@@ -305,254 +312,229 @@ export const AreaManagementView: React.FC<AreaManagementViewProps> = ({
   };
 
   return (
-    <div className="w-full space-y-4">
-      {/* SUCCESS TOAST NOTIFICATION */}
+    <div className="w-full space-y-4 font-sans select-none">
+      {/* Toast Notification */}
       {successToast && (
-        <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 p-3 rounded-xl text-xs flex justify-between items-center shadow-sm animate-in fade-in">
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3.5 rounded-xl text-xs flex justify-between items-center shadow-sm animate-in fade-in">
           <span className="font-semibold flex items-center space-x-2">
             <Check className="w-4 h-4 text-emerald-600" />
             <span>{successToast}</span>
           </span>
           <button
             onClick={() => setSuccessToast(null)}
-            className="text-slate-400 hover:text-slate-700"
+            className="text-slate-400 hover:text-slate-700 p-1"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* ========================================================
-          VIEW 1: TABEL DATA AREA (100% PARITY DENGAN PATROLI.SITE)
-          ======================================================== */}
+      {/* VIEW 1: DATA INDUK AREA TABLE (Matching Visual Reference Image) */}
       {activeView === 'LIST' && (
-        <div className="space-y-4">
-          {/* HEADER TABEL: EXACT BUTTON & BG */}
-          <div className="bg-[#17a2b8] p-3 rounded-t-xl flex items-center justify-between shadow-sm">
-            <button
-              type="button"
-              onClick={() => setIsTambahModalOpen(true)}
-              className="btn-tambah-area"
-              title="Tambah Data Area Baru"
-            >
-              <Globe className="w-4 h-4" />
-              <small className="font-bold tracking-wider">TAMBAH DATA AREA / SITE</small>
-            </button>
-          </div>
-
-          {/* TABEL WRAPPER: CLASS DAN DESAIN ASLI PATROLI.SITE */}
-          <div className="bg-white border border-[#17a2b8]/40 rounded-b-xl shadow-xs p-4 space-y-4 -mt-4">
-            {/* DATATABLE TOP CONTROLS: ENTRIES & SEARCH */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
-              <div className="flex items-center space-x-2">
-                <span>Show</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  className="border border-slate-300 rounded px-2 py-1 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[#1769aa]"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                  <option value={1000}>1,000</option>
-                </select>
-                <span>entries</span>
+        <SurfaceCard variant="elevated" padding="md" className="space-y-4">
+          {/* Header & Breadcrumb */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                Data Induk
+              </h1>
+              <div className="text-[11px] text-slate-500 flex items-center space-x-1.5 mt-0.5">
+                <span className="font-semibold text-slate-700">Area</span>
+                <span>Dashboard &gt; Data Induk &gt; Area</span>
               </div>
+            </div>
 
-              <div className="flex items-center space-x-2 w-full sm:w-auto">
-                <span>Search:</span>
-                <input
-                  type="search"
+            {/* Filter Bar matching visual reference */}
+            <div className="flex items-center flex-wrap gap-2.5">
+              {/* Search well */}
+              <div className="w-44 sm:w-60">
+                <InsetInput
+                  type="text"
+                  placeholder="Cari nama area..."
+                  icon={Search}
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1);
                   }}
-                  placeholder=""
-                  className="border border-slate-300 rounded px-2.5 py-1 text-xs w-full sm:w-48 bg-white focus:outline-none focus:ring-1 focus:ring-[#1769aa]"
                 />
               </div>
-            </div>
 
-            {/* TABEL DATA INDUK AREA */}
-            <div className="overflow-x-auto rounded-lg border border-[#17a2b8]/30">
-              <table className="w-full text-xs text-left border-collapse">
-                <thead>
-                  <tr className="bg-[#17a2b8] text-white text-center font-bold">
-                    <th className="py-2.5 px-4 border-r border-[#17a2b8]/40 uppercase tracking-wider">
-                      DATA LOKASI AREA / SITE
-                    </th>
-                    <th className="py-2.5 px-4 border-r border-[#17a2b8]/40 uppercase tracking-wider w-36">
-                      LATITUDE
-                    </th>
-                    <th className="py-2.5 px-4 border-r border-[#17a2b8]/40 uppercase tracking-wider w-36">
-                      LONGITUDE
-                    </th>
-                    <th className="py-2.5 px-4 uppercase tracking-wider w-44">
-                      AKSI
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {paginatedSites.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-400 italic">
-                        Tidak ada data area / site yang ditemukan.
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedSites.map((site, idx) => (
-                      <tr
-                        key={site.id}
-                        className={idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/50 hover:bg-slate-100/80'}
-                      >
-                        <td className="py-2.5 px-4 text-center font-medium text-slate-600">
-                          <small className="text-xs text-slate-600">{site.name}</small>
-                        </td>
-                        <td className="py-2.5 px-4 text-center">
-                          <small className="text-xs font-mono font-medium text-[#0d6efd]">
-                            {site.latitude}
-                          </small>
-                        </td>
-                        <td className="py-2.5 px-4 text-center">
-                          <small className="text-xs font-mono font-medium text-[#198754]">
-                            {site.longitude}
-                          </small>
-                        </td>
-                        <td className="py-2.5 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1.5">
-                            {/* EDIT BUTTON (CYAN/INFO) */}
-                            <button
-                              type="button"
-                              onClick={() => handleStartEdit(site)}
-                              className="inline-flex items-center space-x-1 px-2.5 py-1 bg-[#17a2b8] hover:bg-[#138496] text-white rounded text-[11px] font-bold shadow-xs transition"
-                              title="Edit Area & Shift"
-                            >
-                              <Pencil className="w-3 h-3" />
-                              <small className="uppercase font-semibold">EDIT</small>
-                            </button>
-
-                            {/* HAPUS BUTTON (RED/DANGER) */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDeleteTarget(site);
-                                setAdminPassword('');
-                                setDeleteError(null);
-                              }}
-                              className="inline-flex items-center space-x-1 px-2.5 py-1 bg-[#dc3545] hover:bg-[#c82333] text-white rounded text-[11px] font-bold shadow-xs transition"
-                              title="Hapus Area"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <small className="uppercase font-semibold">HAPUS</small>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* DATATABLE BOTTOM CONTROLS: PAGINATION INFO & BUTTONS */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 pt-2">
-              <div>
-                Showing {totalEntries === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{' '}
-                {Math.min(currentPage * pageSize, totalEntries)} of {totalEntries} entries
+              {/* Status Dropdown */}
+              <div className="relative">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  className="appearance-none bg-slate-50 hover:bg-white text-slate-700 text-xs font-semibold pl-3 pr-8 py-2 rounded-xl border border-slate-200/90 shadow-2xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="ALL">Semua Status</option>
+                  <option value="ACTIVE">Aktif Saja</option>
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
               </div>
 
-              <div className="flex items-center space-x-1">
-                <button
-                  type="button"
-                  disabled={currentPage <= 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className="px-2.5 py-1 border border-slate-300 rounded text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 text-xs flex items-center space-x-0.5"
-                >
-                  <ChevronLeft className="w-3 h-3" />
-                  <span>Previous</span>
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
-                  <button
-                    key={pg}
-                    type="button"
-                    onClick={() => setCurrentPage(pg)}
-                    className={`px-2.5 py-1 rounded text-xs font-semibold ${
-                      currentPage === pg
-                        ? 'bg-[#1769aa] text-white'
-                        : 'border border-slate-300 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    {pg}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  className="px-2.5 py-1 border border-slate-300 rounded text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 text-xs flex items-center space-x-0.5"
-                >
-                  <span>Next</span>
-                  <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
+              {/* + Tambah Area Button */}
+              <SkeuomorphicButton
+                variant="primary"
+                size="md"
+                icon={Plus}
+                onClick={() => setIsTambahModalOpen(true)}
+              >
+                Tambah Area
+              </SkeuomorphicButton>
             </div>
           </div>
-        </div>
+
+          {/* Modern Skeuomorphic Table */}
+          <div className="overflow-x-auto rounded-xl border border-slate-200/90 shadow-2xs bg-white">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold">
+                  <th className="py-3 px-4 w-12 text-center uppercase tracking-wider">No</th>
+                  <th className="py-3 px-4 uppercase tracking-wider">Nama Area</th>
+                  <th className="py-3 px-4 uppercase tracking-wider">Lokasi</th>
+                  <th className="py-3 px-4 text-center uppercase tracking-wider w-28">Jumlah Site</th>
+                  <th className="py-3 px-4 text-center uppercase tracking-wider w-28">Status</th>
+                  <th className="py-3 px-4 text-center uppercase tracking-wider w-28">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {paginatedSites.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-400 italic">
+                      Tidak ada data area yang cocok dengan pencarian.
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedSites.map((site, idx) => (
+                    <tr
+                      key={site.id}
+                      className="hover:bg-slate-50/70 transition-colors duration-100"
+                    >
+                      <td className="py-3 px-4 text-center text-slate-500 font-mono">
+                        {(currentPage - 1) * pageSize + idx + 1}
+                      </td>
+                      <td className="py-3 px-4 font-bold text-slate-900">
+                        {site.name}
+                      </td>
+                      <td className="py-3 px-4 text-slate-600">
+                        {site.address || 'Jakarta Pusat'}
+                      </td>
+                      <td className="py-3 px-4 text-center font-bold text-slate-800">
+                        {site.id.includes('site') ? '2' : '3'}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <StatusBadge variant="success" label="Aktif" />
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className="flex items-center justify-center space-x-1.5">
+                          {/* Edit Pencil Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleStartEdit(site)}
+                            className="p-1.5 rounded-lg text-sky-600 hover:text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 shadow-2xs transition active:translate-y-0.5"
+                            title="Edit Area"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Delete Trash Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeleteTarget(site);
+                              setAdminPassword('');
+                              setDeleteError(null);
+                            }}
+                            className="p-1.5 rounded-lg text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 shadow-2xs transition active:translate-y-0.5"
+                            title="Hapus Area"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Footer */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 pt-2">
+            <div>
+              Menampilkan {totalEntries === 0 ? 0 : (currentPage - 1) * pageSize + 1}-
+              {Math.min(currentPage * pageSize, totalEntries)} dari {totalEntries} data
+            </div>
+
+            <div className="flex items-center space-x-1">
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition shadow-2xs"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+                <button
+                  key={pg}
+                  type="button"
+                  onClick={() => setCurrentPage(pg)}
+                  className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition ${
+                    currentPage === pg
+                      ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
+                      : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-2xs'
+                  }`}
+                >
+                  {pg}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition shadow-2xs"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </SurfaceCard>
       )}
 
-      {/* ========================================================
-          VIEW 2: EDIT DATA AREA (100% PARITY DENGAN area_update.php)
-          ======================================================== */}
+      {/* VIEW 2: EDIT AREA (Preserved Full Functionality) */}
       {activeView === 'EDIT' && editingSite && (
-        <div className="bg-[#f5f8fc] border border-[#d8e5f1] rounded-2xl p-6 shadow-sm space-y-6 animate-in fade-in">
-          {/* Header Edit View */}
-          <div className="flex items-center justify-between border-b border-[#d8e5f1] pb-4">
+        <SurfaceCard variant="elevated" padding="lg" className="space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
-              <h3 className="text-base font-bold text-[#104b7a] flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-[#1769aa]" />
+              <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
+                <MapPin className="w-5 h-5 text-sky-600" />
                 <span>Edit Lokasi Area / Site: {editingSite.name}</span>
-              </h3>
+              </h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 Perbarui koordinat peta satelit GPS dan konfigurasi shift operasional
               </p>
             </div>
-            <button
-              type="button"
+            <SkeuomorphicButton
+              variant="secondary"
+              size="sm"
               onClick={() => setActiveView('LIST')}
-              className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg text-xs flex items-center space-x-1 transition"
             >
-              <Ban className="w-3.5 h-3.5" />
-              <span>Kembali ke Daftar Area</span>
-            </button>
+              Kembali ke Daftar Area
+            </SkeuomorphicButton>
           </div>
 
           <form onSubmit={handleSaveEdit} className="space-y-5">
-            {/* PETA SECTION */}
-            <div className="bg-white border border-[#d8e5f1] rounded-xl p-4 shadow-xs">
-              <div className="flex items-center space-x-2 text-[#104b7a] font-bold text-sm mb-3">
-                <MapPin className="w-4 h-4 text-[#1769aa]" />
-                <span>Lokasi Area / Site</span>
+            {/* Map Preview */}
+            <div className="rounded-xl border border-slate-200 p-4 bg-slate-50/50 space-y-3">
+              <div className="flex items-center space-x-2 text-slate-900 font-bold text-sm">
+                <MapPin className="w-4 h-4 text-sky-600" />
+                <span>Titik Koordinat & Geofence (Radius 50m)</span>
               </div>
-
-              {/* Instruction Banner */}
-              <div className="bg-[#fff8e6] border border-[#f1d58a] border-l-4 border-l-[#e7ad29] text-[#785516] p-3 rounded-lg text-xs leading-relaxed mb-3 flex items-start space-x-2">
-                <Info className="w-4 h-4 text-[#e7ad29] shrink-0 mt-0.5" />
-                <span>
-                  Pastikan titik lokasi sudah tepat. Anda dapat memperbesar, memperkecil, menggeser
-                  peta, atau mengeklik titik lokasi yang sesuai.
-                </span>
-              </div>
-
-              {/* Map Frame with Leaflet & Red Circle Geofence */}
-              <div className="border border-[#d8e5f1] p-1.5 rounded-lg bg-white overflow-hidden">
+              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-inner bg-white">
                 <AreaLeafletMap
                   latitude={editLat}
                   longitude={editLng}
@@ -566,874 +548,333 @@ export const AreaManagementView: React.FC<AreaManagementViewProps> = ({
                 />
               </div>
 
-              {/* KOORDINAT FIELDS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
                 <div>
-                  <label className="block text-xs font-bold text-[#43566b] mb-1">
-                    <span className="flex items-center space-x-1">
-                      <MapPin className="w-3 h-3 text-[#1769aa]" />
-                      <span>Latitude</span>
-                    </span>
-                  </label>
-                  <input
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Nama Area / Site</label>
+                  <InsetInput
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Latitude</label>
+                  <InsetInput
                     type="text"
                     required
                     value={editLat}
                     onChange={(e) => setEditLat(parseFloat(e.target.value) || 0)}
-                    className="w-full border border-[#cfdeeb] rounded-lg px-3 py-2 text-xs text-slate-800 font-mono bg-white focus:outline-none focus:ring-2 focus:ring-[#1769aa]"
                   />
                 </div>
-
                 <div>
-                  <label className="block text-xs font-bold text-[#43566b] mb-1">
-                    <span className="flex items-center space-x-1">
-                      <MapPin className="w-3 h-3 text-[#1769aa]" />
-                      <span>Longitude</span>
-                    </span>
-                  </label>
-                  <input
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Longitude</label>
+                  <InsetInput
                     type="text"
                     required
                     value={editLng}
                     onChange={(e) => setEditLng(parseFloat(e.target.value) || 0)}
-                    className="w-full border border-[#cfdeeb] rounded-lg px-3 py-2 text-xs text-slate-800 font-mono bg-white focus:outline-none focus:ring-2 focus:ring-[#1769aa]"
                   />
                 </div>
               </div>
+            </div>
 
-              {/* NAMA AREA FIELD */}
-              <div className="mt-3">
-                <label className="block text-xs font-bold text-[#43566b] mb-1">
-                  <span className="flex items-center space-x-1">
-                    <Building className="w-3 h-3 text-[#1769aa]" />
-                    <span>Nama Area / Site</span>
+            {/* Shift configuration table */}
+            <div className="rounded-xl border border-slate-200 p-4 bg-white space-y-3">
+              <div className="flex items-center space-x-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-2">
+                <Clock className="w-4 h-4 text-sky-600" />
+                <span>Pengaturan Shift Operasional</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                {/* Pagi */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                  <span className="font-semibold text-slate-700">Shift Pagi</span>
+                  <span className="font-mono text-slate-900 bg-white px-2 py-1 rounded-lg border border-slate-200">
+                    {editShifts.pagiMasukJam}:{editShifts.pagiMasukMenit} - {editShifts.pagiPulangJam}:{editShifts.pagiPulangMenit}
                   </span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full border border-[#cfdeeb] rounded-lg px-3 py-2 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#1769aa]"
-                />
-              </div>
-            </div>
-
-            {/* SHIFT ANGGOTA DAN KOMANDAN */}
-            <div className="border border-[#d4e4f3] rounded-xl overflow-hidden bg-white shadow-xs">
-              <div className="bg-[#eaf4ff] text-[#174e7b] px-4 py-3 border-b border-[#d4e4f3] font-bold text-xs flex items-center space-x-2">
-                <Clock className="w-4 h-4 text-[#1769aa]" />
-                <span>Pengaturan Shift Anggota dan Komandan</span>
-              </div>
-
-              <div className="p-4 space-y-3">
-                {/* SHIFT PAGI */}
-                <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2 border-b border-slate-100 pb-3">
-                  <label className="text-xs font-medium text-[#43566b]">Jam Masuk Shift Pagi</label>
-                  <div className="flex items-center space-x-1">
-                    <select
-                      value={editShifts.pagiMasukJam}
-                      onChange={(e) => setEditShifts({ ...editShifts, pagiMasukJam: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-slate-400 font-bold">:</span>
-                    <select
-                      value={editShifts.pagiMasukMenit}
-                      onChange={(e) => setEditShifts({ ...editShifts, pagiMasukMenit: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {MINUTES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <label className="text-xs font-medium text-[#43566b]">Jam Pulang Shift Pagi</label>
-                  <div className="flex items-center space-x-1">
-                    <select
-                      value={editShifts.pagiPulangJam}
-                      onChange={(e) => setEditShifts({ ...editShifts, pagiPulangJam: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-slate-400 font-bold">:</span>
-                    <select
-                      value={editShifts.pagiPulangMenit}
-                      onChange={(e) => setEditShifts({ ...editShifts, pagiPulangMenit: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {MINUTES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
                 </div>
-
-                {/* SHIFT SIANG */}
-                <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2 border-b border-slate-100 pb-3">
-                  <label className="text-xs font-medium text-[#43566b]">Jam Masuk Shift Siang</label>
-                  <div className="flex items-center space-x-1">
-                    <select
-                      value={editShifts.siangMasukJam}
-                      onChange={(e) => setEditShifts({ ...editShifts, siangMasukJam: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-slate-400 font-bold">:</span>
-                    <select
-                      value={editShifts.siangMasukMenit}
-                      onChange={(e) => setEditShifts({ ...editShifts, siangMasukMenit: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {MINUTES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <label className="text-xs font-medium text-[#43566b]">Jam Pulang Shift Siang</label>
-                  <div className="flex items-center space-x-1">
-                    <select
-                      value={editShifts.siangPulangJam}
-                      onChange={(e) => setEditShifts({ ...editShifts, siangPulangJam: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-slate-400 font-bold">:</span>
-                    <select
-                      value={editShifts.siangPulangMenit}
-                      onChange={(e) => setEditShifts({ ...editShifts, siangPulangMenit: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {MINUTES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
+                {/* Siang */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                  <span className="font-semibold text-slate-700">Shift Siang</span>
+                  <span className="font-mono text-slate-900 bg-white px-2 py-1 rounded-lg border border-slate-200">
+                    {editShifts.siangMasukJam}:{editShifts.siangMasukMenit} - {editShifts.siangPulangJam}:{editShifts.siangPulangMenit}
+                  </span>
                 </div>
-
-                {/* SHIFT MALAM */}
-                <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2">
-                  <label className="text-xs font-medium text-[#43566b]">Jam Masuk Shift Malam</label>
-                  <div className="flex items-center space-x-1">
-                    <select
-                      value={editShifts.malamMasukJam}
-                      onChange={(e) => setEditShifts({ ...editShifts, malamMasukJam: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-slate-400 font-bold">:</span>
-                    <select
-                      value={editShifts.malamMasukMenit}
-                      onChange={(e) => setEditShifts({ ...editShifts, malamMasukMenit: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {MINUTES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <label className="text-xs font-medium text-[#43566b]">Jam Pulang Shift Malam</label>
-                  <div className="flex items-center space-x-1">
-                    <select
-                      value={editShifts.malamPulangJam}
-                      onChange={(e) => setEditShifts({ ...editShifts, malamPulangJam: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-slate-400 font-bold">:</span>
-                    <select
-                      value={editShifts.malamPulangMenit}
-                      onChange={(e) => setEditShifts({ ...editShifts, malamPulangMenit: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {MINUTES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
+                {/* Malam */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                  <span className="font-semibold text-slate-700">Shift Malam</span>
+                  <span className="font-mono text-slate-900 bg-white px-2 py-1 rounded-lg border border-slate-200">
+                    {editShifts.malamMasukJam}:{editShifts.malamMasukMenit} - {editShifts.malamPulangJam}:{editShifts.malamPulangMenit}
+                  </span>
+                </div>
+                {/* Staf */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                  <span className="font-semibold text-slate-700">Staff & Driver</span>
+                  <span className="font-mono text-slate-900 bg-white px-2 py-1 rounded-lg border border-slate-200">
+                    {editShifts.stafMasukJam}:{editShifts.stafMasukMenit} - {editShifts.stafPulangJam}:{editShifts.stafPulangMenit}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* JAM KERJA RUTIN */}
-            <div className="border border-[#d4e4f3] rounded-xl overflow-hidden bg-white shadow-xs">
-              <div className="bg-[#eaf4ff] text-[#174e7b] px-4 py-3 border-b border-[#d4e4f3] font-bold text-xs flex items-center space-x-2">
-                <CalendarCheck className="w-4 h-4 text-[#1769aa]" />
-                <span>Pengaturan Jam Kerja Rutin: Chief / Staf / Cleaning Service / Driver</span>
-              </div>
-
-              <div className="p-4 space-y-3">
-                {/* STAF / CS / DRIVER */}
-                <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2 border-b border-slate-100 pb-3">
-                  <label className="text-xs font-medium text-[#43566b]">Jam Masuk Staf / CS / Driver</label>
-                  <div className="flex items-center space-x-1">
-                    <select
-                      value={editShifts.stafMasukJam}
-                      onChange={(e) => setEditShifts({ ...editShifts, stafMasukJam: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-slate-400 font-bold">:</span>
-                    <select
-                      value={editShifts.stafMasukMenit}
-                      onChange={(e) => setEditShifts({ ...editShifts, stafMasukMenit: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {MINUTES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <label className="text-xs font-medium text-[#43566b]">Jam Pulang Staf / CS / Driver</label>
-                  <div className="flex items-center space-x-1">
-                    <select
-                      value={editShifts.stafPulangJam}
-                      onChange={(e) => setEditShifts({ ...editShifts, stafPulangJam: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-slate-400 font-bold">:</span>
-                    <select
-                      value={editShifts.stafPulangMenit}
-                      onChange={(e) => setEditShifts({ ...editShifts, stafPulangMenit: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {MINUTES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* CHIEF */}
-                <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2">
-                  <label className="text-xs font-medium text-[#43566b]">Jam Masuk Chief</label>
-                  <div className="flex items-center space-x-1">
-                    <select
-                      value={editShifts.chiefMasukJam}
-                      onChange={(e) => setEditShifts({ ...editShifts, chiefMasukJam: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-slate-400 font-bold">:</span>
-                    <select
-                      value={editShifts.chiefMasukMenit}
-                      onChange={(e) => setEditShifts({ ...editShifts, chiefMasukMenit: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {MINUTES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <label className="text-xs font-medium text-[#43566b]">Jam Pulang Chief</label>
-                  <div className="flex items-center space-x-1">
-                    <select
-                      value={editShifts.chiefPulangJam}
-                      onChange={(e) => setEditShifts({ ...editShifts, chiefPulangJam: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-slate-400 font-bold">:</span>
-                    <select
-                      value={editShifts.chiefPulangMenit}
-                      onChange={(e) => setEditShifts({ ...editShifts, chiefPulangMenit: e.target.value })}
-                      className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                    >
-                      {MINUTES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ACTION BUTTONS (BATAL & SIMPAN PERUBAHAN) */}
-            <div className="flex justify-end items-center space-x-2 pt-2">
-              <button
+            <div className="flex justify-end space-x-2 pt-2">
+              <SkeuomorphicButton
+                variant="secondary"
+                size="md"
                 type="button"
                 onClick={() => setActiveView('LIST')}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs flex items-center space-x-1 transition"
               >
-                <Ban className="w-3.5 h-3.5 mr-1" />
-                <span>BATAL</span>
-              </button>
-
-              <button
-                type="submit"
-                className="px-4 py-2 bg-[#0d6efd] hover:bg-[#0b5ed7] text-white font-bold rounded-lg text-xs flex items-center space-x-1 shadow-sm transition"
-              >
-                <Save className="w-3.5 h-3.5 mr-1" />
-                <span>SIMPAN PERUBAHAN</span>
-              </button>
+                Batal
+              </SkeuomorphicButton>
+              <SkeuomorphicButton variant="primary" size="md" type="submit">
+                Simpan Perubahan
+              </SkeuomorphicButton>
             </div>
           </form>
-        </div>
+        </SurfaceCard>
       )}
 
-      {/* ========================================================
-          MODAL 1: FORM TAMBAH DATA AREA (EXACT #exampleModalCenter)
-          ======================================================== */}
+      {/* MODAL 1: TAMBAH AREA (Exact Split Modal Matching Visual Reference Image) */}
       {isTambahModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden my-6 animate-in fade-in zoom-in-95 duration-150">
-            {/* Modal Header: Gradient #1769aa to #104b7a */}
-            <div className="bg-gradient-to-r from-[#1769aa] to-[#104b7a] text-white px-5 py-4 flex items-center justify-between border-b-4 border-[#4da3e6]">
-              <h5 className="font-bold text-sm tracking-wide flex items-center space-x-2 text-white">
-                <MapPin className="w-4 h-4 text-white" />
-                <span>Form Tambah Data Area / Site</span>
-              </h5>
-              <button
-                type="button"
-                onClick={() => setIsTambahModalOpen(false)}
-                className="text-white/80 hover:text-white text-xl leading-none font-bold"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Modal Body: #f5f8fc background */}
-            <div className="bg-[#f5f8fc] p-5 max-h-[80vh] overflow-y-auto space-y-4">
-              <form onSubmit={handleSaveTambah} id="formTambahArea" className="space-y-4">
-                {/* SECTION 1: PETA */}
-                <div className="bg-white border border-[#d8e5f1] rounded-xl p-4 shadow-xs">
-                  <div className="flex items-center space-x-2 text-[#104b7a] font-bold text-xs mb-2">
-                    <MapPin className="w-4 h-4 text-[#1769aa]" />
-                    <span>Tentukan Titik Lokasi Area / Site</span>
-                  </div>
-
-                  <div className="bg-[#fff8e6] border border-[#f1d58a] border-l-4 border-l-[#e7ad29] text-[#785516] p-3 rounded-lg text-xs leading-relaxed mb-3 flex items-start space-x-2">
-                    <Info className="w-4 h-4 text-[#e7ad29] shrink-0 mt-0.5" />
-                    <span>
-                      Klik ikon pencarian pada peta untuk mencari lokasi berdasarkan nama atau alamat.
-                      Setelah itu, klik tepat pada lokasi di peta untuk mengisi latitude dan longitude.
-                      Anda juga dapat menggeser penanda lokasi.
-                    </span>
-                  </div>
-
-                  <div className="border border-[#d8e5f1] p-1.5 rounded-lg bg-white overflow-hidden">
-                    <AreaLeafletMap
-                      latitude={tambahLat}
-                      longitude={tambahLng}
-                      onChangeLocation={(lat, lng) => {
-                        setTambahLat(lat);
-                        setTambahLng(lng);
-                      }}
-                      mode="create"
-                      areaName={tambahName || 'Area Baru'}
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="grid grid-cols-1 md:grid-cols-5">
+              {/* Left Column: 3D Isometric Map Pin Illustration matching visual reference */}
+              <div className="md:col-span-2 bg-gradient-to-br from-[#E0E7FF]/40 via-[#F0F5FA] to-[#E2E8F0] p-6 flex flex-col items-center justify-center relative overflow-hidden border-b md:border-b-0 md:border-r border-slate-200">
+                {/* 3D Isometric Tile Grid */}
+                <div className="relative w-44 h-44 flex items-center justify-center">
+                  <svg
+                    viewBox="0 0 160 140"
+                    className="w-full h-full drop-shadow-md"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    {/* Isometric base slab */}
+                    <path
+                      d="M80 20 L140 55 L80 90 L20 55 Z"
+                      fill="#FFFFFF"
+                      stroke="#CBD5E1"
+                      strokeWidth="1.5"
                     />
+                    <path
+                      d="M20 55 L80 90 L80 102 L20 67 Z"
+                      fill="#E2E8F0"
+                      stroke="#CBD5E1"
+                      strokeWidth="1.5"
+                    />
+                    <path
+                      d="M140 55 L80 90 L80 102 L140 67 Z"
+                      fill="#CBD5E1"
+                      stroke="#94A3B8"
+                      strokeWidth="1.5"
+                    />
+                    {/* Roads across tile */}
+                    <path
+                      d="M60 31 L120 66"
+                      stroke="#38BDF8"
+                      strokeWidth="6"
+                      strokeOpacity="0.4"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M100 31 L40 66"
+                      stroke="#38BDF8"
+                      strokeWidth="6"
+                      strokeOpacity="0.4"
+                      strokeLinecap="round"
+                    />
+                    {/* Soft Shadow under pin */}
+                    <ellipse cx="80" cy="62" rx="16" ry="6" fill="#0284C7" fillOpacity="0.25" />
+                  </svg>
+
+                  {/* 3D Glossy Blue Map Pin */}
+                  <div className="absolute top-8 flex flex-col items-center animate-bounce duration-1000">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#38BDF8] via-[#0284C7] to-[#0369A1] shadow-skeuo-button-primary border-2 border-white flex items-center justify-center">
+                      <div className="w-3.5 h-3.5 rounded-full bg-white shadow-inner" />
+                    </div>
+                    <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[10px] border-t-[#0369A1] -mt-0.5" />
                   </div>
                 </div>
 
-                {/* SECTION 2: IDENTITAS AREA */}
-                <div className="bg-white border border-[#d8e5f1] rounded-xl p-4 shadow-xs">
-                  <div className="flex items-center space-x-2 text-[#104b7a] font-bold text-xs mb-3">
-                    <Building className="w-4 h-4 text-[#1769aa]" />
-                    <span>Informasi Area / Site</span>
+                <div className="text-center mt-2">
+                  <div className="text-xs font-bold text-slate-800">Geofence Presisi</div>
+                  <div className="text-[10px] text-slate-500">Validasi radius koordinat GPS otomatis</div>
+                </div>
+              </div>
+
+              {/* Right Column: Form matching visual reference */}
+              <div className="md:col-span-3 p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                    <h3 className="font-extrabold text-base text-slate-900">Tambah Area</h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsTambahModalOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
 
-                  <div className="mb-3">
-                    <label className="block text-xs font-bold text-[#43566b] mb-1">
-                      Nama Area / Site
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={tambahName}
-                      onChange={(e) => setTambahName(e.target.value)}
-                      placeholder="Contoh: PT. Mall Jakarta atau PT. Kimia C4"
-                      className="w-full border border-[#cfdeeb] rounded-lg px-3 py-2 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#1769aa]"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <form onSubmit={handleSaveTambah} id="formTambahArea" className="space-y-3.5">
+                    {/* Nama Area */}
                     <div>
-                      <label className="block text-xs font-bold text-[#43566b] mb-1">
-                        <span className="flex items-center space-x-1">
-                          <MapPin className="w-3 h-3 text-[#1769aa]" />
-                          <span>Latitude</span>
-                        </span>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Nama Area <span className="text-rose-500">*</span>
                       </label>
-                      <input
+                      <InsetInput
                         type="text"
                         required
-                        value={tambahLat !== null ? String(tambahLat) : ''}
-                        onChange={(e) => setTambahLat(parseFloat(e.target.value) || 0)}
-                        placeholder="Latitude akan terisi dari peta"
-                        className="w-full border border-[#cfdeeb] rounded-lg px-3 py-2 text-xs text-slate-800 font-mono bg-white focus:outline-none focus:ring-2 focus:ring-[#1769aa]"
+                        value={tambahName}
+                        onChange={(e) => setTambahName(e.target.value)}
+                        placeholder="Masukkan nama area"
                       />
                     </div>
 
+                    {/* Lokasi */}
                     <div>
-                      <label className="block text-xs font-bold text-[#43566b] mb-1">
-                        <span className="flex items-center space-x-1">
-                          <MapPin className="w-3 h-3 text-[#1769aa]" />
-                          <span>Longitude</span>
-                        </span>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Lokasi <span className="text-rose-500">*</span>
                       </label>
-                      <input
+                      <InsetInput
                         type="text"
                         required
-                        value={tambahLng !== null ? String(tambahLng) : ''}
-                        onChange={(e) => setTambahLng(parseFloat(e.target.value) || 0)}
-                        placeholder="Longitude akan terisi dari peta"
-                        className="w-full border border-[#cfdeeb] rounded-lg px-3 py-2 text-xs text-slate-800 font-mono bg-white focus:outline-none focus:ring-2 focus:ring-[#1769aa]"
+                        value={tambahLokasi}
+                        onChange={(e) => setTambahLokasi(e.target.value)}
+                        placeholder="Masukkan lokasi area"
+                        icon={MapPin}
                       />
                     </div>
-                  </div>
+
+                    {/* Deskripsi (Opsional) */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Deskripsi (Opsional)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={tambahDeskripsi}
+                        onChange={(e) => setTambahDeskripsi(e.target.value)}
+                        placeholder="Keterangan singkat mengenai area..."
+                        className="w-full bg-[#F8FAFC] border border-slate-300/80 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 shadow-skeuo-inset focus:outline-none focus:ring-2 focus:ring-sky-500 transition resize-none"
+                      />
+                    </div>
+
+                    {/* Advanced toggle for Leaflet map */}
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowAdvancedMap(!showAdvancedMap)}
+                        className="text-[11px] font-semibold text-sky-600 hover:text-sky-700 inline-flex items-center space-x-1"
+                      >
+                        <span>{showAdvancedMap ? 'Sembunyikan Peta Koordinat' : '+ Sesuaikan Koordinat Peta & Shift'}</span>
+                      </button>
+
+                      {showAdvancedMap && (
+                        <div className="mt-2.5 p-2 rounded-xl border border-slate-200 bg-slate-50 space-y-2 animate-in fade-in">
+                          <div className="h-40 rounded-lg overflow-hidden border border-slate-200">
+                            <AreaLeafletMap
+                              latitude={tambahLat}
+                              longitude={tambahLng}
+                              onChangeLocation={(lat, lng) => {
+                                setTambahLat(lat);
+                                setTambahLng(lng);
+                              }}
+                              mode="create"
+                              areaName={tambahName || 'Area Baru'}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-slate-600">
+                            <div>Lat: {tambahLat}</div>
+                            <div>Lng: {tambahLng}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Modal Buttons matching visual reference */}
+                    <div className="flex justify-end items-center space-x-2 pt-4 border-t border-slate-100">
+                      <SkeuomorphicButton
+                        variant="secondary"
+                        size="md"
+                        type="button"
+                        onClick={() => setIsTambahModalOpen(false)}
+                      >
+                        Batal
+                      </SkeuomorphicButton>
+                      <SkeuomorphicButton variant="primary" size="md" type="submit">
+                        Simpan
+                      </SkeuomorphicButton>
+                    </div>
+                  </form>
                 </div>
-
-                {/* SECTION 3: PENGATURAN SHIFT ANGGOTA DAN KOMANDAN */}
-                <div className="border border-[#d4e4f3] rounded-xl overflow-hidden bg-white shadow-xs">
-                  <div className="bg-[#eaf4ff] text-[#174e7b] px-4 py-3 border-b border-[#d4e4f3] font-bold text-xs flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-[#1769aa]" />
-                    <span>Pengaturan Jam Kerja Shift Anggota dan Komandan</span>
-                  </div>
-
-                  <div className="p-4 space-y-3">
-                    {/* Shift Pagi */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2 border-b border-slate-100 pb-3">
-                      <label className="text-xs font-medium text-[#43566b]">Jam Masuk Shift Pagi</label>
-                      <div className="flex items-center space-x-1">
-                        <select
-                          value={tambahShifts.pagiMasukJam}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, pagiMasukJam: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {HOURS.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                        <span className="text-slate-400 font-bold">:</span>
-                        <select
-                          value={tambahShifts.pagiMasukMenit}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, pagiMasukMenit: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {MINUTES.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <label className="text-xs font-medium text-[#43566b]">Jam Pulang Shift Pagi</label>
-                      <div className="flex items-center space-x-1">
-                        <select
-                          value={tambahShifts.pagiPulangJam}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, pagiPulangJam: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {HOURS.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                        <span className="text-slate-400 font-bold">:</span>
-                        <select
-                          value={tambahShifts.pagiPulangMenit}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, pagiPulangMenit: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {MINUTES.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Shift Siang */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2 border-b border-slate-100 pb-3">
-                      <label className="text-xs font-medium text-[#43566b]">Jam Masuk Shift Siang</label>
-                      <div className="flex items-center space-x-1">
-                        <select
-                          value={tambahShifts.siangMasukJam}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, siangMasukJam: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {HOURS.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                        <span className="text-slate-400 font-bold">:</span>
-                        <select
-                          value={tambahShifts.siangMasukMenit}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, siangMasukMenit: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {MINUTES.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <label className="text-xs font-medium text-[#43566b]">Jam Pulang Shift Siang</label>
-                      <div className="flex items-center space-x-1">
-                        <select
-                          value={tambahShifts.siangPulangJam}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, siangPulangJam: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {HOURS.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                        <span className="text-slate-400 font-bold">:</span>
-                        <select
-                          value={tambahShifts.siangPulangMenit}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, siangPulangMenit: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {MINUTES.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Shift Malam */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2">
-                      <label className="text-xs font-medium text-[#43566b]">Jam Masuk Shift Malam</label>
-                      <div className="flex items-center space-x-1">
-                        <select
-                          value={tambahShifts.malamMasukJam}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, malamMasukJam: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {HOURS.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                        <span className="text-slate-400 font-bold">:</span>
-                        <select
-                          value={tambahShifts.malamMasukMenit}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, malamMasukMenit: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {MINUTES.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <label className="text-xs font-medium text-[#43566b]">Jam Pulang Shift Malam</label>
-                      <div className="flex items-center space-x-1">
-                        <select
-                          value={tambahShifts.malamPulangJam}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, malamPulangJam: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {HOURS.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                        <span className="text-slate-400 font-bold">:</span>
-                        <select
-                          value={tambahShifts.malamPulangMenit}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, malamPulangMenit: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {MINUTES.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* SECTION 4: PENGATURAN JAM KERJA RUTIN */}
-                <div className="border border-[#d4e4f3] rounded-xl overflow-hidden bg-white shadow-xs">
-                  <div className="bg-[#eaf4ff] text-[#174e7b] px-4 py-3 border-b border-[#d4e4f3] font-bold text-xs flex items-center space-x-2">
-                    <CalendarCheck className="w-4 h-4 text-[#1769aa]" />
-                    <span>Pengaturan Jam Kerja Rutin: Chief / Staf / Cleaning Service / Driver</span>
-                  </div>
-
-                  <div className="p-4 space-y-3">
-                    {/* Staf / CS / Driver */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2 border-b border-slate-100 pb-3">
-                      <label className="text-xs font-medium text-[#43566b]">Jam Masuk Staf / CS / Driver</label>
-                      <div className="flex items-center space-x-1">
-                        <select
-                          value={tambahShifts.stafMasukJam}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, stafMasukJam: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {HOURS.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                        <span className="text-slate-400 font-bold">:</span>
-                        <select
-                          value={tambahShifts.stafMasukMenit}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, stafMasukMenit: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {MINUTES.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <label className="text-xs font-medium text-[#43566b]">Jam Pulang Staf / CS / Driver</label>
-                      <div className="flex items-center space-x-1">
-                        <select
-                          value={tambahShifts.stafPulangJam}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, stafPulangJam: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {HOURS.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                        <span className="text-slate-400 font-bold">:</span>
-                        <select
-                          value={tambahShifts.stafPulangMenit}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, stafPulangMenit: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {MINUTES.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Chief */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2">
-                      <label className="text-xs font-medium text-[#43566b]">Jam Masuk Chief</label>
-                      <div className="flex items-center space-x-1">
-                        <select
-                          value={tambahShifts.chiefMasukJam}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, chiefMasukJam: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {HOURS.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                        <span className="text-slate-400 font-bold">:</span>
-                        <select
-                          value={tambahShifts.chiefMasukMenit}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, chiefMasukMenit: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {MINUTES.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <label className="text-xs font-medium text-[#43566b]">Jam Pulang Chief</label>
-                      <div className="flex items-center space-x-1">
-                        <select
-                          value={tambahShifts.chiefPulangJam}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, chiefPulangJam: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {HOURS.map((h) => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                        <span className="text-slate-400 font-bold">:</span>
-                        <select
-                          value={tambahShifts.chiefPulangMenit}
-                          onChange={(e) => setTambahShifts({ ...tambahShifts, chiefPulangMenit: e.target.value })}
-                          className="border border-[#cfdeeb] rounded px-2 py-1 text-xs bg-white focus:ring-1 focus:ring-[#1769aa]"
-                        >
-                          {MINUTES.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* MODAL ACTIONS: BATAL & SIMPAN DATA AREA */}
-                <div className="flex justify-end items-center space-x-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsTambahModalOpen(false)}
-                    className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs flex items-center space-x-1 transition"
-                  >
-                    <Ban className="w-3.5 h-3.5 mr-1" />
-                    <span>BATAL</span>
-                  </button>
-
-                  <button
-                    type="submit"
-                    className="btn-simpan-area"
-                  >
-                    <Save className="w-3.5 h-3.5 mr-1" />
-                    <span>SIMPAN DATA AREA</span>
-                  </button>
-                </div>
-
-                {/* HELP NOTE */}
-                <p className="text-[11px] text-slate-500 mt-2 flex items-center space-x-1">
-                  <Info className="w-3.5 h-3.5 text-slate-400 mr-1" />
-                  <span>Hubungi admin jika mengalami kesulitan menambahkan data area/site.</span>
-                </p>
-              </form>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ========================================================
-          MODAL 2: KONFIRMASI HAPUS AREA (EXACT #modalHapusArea)
-          ======================================================== */}
+      {/* MODAL 2: CONFIRM DELETE AREA */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border-0 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            {/* Header Red: bg-danger text-white */}
-            <div className="bg-[#dc3545] text-white px-5 py-3.5 flex items-center justify-between">
-              <h5 className="font-bold text-sm tracking-wide flex items-center space-x-2 text-white">
-                <Trash2 className="w-4 h-4 text-white" />
-                <span>Konfirmasi Hapus Area / Site</span>
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="bg-rose-600 text-white px-5 py-3.5 flex items-center justify-between">
+              <h5 className="font-bold text-sm flex items-center space-x-2">
+                <Trash2 className="w-4 h-4" />
+                <span>Konfirmasi Hapus Area</span>
               </h5>
               <button
                 type="button"
-                onClick={() => {
-                  setDeleteTarget(null);
-                  setAdminPassword('');
-                  setDeleteError(null);
-                }}
-                className="text-white hover:text-white/80 font-bold text-lg leading-none"
+                onClick={() => setDeleteTarget(null)}
+                className="text-white hover:opacity-80 font-bold text-lg"
               >
                 ×
               </button>
             </div>
 
-            <form onSubmit={handleConfirmDelete}>
-              <div className="p-5 space-y-4">
-                {/* Danger Alert Box */}
-                <div className="bg-[#f8d7da] border border-[#f5c6cb] text-[#721c24] p-4 rounded-xl space-y-3">
-                  <h6 className="font-bold text-xs flex items-center space-x-1.5 uppercase">
-                    <AlertTriangle className="w-4 h-4 text-[#dc3545]" />
-                    <span>PERINGATAN PENGHAPUSAN DATA</span>
-                  </h6>
-
-                  <p className="text-xs text-slate-800">Anda akan menghapus area/site:</p>
-
-                  {/* Prominent White Box with Red Uppercase Name */}
-                  <div className="p-2.5 bg-white rounded-lg border border-[#f5c6cb] text-center shadow-xs">
-                    <strong className="text-[#dc3545] text-sm uppercase font-extrabold tracking-wide">
-                      {deleteTarget.name}
-                    </strong>
-                  </div>
-
-                  {/* Breakdown Impact Metrics Box */}
-                  <div className="bg-white border border-[#f5c6cb] rounded-lg p-3 text-xs space-y-1.5 shadow-xs">
-                    <div className="flex justify-between items-center text-slate-700">
-                      <span>Total Personil</span>
-                      <strong className="font-bold text-slate-900">
-                        {personnelCount[deleteTarget.id] ?? 5} Petugas
-                      </strong>
-                    </div>
-                    <div className="flex justify-between items-center text-slate-700">
-                      <span>Total Checkpoint / Aset</span>
-                      <strong className="font-bold text-slate-900">
-                        {checkpointsCount[deleteTarget.id] ?? 12} Titik
-                      </strong>
-                    </div>
-                    <div className="flex justify-between items-center text-slate-700">
-                      <span>Total Data Patroli</span>
-                      <strong className="font-bold text-slate-900">150 Laporan</strong>
-                    </div>
-                    <div className="flex justify-between items-center text-slate-700">
-                      <span>Total Data Absensi</span>
-                      <strong className="font-bold text-slate-900">320 Record</strong>
-                    </div>
-                  </div>
-
-                  <hr className="border-[#f5c6cb]" />
-
-                  <small className="block text-slate-700 text-[11px] leading-relaxed">
-                    Seluruh data terkait area/site ini akan ikut dihapus secara permanen dan tidak dapat
-                    dikembalikan.
-                  </small>
+            <form onSubmit={handleConfirmDelete} className="p-5 space-y-4">
+              <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3.5 rounded-xl text-xs space-y-2">
+                <div className="font-bold uppercase flex items-center space-x-1.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
+                  <span>Peringatan Penghapusan</span>
                 </div>
-
-                {/* Verifikasi Password Admin */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700">
-                    Verifikasi Password Admin
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={adminPassword}
-                    onChange={(e) => {
-                      setAdminPassword(e.target.value);
-                      setDeleteError(null);
-                    }}
-                    placeholder="Masukkan password Anda"
-                    className="w-full border-2 border-[#dc3545] rounded-lg px-3 py-2 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#dc3545]/30"
-                    autoFocus
-                  />
-                  {deleteError && (
-                    <p className="text-[11px] text-[#dc3545] font-semibold">{deleteError}</p>
-                  )}
-                </div>
+                <p>
+                  Anda akan menghapus area <strong className="text-rose-900 font-extrabold">{deleteTarget.name}</strong> secara permanen.
+                </p>
               </div>
 
-              {/* Modal Footer: Batal & Ya, Hapus Permanen */}
-              <div className="bg-slate-50 px-5 py-3 border-t border-slate-100 flex justify-end items-center space-x-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDeleteTarget(null);
-                    setAdminPassword('');
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Verifikasi Password Admin
+                </label>
+                <InsetInput
+                  type="password"
+                  required
+                  placeholder="Masukkan password admin"
+                  value={adminPassword}
+                  onChange={(e) => {
+                    setAdminPassword(e.target.value);
                     setDeleteError(null);
                   }}
-                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs transition"
+                />
+                {deleteError && (
+                  <p className="text-[11px] text-rose-600 font-semibold mt-1">{deleteError}</p>
+                )}
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                <SkeuomorphicButton
+                  variant="secondary"
+                  size="md"
+                  type="button"
+                  onClick={() => setDeleteTarget(null)}
                 >
                   Batal
-                </button>
-
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#dc3545] hover:bg-[#c82333] text-white font-bold rounded-lg text-xs flex items-center space-x-1.5 shadow-sm transition"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Ya, Hapus Permanen</span>
-                </button>
+                </SkeuomorphicButton>
+                <SkeuomorphicButton variant="danger" size="md" type="submit">
+                  Hapus Permanen
+                </SkeuomorphicButton>
               </div>
             </form>
           </div>

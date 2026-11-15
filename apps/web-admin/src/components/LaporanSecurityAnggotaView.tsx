@@ -1,11 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Edit3, Filter, ShieldCheck, AlertCircle, Clock, MapPin, Building, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, Eye, Edit3, ShieldCheck, AlertCircle, Clock, Building, ChevronLeft, ChevronRight, Loader2, Shield } from 'lucide-react';
 import { PatrolRecordItem, PatrolRecordsResponse } from '@patrol/types';
 import { useData } from '../lib/DataContext';
 import { PatroliDetailModal } from './PatroliDetailModal';
 import { PatroliTindakLanjutModal } from './PatroliTindakLanjutModal';
+import { SurfaceCard } from './ui/SurfaceCard';
+import { InsetInput } from './ui/InsetInput';
+import { SkeuomorphicButton } from './ui/SkeuomorphicButton';
+import { StatusBadge } from './ui/StatusBadge';
 
 export const LaporanSecurityAnggotaView: React.FC = () => {
   const { sites } = useData();
@@ -100,35 +104,32 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Modern Card Container */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
+      <SurfaceCard className="p-6">
         {/* Controls Bar: Search & Filters */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-          <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200/80">
+          <div className="flex flex-wrap items-center gap-3">
             {/* Search Input */}
-            <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="search"
+            <div className="w-full sm:w-72">
+              <InsetInput
+                icon={Search}
                 placeholder="Cari personil, pos, atau temuan..."
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="pl-9 pr-4 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 w-64 transition"
               />
             </div>
 
             {/* Site Filter Dropdown */}
-            <div className="relative">
+            <div>
               <select
                 value={selectedSiteName}
                 onChange={(e) => {
                   setSelectedSiteName(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="text-xs bg-slate-50 border border-slate-200 text-slate-700 font-semibold px-3 py-2 pr-7 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                className="bg-slate-50 border border-slate-200/90 rounded-xl px-3.5 py-2 text-xs text-slate-700 font-semibold shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] focus:outline-none focus:bg-white focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition cursor-pointer"
               >
                 <option value="">Semua Lokasi / Site</option>
                 {sites.map((s) => (
@@ -149,40 +150,40 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
                 setPageLength(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="bg-slate-50 border border-slate-200 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg focus:outline-none cursor-pointer"
+              className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-medium focus:outline-none focus:border-sky-500 cursor-pointer"
             >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
+              <option value="5">5 baris</option>
+              <option value="10">10 baris</option>
+              <option value="20">20 baris</option>
+              <option value="50">50 baris</option>
             </select>
-            <span>data per halaman</span>
           </div>
         </div>
 
         {/* Clean Modern Table */}
-        <div className="overflow-x-auto mt-4">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-white mt-4">
+          <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-200/80">
-                <th className="py-3 px-4 rounded-l-xl">Lokasi / Site</th>
+              <tr className="bg-slate-100/70 border-b border-slate-200/80 text-slate-600 font-semibold text-[11px] tracking-wider uppercase">
+                <th className="py-3 px-4">Lokasi / Site</th>
                 <th className="py-3 px-4">Nama Personil</th>
                 <th className="py-3 px-4">Titik Pos & Temuan</th>
                 <th className="py-3 px-4">Waktu Pemindaian</th>
-                <th className="py-3 px-4 text-center rounded-r-xl">Aksi</th>
+                <th className="py-3 px-4 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-500">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-teal-600 mb-2" />
+                  <td colSpan={5} className="py-12 text-center text-slate-400">
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto text-sky-500 mb-2" />
                     <span>Memuat log kegiatan security...</span>
                   </td>
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-400">
+                    <Shield className="w-6 h-6 mx-auto text-slate-300 mb-2" />
                     Tidak ada catatan kegiatan patroli yang sesuai filter.
                   </td>
                 </tr>
@@ -194,11 +195,11 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
                     row.statusResult.toLowerCase().includes('bahaya');
 
                   return (
-                    <tr key={row.id} className="hover:bg-slate-50/70 transition">
+                    <tr key={row.id} className="hover:bg-slate-50/80 transition-colors">
                       {/* Lokasi */}
                       <td className="py-3.5 px-4 font-semibold text-slate-800">
                         <div className="flex items-center space-x-1.5">
-                          <Building className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
+                          <Building className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
                           <span className="capitalize">{row.siteName}</span>
                         </div>
                       </td>
@@ -253,30 +254,30 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
                       {/* Aksi */}
                       <td className="py-3.5 px-4 text-center">
                         <div className="inline-flex items-center space-x-1.5">
-                          <button
-                            type="button"
+                          <SkeuomorphicButton
+                            variant="secondary"
+                            size="sm"
                             onClick={() => {
                               setSelectedDetailId(row.id);
                               setIsDetailOpen(true);
                             }}
-                            className="px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-semibold flex items-center space-x-1 border border-teal-200/60 transition shadow-xs"
+                            icon={Eye}
                           >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>Detail</span>
-                          </button>
+                            Detail
+                          </SkeuomorphicButton>
 
                           {isAnomaly && (
-                            <button
-                              type="button"
+                            <SkeuomorphicButton
+                              variant="danger"
+                              size="sm"
                               onClick={() => {
                                 setSelectedTlId(row.id);
                                 setIsTlOpen(true);
                               }}
-                              className="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold flex items-center space-x-1 border border-amber-200 transition shadow-xs"
+                              icon={Edit3}
                             >
-                              <Edit3 className="w-3.5 h-3.5" />
-                              <span>TL</span>
-                            </button>
+                              TL
+                            </SkeuomorphicButton>
                           )}
                         </div>
                       </td>
@@ -289,7 +290,7 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
         </div>
 
         {/* Modern Pagination Footer */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 mt-2 border-t border-slate-100 text-xs text-slate-500">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 text-xs text-slate-500">
           <div>
             Menampilkan{' '}
             <span className="font-bold text-slate-800">
@@ -302,12 +303,12 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
             dari <span className="font-bold text-slate-800">{recordsTotal}</span> data
           </div>
 
-          <div className="flex items-center space-x-1">
+          <div className="inline-flex items-center space-x-1 rounded-lg border border-slate-200/80 bg-white p-1">
             <button
               type="button"
               disabled={currentPage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 font-semibold transition flex items-center space-x-1"
+              className="px-2.5 py-1 text-xs rounded hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition text-slate-600 flex items-center space-x-1"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               <span>Sebelumnya</span>
@@ -318,10 +319,10 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
                 key={pg}
                 type="button"
                 onClick={() => setCurrentPage(pg)}
-                className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
+                className={`w-7 h-7 text-xs rounded font-medium transition ${
                   pg === currentPage
-                    ? 'bg-teal-600 text-white shadow-xs'
-                    : 'text-slate-700 hover:bg-slate-100 border border-slate-200'
+                    ? 'bg-sky-500 text-white shadow-xs'
+                    : 'hover:bg-slate-100 text-slate-700'
                 }`}
               >
                 {pg}
@@ -332,14 +333,14 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 font-semibold transition flex items-center space-x-1"
+              className="px-2.5 py-1 text-xs rounded hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition text-slate-600 flex items-center space-x-1"
             >
               <span>Berikutnya</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
-      </div>
+      </SurfaceCard>
 
       {/* Modal Detail Patroli */}
       <PatroliDetailModal
