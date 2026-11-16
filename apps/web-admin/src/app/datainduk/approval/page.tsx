@@ -20,7 +20,7 @@ export default function ApprovalPage() {
         </div>
       </div>
 
-      <ApprovalQueueView />
+      <ApprovalQueueView defaultTab="queue" />
     </div>
   );
 }

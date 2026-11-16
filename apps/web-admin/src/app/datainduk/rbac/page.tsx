@@ -20,7 +20,7 @@ export default function RbacPage() {
         </div>
       </div>
 
-      <ApprovalQueueView />
+      <ApprovalQueueView defaultTab="rbac" />
     </div>
   );
 }

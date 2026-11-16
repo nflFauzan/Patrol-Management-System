@@ -47,6 +47,7 @@ template_unzipped/
 postgres_data/
 redis_data/
 minio_data/
+backups/
 
 # IDE & OS
 .vscode/

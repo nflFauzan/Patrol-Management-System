@@ -24,7 +24,7 @@ import {
   ExternalLink,
   ChevronDown,
 } from 'lucide-react';
-import { approvalApi, rbacApi, sitesApi } from '../field/services/api';
+import { approvalApi, rbacApi, sitesApi } from '../lib/api';
 import { Division, SecurityRank, RoleDefinition, PermissionDefinition } from '@patrol/types';
 import { useAuth } from '../lib/AuthContext';
 import { SurfaceCard } from './ui/SurfaceCard';
@@ -40,12 +40,14 @@ export interface PendingCandidate {
   email: string;
   phone: string;
   division: Division;
+  requestedRole?: string | null;
+  requestedDivision?: string | null;
   createdAt: string;
   isApproved: boolean;
   isActive: boolean;
 }
 
-export const ApprovalQueueView: React.FC = () => {
+export const ApprovalQueueView: React.FC<{ defaultTab?: 'queue' | 'rbac' }> = ({ defaultTab = 'queue' }) => {
   const { hasPermission } = useAuth();
 
   const [candidates, setCandidates] = useState<PendingCandidate[]>([]);
@@ -58,7 +60,7 @@ export const ApprovalQueueView: React.FC = () => {
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   // Filters & Tabs
-  const [activeTab, setActiveTab] = useState<'queue' | 'rbac'>('queue');
+  const [activeTab, setActiveTab] = useState<'queue' | 'rbac'>(defaultTab);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDivision, setSelectedDivision] = useState<string>('ALL');
 
@@ -203,7 +205,7 @@ export const ApprovalQueueView: React.FC = () => {
         code: newRoleCode.trim().toUpperCase(),
         name: newRoleName.trim(),
         description: newRoleDesc.trim(),
-        permissionIds: selectedPermissionIds,
+        permissions: selectedPermissionIds,
       });
 
       setSuccessToast(`Role kustom ${newRoleCode} berhasil dibuat.`);
@@ -266,11 +268,10 @@ export const ApprovalQueueView: React.FC = () => {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setActiveTab('queue')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'queue'
-                  ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
-                  : 'bg-slate-100 text-slate-600 hover:text-slate-900'
-              }`}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${activeTab === 'queue'
+                ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
+                : 'bg-slate-100 text-slate-600 hover:text-slate-900'
+                }`}
             >
               <UserCheck className="w-3.5 h-3.5" />
               <span>Antrean Pendaftaran ({candidates.length})</span>
@@ -278,11 +279,10 @@ export const ApprovalQueueView: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('rbac')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'rbac'
-                  ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
-                  : 'bg-slate-100 text-slate-600 hover:text-slate-900'
-              }`}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${activeTab === 'rbac'
+                ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
+                : 'bg-slate-100 text-slate-600 hover:text-slate-900'
+                }`}
             >
               <Shield className="w-3.5 h-3.5" />
               <span>Hak Akses & Role ({roles.length})</span>
@@ -397,15 +397,14 @@ export const ApprovalQueueView: React.FC = () => {
 
                       <td className="px-4 py-3.5">
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${
-                            candidate.division === Division.SECURITY
-                              ? 'bg-sky-50 text-sky-700 border-sky-200'
-                              : candidate.division === Division.CLEANING
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${candidate.division === Division.SECURITY
+                            ? 'bg-sky-50 text-sky-700 border-sky-200'
+                            : candidate.division === Division.CLEANING
                               ? 'bg-teal-50 text-teal-700 border-teal-200'
                               : candidate.division === Division.DRIVER
-                              ? 'bg-amber-50 text-amber-700 border-amber-200'
-                              : 'bg-purple-50 text-purple-700 border-purple-200'
-                          }`}
+                                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                : 'bg-purple-50 text-purple-700 border-purple-200'
+                            }`}
                         >
                           {candidate.division}
                         </span>

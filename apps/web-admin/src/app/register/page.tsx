@@ -18,7 +18,7 @@ import {
   Lock,
   ChevronDown
 } from 'lucide-react';
-import { authApi } from '../../field/services/api';
+import { authApi } from '../../lib/api';
 import { Division } from '@patrol/types';
 
 export default function RegisterPage() {

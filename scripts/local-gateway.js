@@ -684,6 +684,7 @@ const server = http.createServer(async (req, res) => {
     '/export-laporan',
     '/gaji',
     '/laporan',
+    '/monitoring-patroli',
     '/pesan-siaran',
   ];
   if (adminPages.some(page => pathname === page || pathname.startsWith(page + '/'))) {

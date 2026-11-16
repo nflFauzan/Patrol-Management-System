@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { User, UserRole } from '@patrol/types';
-import { authApi } from '../field/services/api';
+import { authApi } from './api';
 
 interface AuthContextType {
   user: User | null;

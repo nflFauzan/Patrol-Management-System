@@ -116,9 +116,9 @@ export const AppSidebar: React.FC = () => {
 
               {/* Monitoring Patroli */}
               <Link
-                href="/validasi-patroli"
+                href="/monitoring-patroli"
                 className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
-                  pathname.startsWith('/validasi-patroli')
+                  pathname.startsWith('/monitoring-patroli') || pathname.startsWith('/laporan/tracking-patroli')
                     ? 'bg-gradient-to-r from-[#0284C7] to-[#38BDF8] text-white shadow-sky-glow border-t border-white/30'
                     : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/80'
                 }`}
@@ -126,7 +126,7 @@ export const AppSidebar: React.FC = () => {
                 <div className="flex items-center space-x-2.5 min-w-0">
                   <QrCode
                     className={`w-4 h-4 shrink-0 ${
-                      pathname.startsWith('/validasi-patroli') ? 'text-white' : 'text-slate-400'
+                      pathname.startsWith('/monitoring-patroli') || pathname.startsWith('/laporan/tracking-patroli') ? 'text-white' : 'text-slate-400'
                     }`}
                   />
                   <span className="truncate">Monitoring Patroli</span>
