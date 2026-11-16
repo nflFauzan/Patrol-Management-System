@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -11,17 +11,25 @@ import {
   Building
 } from 'lucide-react';
 import { authApi } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { SurfaceCard } from '../components/ui/SurfaceCard';
 import { SkeuomorphicButton } from '../components/ui/SkeuomorphicButton';
 import { StatusBadge } from '../components/ui/StatusBadge';
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('muhamad.naufal');
+  const { user, logout } = useAuth();
+  const [username, setUsername] = useState(user?.username || '');
   const [passwordBaru, setPasswordBaru] = useState('');
   const [kfPasswordBaru, setKfPasswordBaru] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  useEffect(() => {
+    if (user?.username) {
+      setUsername(user.username);
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +39,8 @@ export const ProfilePage: React.FC = () => {
     }
     setIsSubmitting(true);
     try {
-      if (passwordBaru) {
-        await authApi.updatePassword('1447', passwordBaru);
+      if (passwordBaru && user?.id) {
+        await authApi.updatePassword(user.id, passwordBaru);
       }
       setShowSuccessModal(true);
     } catch (err: any) {
@@ -44,8 +52,7 @@ export const ProfilePage: React.FC = () => {
 
   const handleLogout = () => {
     if (window.confirm('Apakah Anda yakin ingin keluar dari sistem?')) {
-      localStorage.removeItem('patrol_auth_token');
-      navigate('/login.php');
+      logout();
     }
   };
 

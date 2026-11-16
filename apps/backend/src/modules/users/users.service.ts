@@ -371,6 +371,8 @@ export class UsersService {
         u.email, 
         u.phone_number as "phone", 
         u.division, 
+        u.requested_role as "requestedRole",
+        u.requested_division as "requestedDivision",
         u.created_at as "createdAt", 
         u.is_approved as "isApproved", 
         u.is_active as "isActive"

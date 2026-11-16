@@ -116,6 +116,8 @@ export interface User {
   approvedAt?: string | null;
   rejectionReason?: string | null;
   permissions?: string[];
+  requestedRole?: string | null;
+  requestedDivision?: string | null;
   customRoleIds?: string[];
   avatarUrl?: string | null;
   lastLoginAt?: string | null;
@@ -728,6 +730,8 @@ export interface RoleDefinition {
   isSystem: boolean;
   isActive: boolean;
   permissions?: string[];
+  requestedRole?: string | null;
+  requestedDivision?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -750,6 +754,7 @@ export interface RegisterRequestDto {
   password: string;
   passwordConfirm: string;
   divisionInterest: Division;
+  requestedRole?: string;
   hp_input?: string;
 }
 

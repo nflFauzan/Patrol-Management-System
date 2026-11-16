@@ -30,6 +30,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [divisionInterest, setDivisionInterest] = useState<Division>(Division.SECURITY);
+  const [requestedRole, setRequestedRole] = useState('SECURITY_OFFICER');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [hpInput, setHpInput] = useState(''); // Honeypot anti-bot
@@ -79,6 +80,7 @@ export default function RegisterPage() {
         email: email.trim().toLowerCase() || `${username.trim().toLowerCase()}@corp.local`,
         username: username.trim().toLowerCase(),
         divisionInterest,
+        requestedRole,
         password,
         passwordConfirm,
         hp_input: hpInput,

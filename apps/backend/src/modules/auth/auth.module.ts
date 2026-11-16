@@ -12,9 +12,12 @@ import { JwtStrategy } from './jwt.strategy';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET', 'super_secret_jwt_key_patrol_2026'),
+        secret:
+          configService.get<string>('JWT_ACCESS_SECRET') ||
+          configService.get<string>('JWT_SECRET') ||
+          'super_secret_patrol_access_jwt_key_2026_xyz!',
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '24h'),
+          expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES_IN', '15m'),
         },
       }),
       inject: [ConfigService],

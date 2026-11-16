@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ClockInPage } from './pages/ClockInPage';
@@ -17,49 +19,242 @@ import { StaffActivityPage } from './pages/StaffActivityPage';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Root Redirects */}
-        <Route path="/" element={<Navigate to="/validasi-patroli/" replace />} />
-        <Route path="/login.php" element={<LoginPage />} />
-        <Route path="/login" element={<LoginPage />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public Authentication Routes */}
+          <Route path="/login.php" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* Dashboard 8-Menu (validasi-patroli/) */}
-        <Route path="/validasi-patroli" element={<DashboardPage />} />
-        <Route path="/validasi-patroli/" element={<DashboardPage />} />
-        <Route path="/validasi-patroli/index.php" element={<DashboardPage />} />
+          {/* Root Redirects */}
+          <Route path="/" element={<Navigate to="/validasi-patroli/" replace />} />
 
-        {/* Individual Module Pages (with /validasi-patroli/ prefix) */}
-        <Route path="/validasi-patroli/xxxxx_xx.php" element={<ClockInPage />} />
-        <Route path="/validasi-patroli/xxxxx_xxx.php" element={<ClockOutPage />} />
-        <Route path="/validasi-patroli/xxxxx_xxxx.php" element={<LeavePage />} />
-        <Route path="/validasi-patroli/xxxxx_xxxxx.php" element={<AttendanceHistoryPage />} />
-        <Route path="/validasi-patroli/xxxxx_xxxxxx.php" element={<ActivityHistoryPage />} />
-        <Route path="/validasi-patroli/xxxxx_xxxxxxx.php" element={<PanicPage />} />
-        <Route path="/validasi-patroli/xxxxx_xxxxxxxx.php" element={<ProfilePage />} />
-        <Route path="/validasi-patroli/xxxxx_xxxxxxxxx.php" element={<PatrolScanPage />} />
-        <Route path="/validasi-patroli/xxxxx_xxxxxxxxxx.php" element={<DriverTripPage />} />
-        <Route path="/validasi-patroli/xxxxx_xxxxxxxxxxxx.php" element={<CommanderReportPage />} />
-        <Route path="/validasi-patroli/xxxxx_xxxxxxxxxxxxx.php" element={<ChiefReportPage />} />
-        <Route path="/validasi-patroli/xxxxx_xxxxxxxxxxxxxx.php" element={<StaffActivityPage />} />
+          {/* Protected Operational Field Routes */}
+          <Route
+            path="/validasi-patroli"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/index.php"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Direct Root Alias Routes (for maximum compatibility with bookmarks or legacy links) */}
-        <Route path="/xxxxx_xx.php" element={<ClockInPage />} />
-        <Route path="/xxxxx_xxx.php" element={<ClockOutPage />} />
-        <Route path="/xxxxx_xxxx.php" element={<LeavePage />} />
-        <Route path="/xxxxx_xxxxx.php" element={<AttendanceHistoryPage />} />
-        <Route path="/xxxxx_xxxxxx.php" element={<ActivityHistoryPage />} />
-        <Route path="/xxxxx_xxxxxxx.php" element={<PanicPage />} />
-        <Route path="/xxxxx_xxxxxxxx.php" element={<ProfilePage />} />
-        <Route path="/xxxxx_xxxxxxxxx.php" element={<PatrolScanPage />} />
-        <Route path="/xxxxx_xxxxxxxxxx.php" element={<DriverTripPage />} />
-        <Route path="/xxxxx_xxxxxxxxxxxx.php" element={<CommanderReportPage />} />
-        <Route path="/xxxxx_xxxxxxxxxxxxx.php" element={<ChiefReportPage />} />
-        <Route path="/xxxxx_xxxxxxxxxxxxxx.php" element={<StaffActivityPage />} />
+          {/* Protected Individual Module Pages */}
+          <Route
+            path="/validasi-patroli/xxxxx_xx.php"
+            element={
+              <ProtectedRoute>
+                <ClockInPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxx.php"
+            element={
+              <ProtectedRoute>
+                <ClockOutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxxx.php"
+            element={
+              <ProtectedRoute>
+                <LeavePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxxxx.php"
+            element={
+              <ProtectedRoute>
+                <AttendanceHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <ActivityHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <PanicPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxxxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxxxxxxxx.php"
+            element={
+              <ProtectedRoute requiredPermission="PATROL:VALIDATE">
+                <PatrolScanPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxxxxxxxxx.php"
+            element={
+              <ProtectedRoute requiredPermission="DRIVER:MONITOR">
+                <DriverTripPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxxxxxxxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <CommanderReportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxxxxxxxxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <ChiefReportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/xxxxx_xxxxxxxxxxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <StaffActivityPage />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/validasi-patroli/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Legacy root alias routes */}
+          <Route
+            path="/xxxxx_xx.php"
+            element={
+              <ProtectedRoute>
+                <ClockInPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxx.php"
+            element={
+              <ProtectedRoute>
+                <ClockOutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxxx.php"
+            element={
+              <ProtectedRoute>
+                <LeavePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxxxx.php"
+            element={
+              <ProtectedRoute>
+                <AttendanceHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <ActivityHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <PanicPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxxxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxxxxxxxx.php"
+            element={
+              <ProtectedRoute requiredPermission="PATROL:VALIDATE">
+                <PatrolScanPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxxxxxxxxx.php"
+            element={
+              <ProtectedRoute requiredPermission="DRIVER:MONITOR">
+                <DriverTripPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxxxxxxxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <CommanderReportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxxxxxxxxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <ChiefReportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/xxxxx_xxxxxxxxxxxxxx.php"
+            element={
+              <ProtectedRoute>
+                <StaffActivityPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/validasi-patroli/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

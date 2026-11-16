@@ -46,14 +46,19 @@ export class AuthService {
       ? UserRole.DRIVER 
       : UserRole.STAFF;
 
+    const requestedRole = dto.requestedRole || defaultRole;
+    const requestedDivision = dto.divisionInterest;
+
     const row = await this.db.queryOne<any>(
       `INSERT INTO users (
         username, nik, password_hash, full_name, email, phone_number,
-        role, division, is_approved, is_active, created_at, updated_at
+        role, division, requested_role, requested_division,
+        is_approved, is_active, created_at, updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       RETURNING id, username, nik, full_name as "fullName", email, phone_number as "phone",
-                role, division, is_approved as "isApproved", is_active as "isActive", created_at as "createdAt"`,
+                role, division, requested_role as "requestedRole", requested_division as "requestedDivision",
+                is_approved as "isApproved", is_active as "isActive", created_at as "createdAt"`,
       [
         dto.username.trim().toLowerCase(),
         dto.nik.trim(),
@@ -63,6 +68,8 @@ export class AuthService {
         dto.phone.trim(),
         defaultRole,
         dto.divisionInterest,
+        requestedRole,
+        requestedDivision,
         false, // is_approved = false
         false, // is_active = false
       ],

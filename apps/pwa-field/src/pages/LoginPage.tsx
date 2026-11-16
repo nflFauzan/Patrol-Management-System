@@ -4,8 +4,8 @@ import { authApi } from '../services/api';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('hendra.chief');
-  const [password, setPassword] = useState('hendra123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [hpInput, setHpInput] = useState(''); // Honeypot
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

@@ -22,23 +22,25 @@ import {
 } from 'lucide-react';
 import { Attendance } from '@patrol/types';
 import { attendanceApi } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { SurfaceCard } from '../components/ui/SurfaceCard';
 import { SkeuomorphicButton } from '../components/ui/SkeuomorphicButton';
 import { StatusBadge } from '../components/ui/StatusBadge';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // User Profile
-  const [userProfile, setUserProfile] = useState({
-    id: '1447',
-    fullName: 'Muhamad Naufal',
-    username: 'muhamad.naufal',
-    role: 'ADMIN',
-    division: 'SECURITY',
-    badgeNumber: 'NIK-SEC-1447',
-    rank: 'CHIEF',
-  });
+  // Dynamic User Profile from Authenticated Session
+  const userProfile = {
+    id: user?.id || 'guest',
+    fullName: user?.fullName || 'Petugas Lapangan',
+    username: user?.username || '',
+    role: (user?.role as string) || 'SECURITY_OFFICER',
+    division: (user?.division as string) || 'SECURITY',
+    badgeNumber: user?.username ? `NIK-${user.username.toUpperCase()}` : 'NIK-FIELD',
+    rank: (user?.securityRank as string) || (user?.role === 'ADMIN_SUPER' ? 'CHIEF' : 'ANGGOTA'),
+  };
 
   const [activeAttendance, setActiveAttendance] = useState<Attendance | null>(null);
   const [activeTab, setActiveTab] = useState<'beranda' | 'patroli' | 'laporan' | 'profil'>('beranda');
@@ -88,71 +90,10 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Role selector dropdown */}
-          <select
-            value={userProfile.role}
-            onChange={(e) => {
-              const role = e.target.value;
-              if (role === 'CHIEF') {
-                setUserProfile({
-                  id: '1447',
-                  fullName: 'Hendra Chief',
-                  username: 'hendra.chief',
-                  role: 'CHIEF',
-                  division: 'SECURITY',
-                  badgeNumber: 'NIK-SEC-1447',
-                  rank: 'CHIEF',
-                });
-              } else if (role === 'COMMANDER') {
-                setUserProfile({
-                  id: '1430',
-                  fullName: 'Dandan Komandan',
-                  username: 'dandan.danru',
-                  role: 'COMMANDER',
-                  division: 'SECURITY',
-                  badgeNumber: 'NIK-SEC-1430',
-                  rank: 'DANRU',
-                });
-              } else if (role === 'DRIVER') {
-                setUserProfile({
-                  id: '1501',
-                  fullName: 'Joko Driver',
-                  username: 'joko.driver',
-                  role: 'DRIVER',
-                  division: 'DRIVER',
-                  badgeNumber: 'NIK-DRV-001',
-                  rank: 'DRIVER',
-                });
-              } else if (role === 'STAFF') {
-                setUserProfile({
-                  id: '1601',
-                  fullName: 'Siti Cleaning',
-                  username: 'siti.cleaning',
-                  role: 'STAFF',
-                  division: 'CLEANING',
-                  badgeNumber: 'NIK-CLN-001',
-                  rank: 'STAFF',
-                });
-              } else {
-                setUserProfile({
-                  id: '1436',
-                  fullName: 'Muhamad Naufal',
-                  username: 'muhamad.naufal',
-                  role: 'ADMIN',
-                  division: 'SECURITY',
-                  badgeNumber: 'NIK-SEC-1436',
-                  rank: 'ADMIN',
-                });
-              }
-            }}
-            className="text-[10px] font-bold bg-white/80 border border-slate-300 rounded-lg px-2 py-1 text-slate-700 outline-none shadow-xs"
-          >
-            <option value="ADMIN">Admin / Naufal</option>
-            <option value="CHIEF">Chief Security</option>
-            <option value="COMMANDER">Danru Security</option>
-            <option value="DRIVER">Driver Armada</option>
-            <option value="STAFF">Cleaning Service</option>
-          </select>
+          {/* Active User Division & Rank Badge */}
+          <span className="text-[10px] font-bold bg-slate-900 text-white rounded-lg px-2.5 py-1 uppercase tracking-wider shadow-xs">
+            {userProfile.division} • {userProfile.rank}
+          </span>
 
           {/* Notification Bell */}
           <button

@@ -13,7 +13,7 @@ import {
   User as UserIcon,
   Lock,
 } from 'lucide-react';
-import { useAuth, DEMO_ACCOUNTS } from '../lib/AuthContext';
+import { useAuth } from '../lib/AuthContext';
 
 export const AdminLoginPage: React.FC = () => {
   const router = useRouter();
@@ -22,53 +22,58 @@ export const AdminLoginPage: React.FC = () => {
 
   const { login } = useAuth();
 
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [hpInput, setHpInput] = useState(''); // Honeypot anti-bot
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSelectDemo = (acc: typeof DEMO_ACCOUNTS[0]) => {
-    setUsername(acc.username);
-    setPassword(acc.password);
-    setErrorMessage(null);
-  };
-
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    if (!username.trim() || !password) {
+      setErrorMessage('Username dan kata sandi wajib diisi');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const loggedUser = await login({
-        username,
+        username: username.trim(),
         password,
         hp_input: hpInput,
       });
 
-      // Role-based smart redirection
+      // Role and permission-based smart redirection
+      const perms = loggedUser.permissions || [];
       const role = loggedUser.role as string;
-      const rank = loggedUser.securityRank as string | undefined;
-
-      const isManagement =
+      const hasAdminAccess =
         role === 'ADMIN_SUPER' ||
         role === 'SUPER_ADMIN' ||
-        role === 'ADMIN' ||
-        role === 'HRD' ||
         role === 'OPS_MANAGER' ||
         role === 'SITE_SUPERVISOR' ||
-        rank === 'CHIEF';
+        role === 'HRD_PAYROLL' ||
+        perms.includes('ADMIN:DASHBOARD_ACCESS') ||
+        perms.includes('DATA_INDUK:VIEW');
 
       let dest = '/dashboard';
-      if (isManagement) {
+      if (hasAdminAccess) {
         dest = returnUrl && returnUrl !== '/login' && returnUrl !== '/' ? returnUrl : '/dashboard';
+      } else if (
+        perms.includes('FIELD:DASHBOARD_ACCESS') ||
+        role === 'SECURITY_OFFICER' ||
+        role === 'CLEANER' ||
+        role === 'DRIVER'
+      ) {
+        dest = '/validasi-patroli';
       } else {
-        dest = returnUrl && returnUrl !== '/login' && returnUrl !== '/' ? returnUrl : '/validasi-patroli';
+        dest = '/dashboard';
       }
 
-      // Fast, snappy redirect - zero artificial theatrics
       window.location.href = dest;
     } catch (err: any) {
       setErrorMessage(err.message || 'Login gagal, periksa username atau kata sandi.');
@@ -99,16 +104,16 @@ export const AdminLoginPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Floating Center Card (Ala Minibank Tazkia Welcome Back Card) */}
+      {/* Center Authentication Card */}
       <main className="w-full max-w-md my-auto z-10">
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xl shadow-slate-900/5 transition-all">
           {/* Header Card */}
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Welcome Back!
+              Masuk Akun
             </h1>
             <p className="text-xs text-slate-500 mt-1 font-medium">
-              Masuk ke Command Center Operasional
+              Autentikasi Terpusat Petugas & Manajemen Operasional
             </p>
           </div>
 
@@ -135,13 +140,16 @@ export const AdminLoginPage: React.FC = () => {
 
             {/* Username Input Pill */}
             <div>
+              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 pl-3">
+                Username / NIK
+              </label>
               <div className="relative">
                 <input
                   type="text"
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Username / NIP Petugas"
+                  placeholder="Masukkan username atau NIK"
                   className="w-full bg-slate-50 border border-slate-200 focus:border-slate-400 focus:bg-white text-slate-900 text-sm rounded-full pl-11 pr-4 py-3 outline-none transition shadow-2xs font-medium placeholder:text-slate-400"
                 />
                 <UserIcon className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -150,13 +158,16 @@ export const AdminLoginPage: React.FC = () => {
 
             {/* Password Input Pill */}
             <div>
+              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 pl-3">
+                Kata Sandi
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Kata Sandi"
+                  placeholder="Masukkan kata sandi"
                   className="w-full bg-slate-50 border border-slate-200 focus:border-slate-400 focus:bg-white text-slate-900 text-sm rounded-full pl-11 pr-11 py-3 outline-none transition shadow-2xs font-medium placeholder:text-slate-400"
                 />
                 <Lock className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -204,32 +215,9 @@ export const AdminLoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Quick Demo Account Selector (Pills Ringkas) */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase text-center mb-2.5">
-              Akses Cepat Pengujian (1-Klik)
-            </div>
-            <div className="flex flex-wrap justify-center gap-1.5">
-              {DEMO_ACCOUNTS.map((acc, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleSelectDemo(acc)}
-                  className={`text-[11px] font-medium px-2.5 py-1 rounded-full border transition ${
-                    username === acc.username
-                      ? 'bg-slate-900 text-white border-slate-900'
-                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                  }`}
-                >
-                  {acc.securityRank || (acc.role === 'ADMIN_SUPER' ? 'Admin' : acc.division)}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Bottom Link to Register */}
-          <div className="text-center mt-5 text-xs text-slate-500">
-            Belum memiliki akun?{' '}
+          <div className="text-center mt-6 pt-5 border-t border-slate-100 text-xs text-slate-500">
+            Belum memiliki akun terdaftar?{' '}
             <Link
               href="/register"
               className="font-bold text-slate-900 hover:underline"
