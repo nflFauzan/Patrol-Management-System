@@ -80,8 +80,9 @@ export const ApprovalQueueView: React.FC<{ defaultTab?: 'queue' | 'rbac' }> = ({
   // Reject Form State
   const [rejectReason, setRejectReason] = useState<string>('');
 
-  // New Custom Role Modal State
+  // New / Edit Role Modal State
   const [isNewRoleModalOpen, setIsNewRoleModalOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<RoleDefinition | null>(null);
   const [newRoleCode, setNewRoleCode] = useState('');
   const [newRoleName, setNewRoleName] = useState('');
   const [newRoleDesc, setNewRoleDesc] = useState('');
@@ -121,22 +122,35 @@ export const ApprovalQueueView: React.FC<{ defaultTab?: 'queue' | 'rbac' }> = ({
   // Open approve modal & prefill defaults
   const handleOpenApprove = (candidate: PendingCandidate) => {
     setApproveTarget(candidate);
-    setAssignedDivision(candidate.division);
+    
+    // Check if candidate selected a requested division during registration
+    const targetDivision = (candidate.requestedDivision as Division) || candidate.division;
+    setAssignedDivision(targetDivision);
 
-    const matchedRole = roles.find(
-      (r) => r.code.toLowerCase().includes(candidate.division.toLowerCase())
-    ) || roles[0];
+    // Prefer candidate's requested role if valid, else find role matching division
+    let matchedRole: RoleDefinition | undefined;
+    if (candidate.requestedRole) {
+      matchedRole = roles.find(
+        (r) => r.code === candidate.requestedRole || r.name.toLowerCase() === candidate.requestedRole?.toLowerCase()
+      );
+    }
+    if (!matchedRole) {
+      matchedRole = roles.find(
+        (r) => r.code.toLowerCase().includes(targetDivision.toLowerCase())
+      ) || roles[0];
+    }
+
     if (matchedRole) {
       setAssignedRoleId(matchedRole.id);
     }
 
-    if (candidate.division === Division.CLEANING) {
+    if (targetDivision === Division.CLEANING) {
       setGajiPokok('4200000');
       setTunjangan('400000');
-    } else if (candidate.division === Division.DRIVER) {
+    } else if (targetDivision === Division.DRIVER) {
       setGajiPokok('4500000');
       setTunjangan('500000');
-    } else if (candidate.division === Division.STAFF) {
+    } else if (targetDivision === Division.STAFF) {
       setGajiPokok('4800000');
       setTunjangan('600000');
     } else {
@@ -191,34 +205,106 @@ export const ApprovalQueueView: React.FC<{ defaultTab?: 'queue' | 'rbac' }> = ({
     }
   };
 
-  // Create new custom role
-  const handleCreateRole = async (e: React.FormEvent) => {
+  // Open modal to create a new role
+  const handleOpenCreateRole = () => {
+    setEditingRole(null);
+    setNewRoleCode('');
+    setNewRoleName('');
+    setNewRoleDesc('');
+    setSelectedPermissionIds([]);
+    setIsNewRoleModalOpen(true);
+  };
+
+  // Open modal to edit an existing role
+  const handleOpenEditRole = (role: RoleDefinition) => {
+    setEditingRole(role);
+    setNewRoleCode(role.code);
+    setNewRoleName(role.name);
+    setNewRoleDesc(role.description || '');
+    setSelectedPermissionIds(role.permissions || []);
+    setIsNewRoleModalOpen(true);
+  };
+
+  // Create or Update role
+  const handleSaveRole = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newRoleCode.trim() || !newRoleName.trim()) {
-      alert('Kode role dan nama role wajib diisi!');
+    if (!newRoleName.trim()) {
+      alert('Nama role wajib diisi!');
+      return;
+    }
+    if (!editingRole && !newRoleCode.trim()) {
+      alert('Kode role wajib diisi!');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await rbacApi.createRole({
-        code: newRoleCode.trim().toUpperCase(),
-        name: newRoleName.trim(),
-        description: newRoleDesc.trim(),
-        permissions: selectedPermissionIds,
-      });
+      if (editingRole) {
+        await rbacApi.updateRole(editingRole.id, {
+          name: newRoleName.trim(),
+          description: newRoleDesc.trim(),
+          permissions: selectedPermissionIds,
+        });
+        setSuccessToast(`Role ${editingRole.code} berhasil diperbarui.`);
+      } else {
+        await rbacApi.createRole({
+          code: newRoleCode.trim().toUpperCase(),
+          name: newRoleName.trim(),
+          description: newRoleDesc.trim(),
+          permissions: selectedPermissionIds,
+        });
+        setSuccessToast(`Role kustom ${newRoleCode.trim().toUpperCase()} berhasil dibuat.`);
+      }
 
-      setSuccessToast(`Role kustom ${newRoleCode} berhasil dibuat.`);
       setIsNewRoleModalOpen(false);
+      setEditingRole(null);
       setNewRoleCode('');
       setNewRoleName('');
       setNewRoleDesc('');
       setSelectedPermissionIds([]);
       await loadData();
     } catch (err: any) {
-      alert(`Gagal membuat role: ${err.response?.data?.message || err.message}`);
+      alert(`Gagal menyimpan role: ${err.response?.data?.message || err.message}`);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Deactivate custom role
+  const handleDeactivateRole = async (role: RoleDefinition) => {
+    if (role.isSystem) {
+      alert('Role sistem permanen tidak dapat dinonaktifkan.');
+      return;
+    }
+    if (!confirm(`Apakah Anda yakin ingin menonaktifkan role "${role.name}" (${role.code})?`)) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await rbacApi.deactivateRole(role.id);
+      setSuccessToast(`Role ${role.code} berhasil dinonaktifkan.`);
+      await loadData();
+    } catch (err: any) {
+      alert(`Gagal menonaktifkan role: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Toggle permission in role modal
+  const handleTogglePermission = (permCode: string) => {
+    setSelectedPermissionIds((prev) =>
+      prev.includes(permCode) ? prev.filter((p) => p !== permCode) : [...prev, permCode]
+    );
+  };
+
+  // Select all or clear all permissions
+  const handleToggleAllPermissions = () => {
+    if (selectedPermissionIds.length === permissions.length) {
+      setSelectedPermissionIds([]);
+    } else {
+      setSelectedPermissionIds(permissions.map((p) => p.code));
     }
   };
 
@@ -303,7 +389,7 @@ export const ApprovalQueueView: React.FC<{ defaultTab?: 'queue' | 'rbac' }> = ({
                 variant="primary"
                 size="sm"
                 icon={Plus}
-                onClick={() => setIsNewRoleModalOpen(true)}
+                onClick={handleOpenCreateRole}
               >
                 Role Baru
               </SkeuomorphicButton>
@@ -396,18 +482,25 @@ export const ApprovalQueueView: React.FC<{ defaultTab?: 'queue' | 'rbac' }> = ({
                       </td>
 
                       <td className="px-4 py-3.5">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${candidate.division === Division.SECURITY
-                            ? 'bg-sky-50 text-sky-700 border-sky-200'
-                            : candidate.division === Division.CLEANING
-                              ? 'bg-teal-50 text-teal-700 border-teal-200'
-                              : candidate.division === Division.DRIVER
-                                ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                : 'bg-purple-50 text-purple-700 border-purple-200'
-                            }`}
-                        >
-                          {candidate.division}
-                        </span>
+                        <div className="flex flex-col gap-1 items-start">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${candidate.division === Division.SECURITY
+                              ? 'bg-sky-50 text-sky-700 border-sky-200'
+                              : candidate.division === Division.CLEANING
+                                ? 'bg-teal-50 text-teal-700 border-teal-200'
+                                : candidate.division === Division.DRIVER
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                  : 'bg-purple-50 text-purple-700 border-purple-200'
+                              }`}
+                          >
+                            {candidate.division}
+                          </span>
+                          {candidate.requestedRole && (
+                            <span className="text-[10px] text-sky-800 bg-sky-100/90 border border-sky-200 px-2 py-0.5 rounded font-mono font-bold">
+                              Req: {candidate.requestedRole}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       <td className="px-4 py-3.5 text-slate-500 font-mono text-[11px]">
@@ -485,6 +578,28 @@ export const ApprovalQueueView: React.FC<{ defaultTab?: 'queue' | 'rbac' }> = ({
                     ))
                   ) : (
                     <span className="text-slate-400 text-[10px] italic">Tidak ada izin spesifik</span>
+                  )}
+                </div>
+
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditRole(role)}
+                    className="text-[11px] font-bold text-sky-700 hover:text-sky-900 px-2.5 py-1 bg-sky-50 hover:bg-sky-100 rounded-lg transition"
+                  >
+                    Edit Izin ({role.permissions?.length || 0})
+                  </button>
+
+                  {!role.isSystem ? (
+                    <button
+                      type="button"
+                      onClick={() => handleDeactivateRole(role)}
+                      className="text-[11px] font-bold text-rose-600 hover:text-rose-800 px-2 py-1 bg-rose-50 hover:bg-rose-100 rounded-lg transition"
+                    >
+                      Nonaktifkan
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-slate-400 italic">Sistem Baku</span>
                   )}
                 </div>
               </div>
@@ -660,6 +775,158 @@ export const ApprovalQueueView: React.FC<{ defaultTab?: 'queue' | 'rbac' }> = ({
                 </SkeuomorphicButton>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE / EDIT ROLE MODAL DIALOG */}
+      {isNewRoleModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-2">
+                <Shield className="w-5 h-5 text-sky-400" />
+                <h3 className="font-extrabold text-base">
+                  {editingRole ? `Konfigurasi Role: ${editingRole.name}` : 'Buat Role Baru'}
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsNewRoleModalOpen(false)}
+                className="text-white hover:opacity-80 font-bold text-xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveRole} className="p-6 space-y-4 text-xs overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">
+                    Kode Role {editingRole && <span className="text-slate-400 font-normal">(Tidak dapat diubah)</span>}
+                  </label>
+                  <input
+                    type="text"
+                    value={newRoleCode}
+                    onChange={(e) => setNewRoleCode(e.target.value.toUpperCase())}
+                    disabled={!!editingRole}
+                    placeholder="Contoh: CHIEF_SECURITY"
+                    className="w-full bg-[#F8FAFC] border border-slate-300/80 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-800 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-sky-500 uppercase"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">Nama Tampilan Role *</label>
+                  <input
+                    type="text"
+                    value={newRoleName}
+                    onChange={(e) => setNewRoleName(e.target.value)}
+                    placeholder="Contoh: Chief Security Officer"
+                    className="w-full bg-[#F8FAFC] border border-slate-300/80 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Deskripsi Tanggung Jawab</label>
+                <input
+                  type="text"
+                  value={newRoleDesc}
+                  onChange={(e) => setNewRoleDesc(e.target.value)}
+                  placeholder="Deskripsi singkat wewenang peran ini..."
+                  className="w-full bg-[#F8FAFC] border border-slate-300/80 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              {/* Categorized Permissions Selector */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+                  <span className="font-bold text-slate-800 text-xs">
+                    Matriks Hak Akses & Perizinan ({selectedPermissionIds.length} dipilih)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleToggleAllPermissions}
+                    className="text-sky-600 hover:text-sky-800 font-bold text-[11px]"
+                  >
+                    {selectedPermissionIds.length === permissions.length ? 'Batal Semua' : 'Pilih Semua'}
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    {
+                      category: 'Akses Portal & Dashboard Utama',
+                      perms: ['ADMIN:DASHBOARD_ACCESS', 'FIELD:DASHBOARD_ACCESS'],
+                    },
+                    {
+                      category: 'Operasional Patroli',
+                      perms: ['PATROL:SCAN', 'PATROL:VIEW', 'PATROL:VALIDATE'],
+                    },
+                    {
+                      category: 'Absensi & Presensi',
+                      perms: ['ATTENDANCE:SUBMIT', 'ATTENDANCE:VIEW', 'ATTENDANCE:APPROVE'],
+                    },
+                    {
+                      category: 'Insiden & Tombol Darurat SOS',
+                      perms: ['INCIDENT:CREATE', 'INCIDENT:VIEW', 'INCIDENT:RESOLVE', 'SOS:TRIGGER', 'SOS:VIEW'],
+                    },
+                    {
+                      category: 'Master Data & RBAC',
+                      perms: ['DATA_INDUK:VIEW', 'DATA_INDUK:MANAGE', 'USER:APPROVE', 'RBAC:MANAGE'],
+                    },
+                    {
+                      category: 'Payroll & Pelaporan',
+                      perms: ['PAYROLL:VIEW', 'PAYROLL:GENERATE', 'BROADCAST:SEND', 'EXPORT:REPORTS'],
+                    },
+                  ].map((group) => (
+                    <div key={group.category} className="bg-slate-50/70 p-3 rounded-2xl border border-slate-200/80">
+                      <div className="font-bold text-slate-700 text-[11px] mb-2">{group.category}</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {group.perms.map((pCode) => {
+                          const isSelected = selectedPermissionIds.includes(pCode);
+                          return (
+                            <button
+                              key={pCode}
+                              type="button"
+                              onClick={() => handleTogglePermission(pCode)}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition flex items-center gap-1 ${
+                                isSelected
+                                  ? 'bg-sky-600 text-white shadow-2xs'
+                                  : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
+                              }`}
+                            >
+                              <span>{isSelected ? '✓' : '+'}</span>
+                              <span>{pCode}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4 border-t border-slate-100">
+                <SkeuomorphicButton
+                  variant="secondary"
+                  size="md"
+                  type="button"
+                  onClick={() => setIsNewRoleModalOpen(false)}
+                >
+                  Batal
+                </SkeuomorphicButton>
+                <SkeuomorphicButton
+                  variant="primary"
+                  size="md"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Menyimpan...' : editingRole ? 'Simpan Perubahan' : 'Buat Role'}
+                </SkeuomorphicButton>
+              </div>
+            </form>
           </div>
         </div>
       )}
