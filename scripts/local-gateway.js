@@ -666,12 +666,21 @@ const server = http.createServer(async (req, res) => {
     return proxyHttpRequest(req, res, ADMIN_PORT, targetUrl);
   }
 
-  // 9. Routing Khusus PWA (/pwa, /pwa/*, /app, /app/*)
+  // 9. Routing Khusus PWA (/pwa, /pwa/*, /app, /app/*, /validasi-patroli/*, dan rute operasional PWA)
   if (
     pathname === '/pwa' || pathname.startsWith('/pwa/') ||
-    pathname === '/app' || pathname.startsWith('/app/')
+    pathname === '/app' || pathname.startsWith('/app/') ||
+    pathname.startsWith('/validasi-patroli/') ||
+    pathname === '/clock-in' ||
+    pathname === '/clock-out' ||
+    pathname === '/patrol-scan' ||
+    pathname === '/driver-trip' ||
+    pathname.endsWith('.php')
   ) {
-    const pwaPath = pathname.replace(/^\/(pwa|app)/, '') || '/';
+    let pwaPath = pathname;
+    if (pathname === '/pwa' || pathname.startsWith('/pwa/') || pathname === '/app' || pathname.startsWith('/app/')) {
+      pwaPath = pathname.replace(/^\/(pwa|app)/, '') || '/';
+    }
     const targetUrl = pwaPath + (parsedUrl.search || '');
     return proxyHttpRequest(req, res, PWA_PORT, targetUrl);
   }

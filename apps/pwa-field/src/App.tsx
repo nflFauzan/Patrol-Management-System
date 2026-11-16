@@ -251,6 +251,21 @@ export default function App() {
             }
           />
 
+          {/* Canonical Semantic Routes */}
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/clock-in" element={<ProtectedRoute><ClockInPage /></ProtectedRoute>} />
+          <Route path="/clock-out" element={<ProtectedRoute><ClockOutPage /></ProtectedRoute>} />
+          <Route path="/leave" element={<ProtectedRoute><LeavePage /></ProtectedRoute>} />
+          <Route path="/attendance-history" element={<ProtectedRoute><AttendanceHistoryPage /></ProtectedRoute>} />
+          <Route path="/activity-history" element={<ProtectedRoute><ActivityHistoryPage /></ProtectedRoute>} />
+          <Route path="/panic" element={<ProtectedRoute><PanicPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/patrol-scan" element={<ProtectedRoute requiredPermission="PATROL:VALIDATE"><PatrolScanPage /></ProtectedRoute>} />
+          <Route path="/driver-trip" element={<ProtectedRoute requiredPermission="DRIVER:MONITOR"><DriverTripPage /></ProtectedRoute>} />
+          <Route path="/commander-report" element={<ProtectedRoute><CommanderReportPage /></ProtectedRoute>} />
+          <Route path="/chief-report" element={<ProtectedRoute><ChiefReportPage /></ProtectedRoute>} />
+          <Route path="/staff-activity" element={<ProtectedRoute><StaffActivityPage /></ProtectedRoute>} />
+
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/validasi-patroli/" replace />} />
         </Routes>
