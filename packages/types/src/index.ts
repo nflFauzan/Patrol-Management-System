@@ -784,30 +784,65 @@ export interface LoginResponseDto {
   expiresIn: number;
 }
 
+// ----------------------------------------------------------------------------
+// Offline Synchronization & Idempotency Models
+// ----------------------------------------------------------------------------
+
+export type OfflineTransactionType =
+  | 'ATTENDANCE_CLOCK_IN'
+  | 'ATTENDANCE_CLOCK_OUT'
+  | 'PATROL_SCAN'
+  | 'LEAVE_REQUEST';
+
+export type OfflineTransactionStatus =
+  | 'PENDING_OFFLINE'
+  | 'SYNCING'
+  | 'SYNCED'
+  | 'REJECTED'
+  | 'NEEDS_REVIEW';
+
+export interface OfflineTransaction {
+  id: string; // Idempotency UUID
+  type: OfflineTransactionType;
+  payload: any;
+  deviceTimestamp: string;
+  createdAt: string;
+  status: OfflineTransactionStatus;
+  retryCount: number;
+  lastError?: string | null;
+  serverSyncedAt?: string | null;
+}
+
 // Attendance DTOs
 export interface ClockInRequestDto {
+  id?: string;
   siteId: string;
   latitude: number;
   longitude: number;
   photoBase64?: string;
   notes?: string;
+  deviceTimestamp?: string;
 }
 
 export interface ClockOutRequestDto {
+  id?: string;
   attendanceId?: string;
   siteId?: string;
   latitude: number;
   longitude: number;
   photoBase64?: string;
   notes?: string;
+  deviceTimestamp?: string;
 }
 
 export interface LeaveRequestDto {
+  id?: string;
   siteId: string;
   status: AttendanceStatus.SICK | AttendanceStatus.PERMISSION;
   date: string;
   leaveReason: string;
   attachmentBase64?: string;
+  deviceTimestamp?: string;
 }
 
 // Patrol DTOs
@@ -817,6 +852,7 @@ export interface StartPatrolRequestDto {
 }
 
 export interface ScanCheckpointRequestDto {
+  id?: string;
   patrolLogId?: string;
   checkpointId: string;
   qrPayload: string;
@@ -826,6 +862,7 @@ export interface ScanCheckpointRequestDto {
   condition?: CheckpointCondition;
   resultStatus?: PatrolResultCondition | string;
   notes?: string;
+  deviceTimestamp?: string;
 }
 
 export interface FinishPatrolRequestDto {

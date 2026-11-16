@@ -12,6 +12,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import { patrolApi } from '../services/api';
+import { enqueueOfflineTransaction } from '../services/offlineQueue';
+import { OfflineStatusBar } from '../components/OfflineStatusBar';
 import { SurfaceCard } from '../components/ui/SurfaceCard';
 import { SkeuomorphicButton } from '../components/ui/SkeuomorphicButton';
 import { StatusBadge } from '../components/ui/StatusBadge';
@@ -46,33 +48,49 @@ export const PatrolScanPage: React.FC = () => {
           const now = new Date();
           const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
 
-          // Submit to patrol check API
-          try {
-            if ('geolocation' in navigator) {
-              navigator.geolocation.getCurrentPosition(
-                async (pos) => {
-                  try {
-                    await patrolApi.scanCheckpoint({
-                      siteId: '11111111-1111-1111-1111-111111111111',
-                      qrCodeToken: decodedText,
-                      latitude: pos.coords.latitude,
-                      longitude: pos.coords.longitude,
-                    });
-                  } catch (e) {
-                    console.warn('API sync warning:', e);
-                  }
-                  setScanSuccessModal({ token: decodedText, time: timeStr });
-                },
-                () => {
-                  setScanSuccessModal({ token: decodedText, time: timeStr });
-                },
-                { enableHighAccuracy: true, timeout: 5000 }
-              );
-            } else {
-              setScanSuccessModal({ token: decodedText, time: timeStr });
+          const recordScanResult = async (lat: number, lng: number) => {
+            const payload = {
+              siteId: '11111111-1111-1111-1111-111111111111',
+              qrPayload: decodedText,
+              latitude: lat,
+              longitude: lng,
+              statusResult: 'Situasi Aman Terkendali',
+            };
+
+            if (!navigator.onLine) {
+              await enqueueOfflineTransaction('PATROL_SCAN', payload);
+              setScanSuccessModal({ token: decodedText, time: `${timeStr} (Offline)` });
+              return;
             }
-          } catch (err: any) {
-            setScanSuccessModal({ token: decodedText, time: timeStr });
+
+            try {
+              await patrolApi.scanCheckpoint({
+                siteId: payload.siteId,
+                qrCodeToken: decodedText,
+                latitude: lat,
+                longitude: lng,
+              });
+              setScanSuccessModal({ token: decodedText, time: timeStr });
+            } catch (err: any) {
+              const isNetworkErr = !err.response || err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED';
+              if (isNetworkErr) {
+                await enqueueOfflineTransaction('PATROL_SCAN', payload);
+                setScanSuccessModal({ token: decodedText, time: `${timeStr} (Offline)` });
+              } else {
+                setScanSuccessModal({ token: decodedText, time: timeStr });
+              }
+            }
+          };
+
+          // Submit to patrol check API
+          if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+              (pos) => recordScanResult(pos.coords.latitude, pos.coords.longitude),
+              () => recordScanResult(-6.2088, 106.8456), // Fallback coords if denied
+              { enableHighAccuracy: true, timeout: 5000 }
+            );
+          } else {
+            recordScanResult(-6.2088, 106.8456);
           }
         },
         () => {
@@ -133,6 +151,9 @@ export const PatrolScanPage: React.FC = () => {
         </span>
         <div className="w-8" />
       </header>
+
+      {/* Offline Status & Pending Sync Bar */}
+      <OfflineStatusBar />
 
       {/* Main Content Area */}
       <main className="px-4 pt-4 max-w-md mx-auto w-full flex-1 flex flex-col justify-between">

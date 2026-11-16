@@ -26,6 +26,7 @@ import { useAuth } from '../context/AuthContext';
 import { SurfaceCard } from '../components/ui/SurfaceCard';
 import { SkeuomorphicButton } from '../components/ui/SkeuomorphicButton';
 import { StatusBadge } from '../components/ui/StatusBadge';
+import { OfflineStatusBar } from '../components/OfflineStatusBar';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -107,6 +108,9 @@ export const DashboardPage: React.FC = () => {
           </button>
         </div>
       </header>
+
+      {/* Offline Status & Pending Sync Bar */}
+      <OfflineStatusBar />
 
       {/* Main Content Area */}
       <main className="px-4 pt-4 space-y-4 max-w-md mx-auto">

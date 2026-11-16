@@ -46,12 +46,29 @@ export const attendanceApi = {
     return res.data;
   },
 
-  clockIn: async (payload: { siteId: string; latitude: number; longitude: number; photoBase64?: string; notes?: string }) => {
+  clockIn: async (payload: {
+    id?: string;
+    siteId: string;
+    latitude: number;
+    longitude: number;
+    photoBase64?: string;
+    notes?: string;
+    deviceTimestamp?: string;
+  }) => {
     const res = await apiClient.post('/attendance/clock-in', payload);
     return res.data;
   },
 
-  clockOut: async (payload: { attendanceId?: string; latitude: number; longitude: number; photoBase64?: string; notes?: string }) => {
+  clockOut: async (payload: {
+    id?: string;
+    attendanceId?: string;
+    siteId?: string;
+    latitude: number;
+    longitude: number;
+    photoBase64?: string;
+    notes?: string;
+    deviceTimestamp?: string;
+  }) => {
     let attId = payload.attendanceId;
     if (!attId) {
       const today = await apiClient.get('/attendance/today').catch(() => null);
@@ -129,6 +146,7 @@ export const patrolApi = {
     return res.data;
   },
   recordScan: async (payload: {
+    id?: string;
     siteId: string;
     checkpointId?: string;
     qrPayload?: string;
@@ -137,6 +155,7 @@ export const patrolApi = {
     statusResult?: string;
     notes?: string;
     photoKey?: string;
+    deviceTimestamp?: string;
   }) => {
     const res = await apiClient.post('/patrol/scan', payload);
     return res.data;

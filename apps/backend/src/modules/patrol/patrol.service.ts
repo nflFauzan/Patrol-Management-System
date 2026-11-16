@@ -12,6 +12,7 @@ import {
 } from '@patrol/types';
 
 export interface RecordScanDto {
+  id?: string;
   siteId: string;
   checkpointId?: string;
   qrPayload?: string;
@@ -20,6 +21,7 @@ export interface RecordScanDto {
   statusResult?: string; // 'Situasi Aman Terkendali' | 'Perlu Tindak Lanjut'
   notes?: string;
   photoKey?: string;
+  deviceTimestamp?: string;
 }
 
 @Injectable()
@@ -103,40 +105,91 @@ export class PatrolService {
       }
     }
 
+    // Idempotency check: if client already submitted this transaction ID
+    if (data.id) {
+      const existing = await this.db.queryOne<any>(
+        `SELECT 
+          id, site_id AS "siteId", checkpoint_id AS "checkpointId", user_id AS "userId",
+          scanned_at AS "scannedAt",
+          ST_Y(coordinates::geometry) AS latitude,
+          ST_X(coordinates::geometry) AS longitude,
+          status_result AS "statusResult", notes, photo_key AS "photoKey"
+        FROM patrol_logs WHERE id = $1`,
+        [data.id],
+      );
+      if (existing) {
+        return existing;
+      }
+    }
+
     // 2. PostGIS proximity verification against the site
     const proximity = await this.db.checkCheckpointProximity(cp.id, data.latitude, data.longitude);
 
-    // 3. Insert patrol log
+    // 3. Insert patrol log (preserving offline deviceTimestamp if provided)
     const statusResult = data.statusResult || 'Situasi Aman Terkendali';
     const savedPhotoKey = data.photoKey ? saveBase64Image(data.photoKey, 'patrol', userId) : null;
-    const row = await this.db.queryOne<any>(
+    const scannedAt = data.deviceTimestamp ? new Date(data.deviceTimestamp) : new Date();
+
+    const insertSql = data.id
+      ? `
+        INSERT INTO patrol_logs (
+          id, site_id, checkpoint_id, user_id, coordinates, status_result, notes, photo_key, scanned_at
+        )
+        VALUES (
+          $1, $2, $3, $4,
+          ST_SetSRID(ST_MakePoint($6, $5), 4326),
+          $7, $8, $9, $10
+        )
+        RETURNING 
+          id, site_id AS "siteId", checkpoint_id AS "checkpointId", user_id AS "userId",
+          scanned_at AS "scannedAt",
+          ST_Y(coordinates::geometry) AS latitude,
+          ST_X(coordinates::geometry) AS longitude,
+          status_result AS "statusResult", notes, photo_key AS "photoKey"
       `
-      INSERT INTO patrol_logs (
-        site_id, checkpoint_id, user_id, coordinates, status_result, notes, photo_key
-      )
-      VALUES (
-        $1, $2, $3,
-        ST_SetSRID(ST_MakePoint($5, $4), 4326),
-        $6, $7, $8
-      )
-      RETURNING 
-        id, site_id AS "siteId", checkpoint_id AS "checkpointId", user_id AS "userId",
-        scanned_at AS "scannedAt",
-        ST_Y(coordinates::geometry) AS latitude,
-        ST_X(coordinates::geometry) AS longitude,
-        status_result AS "statusResult", notes, photo_key AS "photoKey"
-    `,
-      [
-        cp.site_id,
-        cp.id,
-        userId,
-        data.latitude,
-        data.longitude,
-        statusResult,
-        data.notes || null,
-        savedPhotoKey,
-      ],
-    );
+      : `
+        INSERT INTO patrol_logs (
+          site_id, checkpoint_id, user_id, coordinates, status_result, notes, photo_key, scanned_at
+        )
+        VALUES (
+          $1, $2, $3,
+          ST_SetSRID(ST_MakePoint($5, $4), 4326),
+          $6, $7, $8, $9
+        )
+        RETURNING 
+          id, site_id AS "siteId", checkpoint_id AS "checkpointId", user_id AS "userId",
+          scanned_at AS "scannedAt",
+          ST_Y(coordinates::geometry) AS latitude,
+          ST_X(coordinates::geometry) AS longitude,
+          status_result AS "statusResult", notes, photo_key AS "photoKey"
+      `;
+
+    const insertParams = data.id
+      ? [
+          data.id,
+          cp.site_id,
+          cp.id,
+          userId,
+          data.latitude,
+          data.longitude,
+          statusResult,
+          data.notes || null,
+          savedPhotoKey,
+          scannedAt,
+        ]
+      : [
+          cp.site_id,
+          cp.id,
+          userId,
+          data.latitude,
+          data.longitude,
+          statusResult,
+          data.notes || null,
+          savedPhotoKey,
+          scannedAt,
+        ];
+
+    const row = await this.db.queryOne<any>(insertSql, insertParams);
 
     // 4. Incident Ticket Auto-Generation if 'Perlu Tindak Lanjut'
     let incidentTicket: any = null;

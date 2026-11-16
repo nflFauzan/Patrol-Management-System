@@ -153,6 +153,38 @@ export class AttendanceService {
   }
 
   async clockIn(userId: string, dto: ClockInRequestDto): Promise<Attendance> {
+    // Idempotency check: if client already submitted this attendance transaction ID
+    if (dto.id) {
+      const existingById = await this.db.queryOne<any>(
+        `SELECT 
+          a.id, a.user_id AS "userId", a.site_id AS "siteId", a.attendance_date AS "date",
+          a.status_type AS "statusType", a.shift_name AS "shiftName",
+          a.clock_in_at AS "clockInTime",
+          ST_Y(a.clock_in_coordinates::geometry) AS "clockInLatitude",
+          ST_X(a.clock_in_coordinates::geometry) AS "clockInLongitude",
+          a.clock_in_photo_key AS "clockInPhotoUrl",
+          a.clock_in_distance_meters AS "clockInDistanceMeters",
+          a.is_late AS "isLate", a.late_minutes AS "lateMinutes",
+          a.clock_out_at AS "clockOutTime",
+          ST_Y(a.clock_out_coordinates::geometry) AS "clockOutLatitude",
+          ST_X(a.clock_out_coordinates::geometry) AS "clockOutLongitude",
+          a.clock_out_photo_key AS "clockOutPhotoUrl",
+          a.clock_out_distance_meters AS "clockOutDistanceMeters",
+          a.work_duration_minutes AS "workDurationMinutes",
+          a.overtime_minutes AS "overtimeMinutes",
+          a.reason AS "leaveReason", a.notes, a.created_at AS "createdAt",
+          u.division, s.geofence_radius_meters AS "geofenceRadiusMeters"
+        FROM attendances a
+        JOIN users u ON a.user_id = u.id
+        JOIN sites s ON a.site_id = s.id
+        WHERE a.id = $1`,
+        [dto.id],
+      );
+      if (existingById) {
+        return this.mapRowToAttendance(existingById);
+      }
+    }
+
     // 1. Verify not already clocked in today
     const existing = await this.getTodayStatus(userId);
     if (existing && existing.clockInTime) {
@@ -174,52 +206,99 @@ export class AttendanceService {
     );
 
     const shiftStartTime = site?.shift_pagi_in || '07:00:00';
-    const now = new Date();
-    const lateMinutes = this.calculateLateMinutes(now, shiftStartTime, 15);
+    const clockInDate = dto.deviceTimestamp ? new Date(dto.deviceTimestamp) : new Date();
+    const attendanceDateStr = clockInDate.toISOString().split('T')[0];
+    const lateMinutes = this.calculateLateMinutes(clockInDate, shiftStartTime, 15);
     const isLate = lateMinutes > 0;
 
     // 4. Save photo key if provided
     const photoKey = dto.photoBase64 ? saveBase64Image(dto.photoBase64, 'selfie_in', userId) : null;
 
-    // 5. Insert attendance record
-    const insertSql = `
-      INSERT INTO attendances (
-        user_id, site_id, attendance_date, status_type, shift_name,
-        clock_in_at, clock_in_coordinates, clock_in_photo_key,
-        clock_in_distance_meters, is_late, late_minutes, notes
-      )
-      VALUES (
-        $1, $2, CURRENT_DATE, 1, 'Shift Pagi (07:00 - 15:00)',
-        CURRENT_TIMESTAMP, ST_SetSRID(ST_MakePoint($4, $3), 4326),
-        $5, $6, $7, $8, $9
-      )
-      RETURNING 
-        id, user_id AS "userId", site_id AS "siteId", attendance_date AS "date",
-        status_type AS "statusType", shift_name AS "shiftName",
-        clock_in_at AS "clockInTime",
-        ST_Y(clock_in_coordinates::geometry) AS "clockInLatitude",
-        ST_X(clock_in_coordinates::geometry) AS "clockInLongitude",
-        clock_in_photo_key AS "clockInPhotoUrl",
-        clock_in_distance_meters AS "clockInDistanceMeters",
-        is_late AS "isLate", late_minutes AS "lateMinutes",
-        clock_out_at AS "clockOutTime",
-        clock_out_distance_meters AS "clockOutDistanceMeters",
-        work_duration_minutes AS "workDurationMinutes",
-        overtime_minutes AS "overtimeMinutes",
-        reason AS "leaveReason", notes, created_at AS "createdAt"
-    `;
+    // 5. Insert attendance record (preserving offline device timestamp & client id)
+    const insertSql = dto.id
+      ? `
+        INSERT INTO attendances (
+          id, user_id, site_id, attendance_date, status_type, shift_name,
+          clock_in_at, clock_in_coordinates, clock_in_photo_key,
+          clock_in_distance_meters, is_late, late_minutes, notes
+        )
+        VALUES (
+          $1, $2, $3, $4, 1, 'Shift Pagi (07:00 - 15:00)',
+          $5, ST_SetSRID(ST_MakePoint($7, $6), 4326),
+          $8, $9, $10, $11, $12
+        )
+        RETURNING 
+          id, user_id AS "userId", site_id AS "siteId", attendance_date AS "date",
+          status_type AS "statusType", shift_name AS "shiftName",
+          clock_in_at AS "clockInTime",
+          ST_Y(clock_in_coordinates::geometry) AS "clockInLatitude",
+          ST_X(clock_in_coordinates::geometry) AS "clockInLongitude",
+          clock_in_photo_key AS "clockInPhotoUrl",
+          clock_in_distance_meters AS "clockInDistanceMeters",
+          is_late AS "isLate", late_minutes AS "lateMinutes",
+          clock_out_at AS "clockOutTime",
+          clock_out_distance_meters AS "clockOutDistanceMeters",
+          work_duration_minutes AS "workDurationMinutes",
+          overtime_minutes AS "overtimeMinutes",
+          reason AS "leaveReason", notes, created_at AS "createdAt"
+      `
+      : `
+        INSERT INTO attendances (
+          user_id, site_id, attendance_date, status_type, shift_name,
+          clock_in_at, clock_in_coordinates, clock_in_photo_key,
+          clock_in_distance_meters, is_late, late_minutes, notes
+        )
+        VALUES (
+          $1, $2, $3, 1, 'Shift Pagi (07:00 - 15:00)',
+          $4, ST_SetSRID(ST_MakePoint($6, $5), 4326),
+          $7, $8, $9, $10, $11
+        )
+        RETURNING 
+          id, user_id AS "userId", site_id AS "siteId", attendance_date AS "date",
+          status_type AS "statusType", shift_name AS "shiftName",
+          clock_in_at AS "clockInTime",
+          ST_Y(clock_in_coordinates::geometry) AS "clockInLatitude",
+          ST_X(clock_in_coordinates::geometry) AS "clockInLongitude",
+          clock_in_photo_key AS "clockInPhotoUrl",
+          clock_in_distance_meters AS "clockInDistanceMeters",
+          is_late AS "isLate", late_minutes AS "lateMinutes",
+          clock_out_at AS "clockOutTime",
+          clock_out_distance_meters AS "clockOutDistanceMeters",
+          work_duration_minutes AS "workDurationMinutes",
+          overtime_minutes AS "overtimeMinutes",
+          reason AS "leaveReason", notes, created_at AS "createdAt"
+      `;
 
-    const row = await this.db.queryOne<any>(insertSql, [
-      userId,
-      dto.siteId,
-      dto.latitude,
-      dto.longitude,
-      photoKey,
-      geofence.distanceMeters,
-      isLate,
-      lateMinutes,
-      dto.notes || null,
-    ]);
+    const insertParams = dto.id
+      ? [
+          dto.id,
+          userId,
+          dto.siteId,
+          attendanceDateStr,
+          clockInDate,
+          dto.latitude,
+          dto.longitude,
+          photoKey,
+          geofence.distanceMeters,
+          isLate,
+          lateMinutes,
+          dto.notes || null,
+        ]
+      : [
+          userId,
+          dto.siteId,
+          attendanceDateStr,
+          clockInDate,
+          dto.latitude,
+          dto.longitude,
+          photoKey,
+          geofence.distanceMeters,
+          isLate,
+          lateMinutes,
+          dto.notes || null,
+        ];
+
+    const row = await this.db.queryOne<any>(insertSql, insertParams);
 
     const attendance = this.mapRowToAttendance({
       ...row,
@@ -266,15 +345,15 @@ export class AttendanceService {
 
     // Calculate effective working duration and overtime
     const clockInDate = new Date(existing.clock_in_at);
-    const now = new Date();
-    const { durationMinutes, overtimeMinutes } = this.calculateWorkingHours(clockInDate, now);
+    const clockOutDate = dto.deviceTimestamp ? new Date(dto.deviceTimestamp) : new Date();
+    const { durationMinutes, overtimeMinutes } = this.calculateWorkingHours(clockInDate, clockOutDate);
 
     const photoKey = dto.photoBase64 ? saveBase64Image(dto.photoBase64, 'selfie_out', userId) : null;
 
     const updateSql = `
       UPDATE attendances
       SET 
-        clock_out_at = CURRENT_TIMESTAMP,
+        clock_out_at = $9,
         clock_out_coordinates = ST_SetSRID(ST_MakePoint($3, $2), 4326),
         clock_out_photo_key = $4,
         clock_out_distance_meters = $5,
@@ -311,6 +390,7 @@ export class AttendanceService {
       durationMinutes,
       overtimeMinutes,
       dto.notes || null,
+      clockOutDate,
     ]);
 
     const attendance = this.mapRowToAttendance({

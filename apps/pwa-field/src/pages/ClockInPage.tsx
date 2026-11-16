@@ -13,6 +13,8 @@ import {
   Building
 } from 'lucide-react';
 import { attendanceApi } from '../services/api';
+import { enqueueOfflineTransaction } from '../services/offlineQueue';
+import { OfflineStatusBar } from '../components/OfflineStatusBar';
 import { SurfaceCard } from '../components/ui/SurfaceCard';
 import { SkeuomorphicButton } from '../components/ui/SkeuomorphicButton';
 import { StatusBadge } from '../components/ui/StatusBadge';
@@ -124,23 +126,41 @@ export const ClockInPage: React.FC = () => {
       return;
     }
     setIsSubmitting(true);
-    try {
-      await attendanceApi.clockIn({
-        siteId: '11111111-1111-1111-1111-111111111111',
-        latitude: gpsCoords.lat,
-        longitude: gpsCoords.lng,
-        photoBase64: photoDataUrl,
-        notes: alasan === '2' ? 'Lembur' : alasan === '3' ? 'Penugasan lain' : 'Piket Rutin',
-      });
-      
+
+    const payload = {
+      siteId: '11111111-1111-1111-1111-111111111111',
+      latitude: gpsCoords.lat,
+      longitude: gpsCoords.lng,
+      photoBase64: photoDataUrl,
+      notes: alasan === '2' ? 'Lembur' : alasan === '3' ? 'Penugasan lain' : 'Piket Rutin',
+    };
+
+    const recordSuccess = (offline = false) => {
       const now = new Date();
       const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' };
       const dateStr = now.toLocaleDateString('id-ID', options);
       const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
-      setSuccessTimestamp(`${dateStr} • ${timeStr}`);
+      setSuccessTimestamp(`${dateStr} • ${timeStr}${offline ? ' (Tersimpan Offline)' : ''}`);
       setShowSuccessModal(true);
+    };
+
+    try {
+      if (!navigator.onLine) {
+        await enqueueOfflineTransaction('ATTENDANCE_CLOCK_IN', payload);
+        recordSuccess(true);
+        return;
+      }
+
+      await attendanceApi.clockIn(payload);
+      recordSuccess(false);
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Gagal menyimpan absensi');
+      const isNetworkErr = !err.response || err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED';
+      if (isNetworkErr) {
+        await enqueueOfflineTransaction('ATTENDANCE_CLOCK_IN', payload);
+        recordSuccess(true);
+      } else {
+        alert(err.response?.data?.message || err.message || 'Gagal menyimpan absensi');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -162,6 +182,9 @@ export const ClockInPage: React.FC = () => {
         </span>
         <div className="w-8" />
       </header>
+
+      {/* Offline Status & Pending Sync Bar */}
+      <OfflineStatusBar />
 
       {/* Main Content Area */}
       <main className="px-4 pt-4 max-w-md mx-auto w-full flex-1 flex flex-col justify-between">
