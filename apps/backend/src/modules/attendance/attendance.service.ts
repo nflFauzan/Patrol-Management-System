@@ -2,11 +2,11 @@ import { Injectable, BadRequestException, NotFoundException, Optional, Logger } 
 import { DatabaseService } from '../../database/database.service';
 import { EventsGateway } from '../gateway/events.gateway';
 import { saveBase64Image, normalizePhotoUrl } from '../../common/utils/file-upload.util';
-import { 
-  ClockInRequestDto, 
-  ClockOutRequestDto, 
-  LeaveRequestDto, 
-  Attendance, 
+import {
+  ClockInRequestDto,
+  ClockOutRequestDto,
+  LeaveRequestDto,
+  Attendance,
   AttendanceStatus,
   AttendanceMatrixResponse,
   AttendanceMatrixRow,
@@ -28,13 +28,13 @@ export class AttendanceService {
   constructor(
     private db: DatabaseService,
     @Optional() private eventsGateway?: EventsGateway,
-  ) {}
+  ) { }
 
   /**
    * Helper to map DB row to Attendance domain object
    */
   private mapRowToAttendance(row: any): Attendance {
-    const isClockInWithinGeofence = row.clockInDistanceMeters !== null 
+    const isClockInWithinGeofence = row.clockInDistanceMeters !== null
       ? Number(row.clockInDistanceMeters) <= (row.geofenceRadiusMeters || 100)
       : true;
 
@@ -45,8 +45,8 @@ export class AttendanceService {
     let status = AttendanceStatus.IN;
     if (row.statusType === 2) status = AttendanceStatus.OUT;
     else if (row.statusType === 3) {
-      status = row.leaveReason?.toLowerCase().includes('sakit') 
-        ? AttendanceStatus.SICK 
+      status = row.leaveReason?.toLowerCase().includes('sakit')
+        ? AttendanceStatus.SICK
         : AttendanceStatus.PERMISSION;
     }
 
@@ -271,32 +271,32 @@ export class AttendanceService {
 
     const insertParams = dto.id
       ? [
-          dto.id,
-          userId,
-          dto.siteId,
-          attendanceDateStr,
-          clockInDate,
-          dto.latitude,
-          dto.longitude,
-          photoKey,
-          geofence.distanceMeters,
-          isLate,
-          lateMinutes,
-          dto.notes || null,
-        ]
+        dto.id,
+        userId,
+        dto.siteId,
+        attendanceDateStr,
+        clockInDate,
+        dto.latitude,
+        dto.longitude,
+        photoKey,
+        geofence.distanceMeters,
+        isLate,
+        lateMinutes,
+        dto.notes || null,
+      ]
       : [
-          userId,
-          dto.siteId,
-          attendanceDateStr,
-          clockInDate,
-          dto.latitude,
-          dto.longitude,
-          photoKey,
-          geofence.distanceMeters,
-          isLate,
-          lateMinutes,
-          dto.notes || null,
-        ];
+        userId,
+        dto.siteId,
+        attendanceDateStr,
+        clockInDate,
+        dto.latitude,
+        dto.longitude,
+        photoKey,
+        geofence.distanceMeters,
+        isLate,
+        lateMinutes,
+        dto.notes || null,
+      ];
 
     const row = await this.db.queryOne<any>(insertSql, insertParams);
 
@@ -840,7 +840,7 @@ export class AttendanceService {
     const clockOutDate = row.clockOutTime ? new Date(row.clockOutTime) : null;
 
     const clockInDateFull = `${this.formatIndonesianDate(clockInDate)} | ${this.formatTime(clockInDate)}`;
-    const clockOutDateFull = clockOutDate 
+    const clockOutDateFull = clockOutDate
       ? `${this.formatIndonesianDate(clockOutDate)} | ${this.formatTime(clockOutDate)}`
       : 'Hari tidak valid, 30 Nov -0001 | 00:00:00';
 

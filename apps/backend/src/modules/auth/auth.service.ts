@@ -12,7 +12,7 @@ export class AuthService {
   constructor(
     private db: DatabaseService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(dto: RegisterRequestDto): Promise<User> {
     // 0. Honeypot check
@@ -38,13 +38,13 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    const defaultRole = dto.divisionInterest === Division.SECURITY 
-      ? UserRole.SECURITY_OFFICER 
-      : dto.divisionInterest === Division.CLEANING 
-      ? UserRole.CLEANER 
-      : dto.divisionInterest === Division.DRIVER 
-      ? UserRole.DRIVER 
-      : UserRole.STAFF;
+    const defaultRole = dto.divisionInterest === Division.SECURITY
+      ? UserRole.SECURITY_OFFICER
+      : dto.divisionInterest === Division.CLEANING
+        ? UserRole.CLEANER
+        : dto.divisionInterest === Division.DRIVER
+          ? UserRole.DRIVER
+          : UserRole.STAFF;
 
     const requestedRole = dto.requestedRole || defaultRole;
     const requestedDivision = dto.divisionInterest;
@@ -206,10 +206,10 @@ export class AuthService {
       updatedAt: userRow.updated_at,
     };
 
-    const payload = { 
-      sub: user.id, 
-      username: user.username, 
-      role: user.role, 
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      role: user.role,
       division: user.division,
       permissions: user.permissions,
     };

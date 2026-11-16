@@ -98,17 +98,15 @@ export const AppSidebar: React.FC = () => {
               {/* Komando Utama */}
               <Link
                 href="/dashboard"
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
-                  pathname === '/dashboard'
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${pathname === '/dashboard'
                     ? 'bg-gradient-to-r from-[#0284C7] to-[#38BDF8] text-white shadow-sky-glow border-t border-white/30'
                     : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/80'
-                }`}
+                  }`}
               >
                 <div className="flex items-center space-x-2.5 min-w-0">
                   <Activity
-                    className={`w-4 h-4 shrink-0 ${
-                      pathname === '/dashboard' ? 'text-white' : 'text-slate-400'
-                    }`}
+                    className={`w-4 h-4 shrink-0 ${pathname === '/dashboard' ? 'text-white' : 'text-slate-400'
+                      }`}
                   />
                   <span className="truncate">Komando Utama</span>
                 </div>
@@ -117,17 +115,15 @@ export const AppSidebar: React.FC = () => {
               {/* Monitoring Patroli */}
               <Link
                 href="/monitoring-patroli"
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
-                  pathname.startsWith('/monitoring-patroli') || pathname.startsWith('/laporan/tracking-patroli')
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${pathname.startsWith('/monitoring-patroli') || pathname.startsWith('/laporan/tracking-patroli')
                     ? 'bg-gradient-to-r from-[#0284C7] to-[#38BDF8] text-white shadow-sky-glow border-t border-white/30'
                     : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/80'
-                }`}
+                  }`}
               >
                 <div className="flex items-center space-x-2.5 min-w-0">
                   <QrCode
-                    className={`w-4 h-4 shrink-0 ${
-                      pathname.startsWith('/monitoring-patroli') || pathname.startsWith('/laporan/tracking-patroli') ? 'text-white' : 'text-slate-400'
-                    }`}
+                    className={`w-4 h-4 shrink-0 ${pathname.startsWith('/monitoring-patroli') || pathname.startsWith('/laporan/tracking-patroli') ? 'text-white' : 'text-slate-400'
+                      }`}
                   />
                   <span className="truncate">Monitoring Patroli</span>
                 </div>
@@ -137,17 +133,15 @@ export const AppSidebar: React.FC = () => {
               {canViewAbsensi && (
                 <Link
                   href="/absensi"
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
-                    pathname.startsWith('/absensi')
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${pathname.startsWith('/absensi')
                       ? 'bg-gradient-to-r from-[#0284C7] to-[#38BDF8] text-white shadow-sky-glow border-t border-white/30'
                       : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/80'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-2.5 min-w-0">
                     <Clock
-                      className={`w-4 h-4 shrink-0 ${
-                        pathname.startsWith('/absensi') ? 'text-white' : 'text-slate-400'
-                      }`}
+                      className={`w-4 h-4 shrink-0 ${pathname.startsWith('/absensi') ? 'text-white' : 'text-slate-400'
+                        }`}
                     />
                     <span className="truncate">Pemantauan Absensi</span>
                   </div>
@@ -157,17 +151,15 @@ export const AppSidebar: React.FC = () => {
               {/* Pusat Darurat SOS */}
               <Link
                 href="/emergency"
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
-                  pathname.startsWith('/emergency')
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${pathname.startsWith('/emergency')
                     ? 'bg-gradient-to-r from-[#EF4444] to-[#B91C1C] text-white shadow-md shadow-rose-950/40 border-t border-white/30'
                     : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/80'
-                }`}
+                  }`}
               >
                 <div className="flex items-center space-x-2.5 min-w-0">
                   <ShieldAlert
-                    className={`w-4 h-4 shrink-0 ${
-                      activeSosAlert ? 'text-rose-400 animate-bounce' : 'text-slate-400'
-                    }`}
+                    className={`w-4 h-4 shrink-0 ${activeSosAlert ? 'text-rose-400 animate-bounce' : 'text-slate-400'
+                      }`}
                   />
                   <span className="truncate">Pusat Darurat SOS</span>
                 </div>
@@ -204,11 +196,10 @@ export const AppSidebar: React.FC = () => {
                   {canViewDataInduk && (
                     <Link
                       href="/datainduk/area"
-                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        pathname.startsWith('/datainduk/area')
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${pathname.startsWith('/datainduk/area')
                           ? 'text-[#38BDF8] font-bold bg-[#1E2B37]'
                           : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/60'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center space-x-2">
                         <Building2 className="w-3.5 h-3.5 shrink-0" />
@@ -223,11 +214,10 @@ export const AppSidebar: React.FC = () => {
                   {canViewDataInduk && (
                     <Link
                       href="/datainduk/checkpoint"
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        pathname.startsWith('/datainduk/checkpoint')
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${pathname.startsWith('/datainduk/checkpoint')
                           ? 'text-[#38BDF8] font-bold bg-[#1E2B37]'
                           : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/60'
-                      }`}
+                        }`}
                     >
                       <MapPin className="w-3.5 h-3.5 shrink-0" />
                       <span>Checkpoint QR</span>
@@ -237,11 +227,10 @@ export const AppSidebar: React.FC = () => {
                   {canViewDataInduk && (
                     <Link
                       href="/datainduk/personil"
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        pathname.startsWith('/datainduk/personil')
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${pathname.startsWith('/datainduk/personil')
                           ? 'text-[#38BDF8] font-bold bg-[#1E2B37]'
                           : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/60'
-                      }`}
+                        }`}
                     >
                       <Users className="w-3.5 h-3.5 shrink-0" />
                       <span>Personil</span>
@@ -251,11 +240,10 @@ export const AppSidebar: React.FC = () => {
                   {canApproveUser && (
                     <Link
                       href="/datainduk/approval"
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        pathname.startsWith('/datainduk/approval')
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${pathname.startsWith('/datainduk/approval')
                           ? 'text-[#38BDF8] font-bold bg-[#1E2B37]'
                           : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/60'
-                      }`}
+                        }`}
                     >
                       <UserCheck className="w-3.5 h-3.5 shrink-0" />
                       <span>Persetujuan Akun</span>
@@ -265,11 +253,10 @@ export const AppSidebar: React.FC = () => {
                   {canManageRbac && (
                     <Link
                       href="/datainduk/rbac"
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        pathname.startsWith('/datainduk/rbac')
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${pathname.startsWith('/datainduk/rbac')
                           ? 'text-[#38BDF8] font-bold bg-[#1E2B37]'
                           : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/60'
-                      }`}
+                        }`}
                     >
                       <KeyRound className="w-3.5 h-3.5 shrink-0" />
                       <span>Hak Akses & Role</span>
@@ -304,11 +291,10 @@ export const AppSidebar: React.FC = () => {
                   {canViewLaporan && (
                     <Link
                       href="/laporan"
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        pathname === '/laporan' || pathname.startsWith('/laporan/')
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${pathname === '/laporan' || pathname.startsWith('/laporan/')
                           ? 'text-[#38BDF8] font-bold bg-[#1E2B37]'
                           : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/60'
-                      }`}
+                        }`}
                     >
                       <FileBarChart className="w-3.5 h-3.5 shrink-0" />
                       <span>Laporan Operasional</span>
@@ -318,11 +304,10 @@ export const AppSidebar: React.FC = () => {
                   {canViewLaporan && (
                     <Link
                       href="/export-laporan"
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        pathname.startsWith('/export-laporan')
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${pathname.startsWith('/export-laporan')
                           ? 'text-[#38BDF8] font-bold bg-[#1E2B37]'
                           : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/60'
-                      }`}
+                        }`}
                     >
                       <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" />
                       <span>Pusat Ekspor Dokumen</span>
@@ -332,11 +317,10 @@ export const AppSidebar: React.FC = () => {
                   {canAccessGaji && (
                     <Link
                       href="/gaji"
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        pathname.startsWith('/gaji')
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${pathname.startsWith('/gaji')
                           ? 'text-[#38BDF8] font-bold bg-[#1E2B37]'
                           : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/60'
-                      }`}
+                        }`}
                     >
                       <DollarSign className="w-3.5 h-3.5 shrink-0" />
                       <span>Penggajian (Payroll)</span>
@@ -346,11 +330,10 @@ export const AppSidebar: React.FC = () => {
                   {canSendBroadcast && (
                     <Link
                       href="/pesan-siaran"
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                        pathname.startsWith('/pesan-siaran')
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition ${pathname.startsWith('/pesan-siaran')
                           ? 'text-[#38BDF8] font-bold bg-[#1E2B37]'
                           : 'text-slate-300 hover:text-white hover:bg-[#2F4152]/60'
-                      }`}
+                        }`}
                     >
                       <Radio className="w-3.5 h-3.5 shrink-0" />
                       <span>Pesan Siaran</span>

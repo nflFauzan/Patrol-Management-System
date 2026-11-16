@@ -2,9 +2,9 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { DatabaseService } from '../../database/database.service';
 import { EventsGateway } from '../gateway/events.gateway';
 import { saveBase64Image, normalizePhotoUrl } from '../../common/utils/file-upload.util';
-import { 
-  HourlyPatrolMatrixResponse, 
-  HourlyPatrolMatrixRow, 
+import {
+  HourlyPatrolMatrixResponse,
+  HourlyPatrolMatrixRow,
   Division,
   PatrolRecordsResponse,
   PatrolDetailResponse,
@@ -29,7 +29,7 @@ export class PatrolService {
   constructor(
     private db: DatabaseService,
     private eventsGateway: EventsGateway,
-  ) {}
+  ) { }
 
   async getLogs(siteId?: string, limit = 50) {
     let sql = `
@@ -166,28 +166,28 @@ export class PatrolService {
 
     const insertParams = data.id
       ? [
-          data.id,
-          cp.site_id,
-          cp.id,
-          userId,
-          data.latitude,
-          data.longitude,
-          statusResult,
-          data.notes || null,
-          savedPhotoKey,
-          scannedAt,
-        ]
+        data.id,
+        cp.site_id,
+        cp.id,
+        userId,
+        data.latitude,
+        data.longitude,
+        statusResult,
+        data.notes || null,
+        savedPhotoKey,
+        scannedAt,
+      ]
       : [
-          cp.site_id,
-          cp.id,
-          userId,
-          data.latitude,
-          data.longitude,
-          statusResult,
-          data.notes || null,
-          savedPhotoKey,
-          scannedAt,
-        ];
+        cp.site_id,
+        cp.id,
+        userId,
+        data.latitude,
+        data.longitude,
+        statusResult,
+        data.notes || null,
+        savedPhotoKey,
+        scannedAt,
+      ];
 
     const row = await this.db.queryOne<any>(insertSql, insertParams);
 

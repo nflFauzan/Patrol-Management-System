@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Shield, 
-  Bell, 
-  Users, 
-  MapPin, 
-  Building2, 
-  CheckCircle2, 
-  ChevronRight, 
-  AlertTriangle, 
-  Clock, 
-  Info, 
-  QrCode, 
-  LogOut, 
-  Calendar, 
-  User, 
-  FileText, 
+import {
+  Shield,
+  Bell,
+  Users,
+  MapPin,
+  Building2,
+  CheckCircle2,
+  ChevronRight,
+  AlertTriangle,
+  Clock,
+  Info,
+  QrCode,
+  LogOut,
+  Calendar,
+  User,
+  FileText,
   Home,
   Sparkles,
   Car
@@ -232,11 +232,11 @@ export const DashboardPage: React.FC = () => {
             >
               <QrCode className="w-5 h-5" />
               <span>
-                {userProfile.division === 'DRIVER' 
-                  ? 'Log Armada' 
-                  : userProfile.division === 'CLEANING' 
-                  ? 'Checklist Zona' 
-                  : 'Scan Patroli'}
+                {userProfile.division === 'DRIVER'
+                  ? 'Log Armada'
+                  : userProfile.division === 'CLEANING'
+                    ? 'Checklist Zona'
+                    : 'Scan Patroli'}
               </span>
             </button>
 
@@ -326,9 +326,8 @@ export const DashboardPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('beranda')}
-          className={`flex flex-col items-center space-y-0.5 transition ${
-            activeTab === 'beranda' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
-          }`}
+          className={`flex flex-col items-center space-y-0.5 transition ${activeTab === 'beranda' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
+            }`}
         >
           <Home className="w-5 h-5" />
           <span className="text-[10px] font-bold">Beranda</span>
@@ -340,9 +339,8 @@ export const DashboardPage: React.FC = () => {
             setActiveTab('patroli');
             handleOpenInputKegiatan();
           }}
-          className={`flex flex-col items-center space-y-0.5 transition ${
-            activeTab === 'patroli' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
-          }`}
+          className={`flex flex-col items-center space-y-0.5 transition ${activeTab === 'patroli' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
+            }`}
         >
           <Shield className="w-5 h-5" />
           <span className="text-[10px] font-bold">Patroli</span>
@@ -354,9 +352,8 @@ export const DashboardPage: React.FC = () => {
             setActiveTab('laporan');
             navigate('/validasi-patroli/xxxxx_xxxxxx.php');
           }}
-          className={`flex flex-col items-center space-y-0.5 transition ${
-            activeTab === 'laporan' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
-          }`}
+          className={`flex flex-col items-center space-y-0.5 transition ${activeTab === 'laporan' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
+            }`}
         >
           <FileText className="w-5 h-5" />
           <span className="text-[10px] font-bold">Laporan</span>
@@ -368,9 +365,8 @@ export const DashboardPage: React.FC = () => {
             setActiveTab('profil');
             navigate('/validasi-patroli/xxxxx_xxxxxxxx.php');
           }}
-          className={`flex flex-col items-center space-y-0.5 transition ${
-            activeTab === 'profil' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
-          }`}
+          className={`flex flex-col items-center space-y-0.5 transition ${activeTab === 'profil' ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600'
+            }`}
         >
           <User className="w-5 h-5" />
           <span className="text-[10px] font-bold">Profil</span>

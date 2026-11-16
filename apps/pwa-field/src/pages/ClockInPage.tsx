@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Camera, 
-  MapPin, 
-  RefreshCw, 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
+import {
+  ArrowLeft,
+  Camera,
+  MapPin,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
   RotateCcw,
   Send,
   Building

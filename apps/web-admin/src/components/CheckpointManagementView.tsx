@@ -384,11 +384,10 @@ export const CheckpointManagementView: React.FC = () => {
 
                     <td className="py-3 px-4 text-center">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                          cp.category === 'Cleaning Service'
-                            ? 'bg-teal-50 text-teal-700 border border-teal-200'
-                            : 'bg-sky-50 text-sky-700 border border-sky-200'
-                        }`}
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${cp.category === 'Cleaning Service'
+                          ? 'bg-teal-50 text-teal-700 border border-teal-200'
+                          : 'bg-sky-50 text-sky-700 border border-sky-200'
+                          }`}
                       >
                         {cp.category}
                       </span>
@@ -472,11 +471,10 @@ export const CheckpointManagementView: React.FC = () => {
                 key={pg}
                 type="button"
                 onClick={() => setCurrentPage(pg)}
-                className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition ${
-                  currentPage === pg
-                    ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
-                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-2xs'
-                }`}
+                className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition ${currentPage === pg
+                  ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
+                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-2xs'
+                  }`}
               >
                 {pg}
               </button>

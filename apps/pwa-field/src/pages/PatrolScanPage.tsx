@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
-import { 
-  ArrowLeft, 
-  Flashlight, 
-  SwitchCamera, 
-  QrCode, 
-  CheckCircle2, 
+import {
+  ArrowLeft,
+  Flashlight,
+  SwitchCamera,
+  QrCode,
+  CheckCircle2,
   AlertTriangle,
   RotateCcw,
   Sparkles
@@ -207,11 +207,10 @@ export const PatrolScanPage: React.FC = () => {
             <button
               type="button"
               onClick={toggleTorch}
-              className={`p-3.5 rounded-2xl border transition active:scale-95 ${
-                torchOn 
-                  ? 'bg-amber-400 text-slate-900 border-amber-500 shadow-md' 
+              className={`p-3.5 rounded-2xl border transition active:scale-95 ${torchOn
+                  ? 'bg-amber-400 text-slate-900 border-amber-500 shadow-md'
                   : 'bg-white border-slate-300 shadow-skeuo-button-secondary text-slate-700'
-              }`}
+                }`}
               title="Senter Flash"
             >
               <Flashlight className="w-6 h-6" />

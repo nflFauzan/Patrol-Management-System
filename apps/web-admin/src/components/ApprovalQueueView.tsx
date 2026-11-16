@@ -122,7 +122,7 @@ export const ApprovalQueueView: React.FC<{ defaultTab?: 'queue' | 'rbac' }> = ({
   // Open approve modal & prefill defaults
   const handleOpenApprove = (candidate: PendingCandidate) => {
     setApproveTarget(candidate);
-    
+
     // Check if candidate selected a requested division during registration
     const targetDivision = (candidate.requestedDivision as Division) || candidate.division;
     setAssignedDivision(targetDivision);
@@ -891,11 +891,10 @@ export const ApprovalQueueView: React.FC<{ defaultTab?: 'queue' | 'rbac' }> = ({
                               key={pCode}
                               type="button"
                               onClick={() => handleTogglePermission(pCode)}
-                              className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition flex items-center gap-1 ${
-                                isSelected
-                                  ? 'bg-sky-600 text-white shadow-2xs'
-                                  : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
-                              }`}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition flex items-center gap-1 ${isSelected
+                                ? 'bg-sky-600 text-white shadow-2xs'
+                                : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
+                                }`}
                             >
                               <span>{isSelected ? '✓' : '+'}</span>
                               <span>{pCode}</span>

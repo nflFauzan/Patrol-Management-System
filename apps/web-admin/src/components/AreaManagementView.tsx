@@ -482,11 +482,10 @@ export const AreaManagementView: React.FC<AreaManagementViewProps> = ({
                   key={pg}
                   type="button"
                   onClick={() => setCurrentPage(pg)}
-                  className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition ${
-                    currentPage === pg
-                      ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
-                      : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-2xs'
-                  }`}
+                  className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition ${currentPage === pg
+                    ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-2xs'
+                    }`}
                 >
                   {pg}
                 </button>

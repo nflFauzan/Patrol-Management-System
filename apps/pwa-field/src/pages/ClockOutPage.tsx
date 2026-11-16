@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Camera, 
-  RefreshCw, 
-  CheckCircle2, 
+import {
+  ArrowLeft,
+  Camera,
+  RefreshCw,
+  CheckCircle2,
   RotateCcw,
   Send,
   LogOut

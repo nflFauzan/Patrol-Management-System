@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(cachedUser);
             setToken(savedToken);
             setAuthCookie(savedToken);
-          } catch {}
+          } catch { }
         }
 
         // Authoritative verification with backend API
