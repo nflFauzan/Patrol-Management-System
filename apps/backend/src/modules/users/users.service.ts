@@ -534,4 +534,131 @@ export class UsersService {
        ORDER BY category ASC, name ASC`
     );
   }
+
+  async updateRole(
+    roleId: string,
+    dto: { name?: string; description?: string; permissions?: string[]; isActive?: boolean },
+  ): Promise<RoleDefinition> {
+    const existing = await this.db.queryOne<any>(
+      `SELECT id, code, name, description, is_system, is_active FROM roles WHERE id::text = $1 OR code = $1`,
+      [roleId],
+    );
+    if (!existing) {
+      throw new NotFoundException(`Role with ID ${roleId} not found`);
+    }
+
+    const updated = await this.db.queryOne<any>(
+      `UPDATE roles SET
+        name = COALESCE($1, name),
+        description = COALESCE($2, description),
+        is_active = COALESCE($3, is_active),
+        updated_at = CURRENT_TIMESTAMP
+       WHERE id = $4
+       RETURNING id, code, name, description, is_system as "isSystem", is_active as "isActive"`,
+      [dto.name?.trim() || null, dto.description || null, dto.isActive, existing.id],
+    );
+
+    if (dto.permissions !== undefined) {
+      // Synchronize role_permissions
+      await this.db.query(`DELETE FROM role_permissions WHERE role_id = $1`, [existing.id]);
+      if (dto.permissions.length > 0) {
+        for (const permCode of dto.permissions) {
+          await this.db.query(
+            `INSERT INTO role_permissions (role_id, permission_id)
+             SELECT $1, id FROM permissions WHERE code = $2
+             ON CONFLICT DO NOTHING`,
+            [existing.id, permCode],
+          );
+        }
+      }
+    }
+
+    // Fetch assigned permissions
+    const permRows = await this.db.query<{ code: string }>(
+      `SELECT p.code
+       FROM role_permissions rp
+       JOIN permissions p ON p.id = rp.permission_id
+       WHERE rp.role_id = $1`,
+      [existing.id],
+    );
+
+    return {
+      ...updated,
+      permissions: permRows.map((r) => r.code),
+    };
+  }
+
+  async assignUserRole(userId: string, roleIdOrCode: string): Promise<User> {
+    const user = await this.db.queryOne<any>(
+      `SELECT id, username, role, is_active FROM users WHERE id = $1`,
+      [userId],
+    );
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const roleRow = await this.db.queryOne<any>(
+      `SELECT id, code, name FROM roles WHERE id::text = $1 OR code = $1 LIMIT 1`,
+      [roleIdOrCode],
+    );
+    if (!roleRow) {
+      throw new NotFoundException(`Role ${roleIdOrCode} not found`);
+    }
+
+    // Super Admin Protection: Prevent removing or demoting the last active Super Admin
+    if (user.role === 'ADMIN_SUPER' && roleRow.code !== 'ADMIN_SUPER') {
+      const activeSuperAdminCount = await this.db.queryOne<{ count: string }>(
+        `SELECT COUNT(*) as count FROM users WHERE role = 'ADMIN_SUPER' AND is_active = true`,
+      );
+      if (parseInt(activeSuperAdminCount?.count || '0', 10) <= 1) {
+        throw new BadRequestException(
+          'Tidak dapat mengubah atau mencabut hak akses Super Administrator terakhir yang aktif.',
+        );
+      }
+    }
+
+    // Update users table role column
+    const updated = await this.db.queryOne<any>(
+      `UPDATE users SET role = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2
+       RETURNING id, username, full_name as "fullName", role, division, is_approved as "isApproved", is_active as "isActive"`,
+      [roleRow.code, userId],
+    );
+
+    // Synchronize user_roles table
+    await this.db.query(`DELETE FROM user_roles WHERE user_id = $1`, [userId]);
+    await this.db.query(
+      `INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+      [userId, roleRow.id],
+    );
+
+    this.logger.log(`User ${userId} assigned role ${roleRow.code}`);
+    return this.mapUser(updated);
+  }
+
+  async deactivateRole(roleId: string): Promise<{ id: string; code: string; isActive: boolean }> {
+    const existing = await this.db.queryOne<any>(
+      `SELECT id, code, is_system FROM roles WHERE id::text = $1 OR code = $1`,
+      [roleId],
+    );
+    if (!existing) {
+      throw new NotFoundException(`Role with ID ${roleId} not found`);
+    }
+
+    if (existing.code === 'ADMIN_SUPER') {
+      throw new BadRequestException('Peran sistem inti ADMIN_SUPER tidak dapat dinonaktifkan.');
+    }
+
+    const updated = await this.db.queryOne<any>(
+      `UPDATE roles SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1
+       RETURNING id, code, is_active as "isActive"`,
+      [existing.id],
+    );
+
+    const isActive = updated.isActive !== undefined ? updated.isActive : updated.is_active;
+    return {
+      id: updated.id,
+      code: updated.code,
+      isActive: Boolean(isActive),
+    };
+  }
 }

@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Body,
   Param,
   Query,
@@ -51,6 +52,51 @@ export class UsersController {
   ): Promise<any> {
     const adminId = req.user?.id || req.user?.sub;
     return this.usersService.rejectUser(id, dto, adminId);
+  }
+
+  // RBAC Role & Permission Management Endpoints
+  @Get('rbac/roles')
+  @Permissions('RBAC:MANAGE', 'DATA_INDUK:VIEW')
+  async getRoles(): Promise<any[]> {
+    return this.usersService.getAllRoles();
+  }
+
+  @Post('rbac/roles')
+  @Permissions('RBAC:MANAGE')
+  async createRole(
+    @Body() dto: { code: string; name: string; description?: string; permissions?: string[] },
+  ): Promise<any> {
+    return this.usersService.createRole(dto);
+  }
+
+  @Put('rbac/roles/:id')
+  @Permissions('RBAC:MANAGE')
+  async updateRole(
+    @Param('id') id: string,
+    @Body() dto: { name?: string; description?: string; permissions?: string[]; isActive?: boolean },
+  ): Promise<any> {
+    return this.usersService.updateRole(id, dto);
+  }
+
+  @Delete('rbac/roles/:id')
+  @Permissions('RBAC:MANAGE')
+  async deactivateRole(@Param('id') id: string): Promise<any> {
+    return this.usersService.deactivateRole(id);
+  }
+
+  @Get('rbac/permissions')
+  @Permissions('RBAC:MANAGE', 'DATA_INDUK:VIEW')
+  async getPermissions(): Promise<any[]> {
+    return this.usersService.getAllPermissions();
+  }
+
+  @Put(':id/role')
+  @Permissions('RBAC:MANAGE')
+  async assignUserRole(
+    @Param('id') userId: string,
+    @Body('roleId') roleId: string,
+  ): Promise<User> {
+    return this.usersService.assignUserRole(userId, roleId);
   }
 
   @Get('id-card-batch')
