@@ -826,39 +826,39 @@ export const PatrolScanModal: React.FC<PatrolScanModalProps> = ({
                 <div className="text-xs font-bold text-amber-900 uppercase">
                   Checklist Sanitasi Kebersihan:
                 </div>
-                <label className="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                <label className="flex items-center space-x-3 p-2.5 min-h-[44px] bg-white border border-amber-200 rounded-xl text-xs font-semibold text-slate-800 cursor-pointer active:bg-amber-100/50 transition">
                   <input
                     type="checkbox"
                     checked={floorCleaned}
                     onChange={(e) => setFloorCleaned(e.target.checked)}
-                    className="w-4 h-4 text-emerald-600 rounded"
+                    className="w-5 h-5 text-emerald-600 rounded-md focus:ring-emerald-500 cursor-pointer"
                   />
                   <span>Lantai disapu dan dipel bersih</span>
                 </label>
-                <label className="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                <label className="flex items-center space-x-3 p-2.5 min-h-[44px] bg-white border border-amber-200 rounded-xl text-xs font-semibold text-slate-800 cursor-pointer active:bg-amber-100/50 transition">
                   <input
                     type="checkbox"
                     checked={trashEmptied}
                     onChange={(e) => setTrashEmptied(e.target.checked)}
-                    className="w-4 h-4 text-emerald-600 rounded"
+                    className="w-5 h-5 text-emerald-600 rounded-md focus:ring-emerald-500 cursor-pointer"
                   />
                   <span>Tempat sampah dikosongkan</span>
                 </label>
-                <label className="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                <label className="flex items-center space-x-3 p-2.5 min-h-[44px] bg-white border border-amber-200 rounded-xl text-xs font-semibold text-slate-800 cursor-pointer active:bg-amber-100/50 transition">
                   <input
                     type="checkbox"
                     checked={suppliesRestocked}
                     onChange={(e) => setSuppliesRestocked(e.target.checked)}
-                    className="w-4 h-4 text-emerald-600 rounded"
+                    className="w-5 h-5 text-emerald-600 rounded-md focus:ring-emerald-500 cursor-pointer"
                   />
                   <span>Sabun & tisu direfill</span>
                 </label>
-                <label className="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                <label className="flex items-center space-x-3 p-2.5 min-h-[44px] bg-white border border-amber-200 rounded-xl text-xs font-semibold text-slate-800 cursor-pointer active:bg-amber-100/50 transition">
                   <input
                     type="checkbox"
                     checked={odorNormal}
                     onChange={(e) => setOdorNormal(e.target.checked)}
-                    className="w-4 h-4 text-emerald-600 rounded"
+                    className="w-5 h-5 text-emerald-600 rounded-md focus:ring-emerald-500 cursor-pointer"
                   />
                   <span>Aroma ruangan normal</span>
                 </label>

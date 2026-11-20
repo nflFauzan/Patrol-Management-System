@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { EventsGateway } from '../gateway/events.gateway';
 import { saveBase64Image, normalizePhotoUrl } from '../../common/utils/file-upload.util';
@@ -77,7 +77,7 @@ export class PatrolService {
     const checkpointParams: any[] = [];
 
     if (data.checkpointId) {
-      checkpointQuery += ` AND (id = $1 OR id::text = $1 OR qr_code_token = $1 OR qr_code_token ILIKE $1)`;
+      checkpointQuery += ` AND (id::text = $1 OR qr_code_token = $1 OR qr_code_token ILIKE $1)`;
       checkpointParams.push(data.checkpointId);
     } else if (data.qrPayload) {
       checkpointQuery += ` AND (qr_code_token = $1 OR qr_code_token ILIKE $1 OR id::text = $1)`;
@@ -92,16 +92,23 @@ export class PatrolService {
       throw new NotFoundException('Checkpoint not found or inactive');
     }
 
-    // Check user division vs checkpoint category (patroli.site parity)
+    // Check user division vs checkpoint category (patroli.site parity & RBAC)
     const user = await this.db.queryOne<any>('SELECT division FROM users WHERE id = $1', [userId]);
     if (user && user.division) {
       const isSecurityUser = user.division.toLowerCase().includes('security') || user.division.toLowerCase().includes('satpam');
       const isCleaningUser = user.division.toLowerCase().includes('cleaning');
+      const isDriverUser = user.division.toLowerCase().includes('driver');
       const isSecurityCp = cp.category.toLowerCase().includes('security') || cp.category.toLowerCase().includes('satpam');
       const isCleaningCp = cp.category.toLowerCase().includes('clean');
 
-      if ((isSecurityUser && isCleaningCp) || (isCleaningUser && isSecurityCp)) {
-        throw new BadRequestException('Gagal..Scan QRcode sesuai bagian anda');
+      if (isDriverUser) {
+        throw new ForbiddenException('Driver logistik tidak memiliki izin melakukan patroli pos keamanan');
+      }
+      if (isCleaningUser && isSecurityCp) {
+        throw new ForbiddenException('Petugas cleaning service tidak memiliki izin melakukan patroli keamanan');
+      }
+      if (isSecurityUser && isCleaningCp) {
+        throw new ForbiddenException('Petugas keamanan tidak memiliki akses checklist kebersihan di endpoint patroli');
       }
     }
 
@@ -429,7 +436,7 @@ export class PatrolService {
         p.id,
         s.name AS "siteName",
         u.full_name AS "officerName",
-        u.avatar_url AS "avatarUrl",
+        u.photo_key AS "avatarUrl",
         COALESCE(u.role::text, 'anggota') AS "position",
         c.name AS "assetName",
         c.category AS "assetType",
@@ -494,7 +501,7 @@ export class PatrolService {
         p.id,
         s.name AS "siteName",
         u.full_name AS "officerName",
-        u.avatar_url AS "avatarUrl",
+        u.photo_key AS "avatarUrl",
         COALESCE(u.role::text, 'anggota') AS "position",
         c.name AS "assetName",
         c.category AS "assetType",

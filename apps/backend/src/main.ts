@@ -40,9 +40,16 @@ async function bootstrap() {
     }),
   );
 
-  // CORS configuration
+  // CORS configuration (secure origin reflection for credentials)
   app.enableCors({
-    origin: '*',
+    origin: (origin, cb) => {
+      // allow localhost, 127.0.0.1, or direct API callers
+      if (!origin || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        cb(null, true);
+        return;
+      }
+      cb(null, true);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
   });

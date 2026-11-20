@@ -29,9 +29,19 @@ test-results/
 playwright-report/
 .playwright-mcp/
 coverage/
+*audit-results*.json
+*retest*.json
+role-audit-report.json
+
+# Runtime uploads & dev dist
+uploads/
+**/uploads/
+dev-dist/
+**/dev-dist/
 
 # Audit artifacts & local snapshots
 docs/audit/
+docs/qa-evidence/
 
 # AI Agent & Skill Workspaces
 .superpowers/

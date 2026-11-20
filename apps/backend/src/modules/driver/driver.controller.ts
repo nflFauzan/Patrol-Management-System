@@ -1,15 +1,18 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { DriverService, StartTripDto, CompleteTripDto } from './driver.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { User } from '@patrol/types';
+import { User, UserRole } from '@patrol/types';
 
 @Controller('driver')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class DriverController {
   constructor(private driverService: DriverService) {}
 
   @Post('trips/start')
+  @Roles(UserRole.DRIVER, UserRole.ADMIN_SUPER)
   async startTrip(
     @CurrentUser() user: User,
     @Body() body: StartTripDto,
@@ -18,6 +21,7 @@ export class DriverController {
   }
 
   @Post('trips/:id/complete')
+  @Roles(UserRole.DRIVER, UserRole.ADMIN_SUPER)
   async completeTrip(
     @Param('id') tripId: string,
     @CurrentUser() user: User,

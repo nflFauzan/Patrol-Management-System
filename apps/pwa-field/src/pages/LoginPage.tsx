@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [hpInput, setHpInput] = useState(''); // Honeypot
@@ -23,7 +24,7 @@ export const LoginPage: React.FC = () => {
         throw new Error('Bot validation failed');
       }
 
-      await authApi.login({
+      await login({
         username,
         password,
         hp_input: hpInput,

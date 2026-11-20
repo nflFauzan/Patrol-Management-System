@@ -1,8 +1,10 @@
 import { Controller, Post, Body, Get, Patch, Param, Query, UseGuards, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { AuthService } from './auth.service';
-import { LoginRequestDto, LoginResponseDto, RegisterRequestDto, User } from '@patrol/types';
+import { LoginRequestDto, LoginResponseDto, RegisterRequestDto, User, UserRole } from '@patrol/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('auth')
@@ -28,7 +30,8 @@ export class AuthController {
   }
 
   @Get('users')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN_SUPER, UserRole.ADMIN_AREA, UserRole.OPS_MANAGER)
   async getUsers(
     @Query('siteId') siteId?: string,
     @Query('division') division?: string,
@@ -37,13 +40,15 @@ export class AuthController {
   }
 
   @Post('users')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN_SUPER, UserRole.ADMIN_AREA, UserRole.OPS_MANAGER)
   async createUser(@Body() body: any): Promise<User> {
     return this.authService.createUser(body);
   }
 
   @Post('bulk-import')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN_SUPER, UserRole.ADMIN_AREA, UserRole.OPS_MANAGER)
   async bulkImport(@Body() body: { items: any[] }) {
     return this.authService.bulkImportPersonil(body.items || []);
   }

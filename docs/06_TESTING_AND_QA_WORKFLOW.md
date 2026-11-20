@@ -88,3 +88,47 @@ npm run test --workspace=@patrol/pwa-field
 # 4. Jalankan Pengujian End-to-End Browser (Playwright)
 npm run test:e2e
 ```
+
+---
+
+## 5. SOP Multi-Agent QA Orchestration & Independent Testing
+
+Untuk menjamin kualitas perangkat lunak enterprise tanpa bias penilaian mandiri (*zero self-grading*), proses QA membagi peran ke dalam Main Agent dan 5 Sub-Agent spesialis:
+
+### A. Pembagian Peran Sub-Agent
+1. **Main Agent (QA Orchestrator & Integrator)**:
+   - Membuat strategi & master test plan.
+   - Mengalokasikan port, akun isolasi, dan koordinasi akses database.
+   - Mengonsolidasi temuan, menyusun defect triage (P0 - P4), dan mengeksekusi perbaikan kode.
+   - Mengarahkan re-test dan regresi independen kepada Sub-Agent.
+2. **Sub-Agent 01: Functional QA Agent**:
+   - Eksplorasi Playwright/browser tanpa asumsi kode.
+   - Pengujian CRUD, tombol, validasi form, navigasi, dan pembatasan role & permission.
+   - Output: Feature & Form Inventory, Step-by-Step Test Scenarios, Defect Bug Reports (PASS/FAIL/BLOCKED/NOT TESTED).
+3. **Sub-Agent 02: Data Integrity QA Agent**:
+   - Audit langsung pada container live PostgreSQL 17 + PostGIS 3.5.
+   - Pengujian fungsi spasial PostGIS (`ST_DWithin`, `ST_Distance`) untuk batas geofence.
+   - Verifikasi rumus jam lembur, potongan keterlambatan toleransi 15 menit, shift lintas malam, dan orphan records.
+   - Output: PostGIS Accuracy Ledger, Schema & Constraint Audit, HRIS Calculation Sheet.
+4. **Sub-Agent 03: UI/UX Auditor Agent**:
+   - Evaluasi heuristik (Nielsen Norman) dan ergonomi lapangan.
+   - Pengujian target sentuh minimal $44 \times 44\text{px}$ pada PWA mobile (viewport 360-412px).
+   - Pengujian visual hierarchy, contrast ratio, dan keterbacaan di bawah sinar matahari.
+   - Output: Heuristic Scorecard, Touch Target Audit, CSS & Spacing Design Recommendations (tanpa mengubah logika bisnis).
+5. **Sub-Agent 04: Offline & Synchronization QA Agent**:
+   - Uji pemutusan jaringan (Playwright network emulation / offline mode).
+   - Verifikasi Service Worker (Workbox precache) dan penyimpanan lokal IndexedDB.
+   - Uji pemulihan koneksi, pengiriman antrean FIFO, dan pencegahan duplikasi data (idempotency key / UUID deduplication).
+   - Output: Offline Resilience Matrix, IndexedDB Schema Report, Sync & Idempotency Audit.
+6. **Sub-Agent 05: Security & Performance QA Agent**:
+   - Uji autentikasi (Bcrypt $\ge 10$, JWT expiration, role tampering).
+   - Sanitasi input koordinat GPS dan payload formulir (mencegah SQLi dan XSS).
+   - Verifikasi tidak adanya kebocoran data sensitif di console/response.
+   - Benchmarking waktu respon API ($< 200\text{ms}$) dan beban koneksi WebSocket.
+   - Output: OWASP Security Audit, RBAC Endpoint Matrix, Performance & Latency Report.
+
+### B. Urutan Kerja Wajib (Mandatory Workflow)
+```
+[Sub-Agent Uji & Kumpulkan Bukti] ➔ [Main Agent Triaging & Perbaikan Kode] ➔ [Sub-Agent Re-Test Independen] ➔ [Operational Sign-Off]
+```
+Dilarang menyatakan fitur selesai tanpa bukti pengujian independen dari sub-agent terkait.

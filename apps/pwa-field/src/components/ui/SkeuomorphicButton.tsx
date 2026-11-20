@@ -36,12 +36,12 @@ export const SkeuomorphicButton: React.FC<SkeuomorphicButtonProps> = ({
     ghost:
       'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 active:bg-slate-200/80',
     icon:
-      'p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 active:translate-y-[1px]',
+      'p-2.5 min-w-[44px] min-h-[44px] rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 active:translate-y-[1px]',
   };
 
   const sizeStyles = {
     sm: 'text-xs px-3 py-1.5 rounded-xl gap-1.5',
-    md: 'text-xs sm:text-sm px-4 py-2.5 rounded-xl gap-2',
+    md: 'text-xs sm:text-sm px-4 py-3 min-h-[44px] rounded-xl gap-2',
     lg: 'text-sm sm:text-base px-5 py-3.5 rounded-2xl gap-2.5',
   };
 

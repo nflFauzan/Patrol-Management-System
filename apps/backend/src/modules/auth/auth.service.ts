@@ -277,18 +277,18 @@ export class AuthService {
         u.potongan_bpjs as "potonganBpjs", u.potongan_alpa as "potonganAlpa",
         u.potongan_lupa_absen as "potonganLupaAbsen",
         u.is_active as "isActive", u.photo_key as "avatarUrl",
-        COALESCE(usa.site_id, u.site_id) as "siteId",
+        usa.site_id as "siteId",
         s.name as "siteName",
         u.created_at as "createdAt", u.updated_at as "updatedAt"
       FROM users u
       LEFT JOIN user_site_assignments usa ON u.id = usa.user_id
-      LEFT JOIN sites s ON (usa.site_id = s.id OR u.site_id = s.id)
+      LEFT JOIN sites s ON usa.site_id = s.id
       WHERE u.is_active = true
     `;
     const params: any[] = [];
     let idx = 1;
     if (siteId) {
-      sql += ` AND (usa.site_id = $${idx} OR u.site_id = $${idx})`;
+      sql += ` AND usa.site_id = $${idx}`;
       params.push(siteId);
       idx++;
     }

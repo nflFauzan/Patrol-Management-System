@@ -86,7 +86,7 @@ export class SitesService {
       INSERT INTO sites (name, address, coordinates, geofence_radius_meters, is_active)
       VALUES (
         $1, $2,
-        ST_SetSRID(ST_MakePoint($4, $3), 4326)::geography,
+        ST_SetSRID(ST_MakePoint(($4)::double precision, ($3)::double precision), 4326),
         $5, $6
       )
       RETURNING 
@@ -101,8 +101,8 @@ export class SitesService {
       [
         data.name,
         data.address,
-        data.latitude,
-        data.longitude,
+        Number(data.latitude),
+        Number(data.longitude),
         data.geofenceRadiusMeters || 100,
         data.isActive ?? true,
       ],

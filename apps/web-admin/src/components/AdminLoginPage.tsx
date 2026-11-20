@@ -201,6 +201,7 @@ export const AdminLoginPage: React.FC = () => {
             {/* Submit Pill Button */}
             <button
               type="submit"
+              aria-label="Masuk ke Command Center"
               disabled={isLoading}
               className="w-full py-3.5 px-6 rounded-full bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white text-sm font-semibold tracking-wide shadow-md shadow-slate-900/10 transition-all flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2"
             >

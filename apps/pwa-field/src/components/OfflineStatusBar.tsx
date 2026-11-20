@@ -16,7 +16,7 @@ export const OfflineStatusBar: React.FC = () => {
         !isOnline
           ? 'bg-amber-500 text-white border-amber-600'
           : isSyncing
-          ? 'bg-sky-600 text-white border-sky-700'
+          ? 'bg-sky-800 text-white border-sky-900'
           : 'bg-sky-50 text-sky-900 border-sky-200'
       }`}
     >

@@ -10,6 +10,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true,
+      },
       includeAssets: ['logo-ps.png', 'admin.png', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'Patroli Site',
