@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Truck, 
-  X, 
-  MapPin, 
-  Navigation, 
-  Gauge, 
-  CheckCircle2, 
+import {
+  Truck,
+  X,
+  MapPin,
+  Navigation,
+  Gauge,
+  CheckCircle2,
   AlertCircle,
   RefreshCw,
   ArrowRight
@@ -34,8 +34,8 @@ export const DriverTripModal: React.FC<DriverTripModalProps> = ({
   // Start Form State
   const [plateNumber, setPlateNumber] = useState<string>('B 9876 XCD');
   const [vehicleType, setVehicleType] = useState<string>('Truk Box Logistik C4');
-  const [origin, setOrigin] = useState<string>('Head Office Sudirman (SCBD)');
-  const [destination, setDestination] = useState<string>('Warehouse & Factory Cikarang');
+  const [origin, setOrigin] = useState<string>('Kantor Pusat Sholeh Iskandar Bogor');
+  const [destination, setDestination] = useState<string>('Pos Logistik & Distribusi Mitra (Sentul / Cikarang)');
   const [odometerStart, setOdometerStart] = useState<number>(45210);
   const [startNotes, setStartNotes] = useState<string>('Pengiriman berkas & inventaris logistik');
 

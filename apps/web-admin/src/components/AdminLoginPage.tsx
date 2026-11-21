@@ -231,7 +231,7 @@ export const AdminLoginPage: React.FC = () => {
 
       {/* Footer */}
       <footer className="w-full max-w-md text-center py-2 z-10 text-[11px] font-medium text-slate-400">
-        © 2026 PT Korporat In-House • Single-Tenant Security
+        © 2026 PT Berdikari Maju Selaras • Sistem Manajemen Patroli & Fasilitas
       </footer>
     </div>
   );

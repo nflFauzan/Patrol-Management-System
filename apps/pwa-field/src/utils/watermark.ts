@@ -46,7 +46,7 @@ export async function stampWatermarkOnPhoto(
       const timeStr = metadata.timestamp || new Date().toLocaleString('id-ID');
       const coordStr = metadata.coordinates
         ? `GPS: ${metadata.coordinates.lat.toFixed(5)}, ${metadata.coordinates.lng.toFixed(5)}`
-        : 'GPS: SCBD PostGIS';
+        : 'GPS: Bogor PostGIS';
       const line2 = `${metadata.checkpointName} | ${timeStr} | ${coordStr}`;
 
       ctx.fillText(line1, 16, canvas.height - barHeight + fontSize + 8);

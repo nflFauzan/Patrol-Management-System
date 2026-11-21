@@ -15,9 +15,9 @@ export default defineConfig({
       },
       includeAssets: ['logo-ps.png', 'admin.png', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Patroli Site',
-        short_name: 'Patroli',
-        description: 'Patroli Site - Patrol & Facility Management System',
+        name: 'Patrol System - PT Berdikari Maju Selaras',
+        short_name: 'Patrol-BMS',
+        description: 'PT Berdikari Maju Selaras - Patrol & Facility Management System',
         theme_color: '#0b3d91',
         background_color: '#ffffff',
         display: 'standalone',

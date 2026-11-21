@@ -8,7 +8,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  
+
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({
@@ -41,10 +41,18 @@ async function bootstrap() {
   );
 
   // CORS configuration (secure origin reflection for credentials)
+  const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : [];
+
   app.enableCors({
     origin: (origin, cb) => {
       // allow localhost, 127.0.0.1, or direct API callers
       if (!origin || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        cb(null, true);
+        return;
+      }
+      if (allowedOrigins.length === 0 || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
         cb(null, true);
         return;
       }
@@ -70,7 +78,11 @@ async function bootstrap() {
     ],
   });
 
-  const port = process.env.BACKEND_PORT ? parseInt(process.env.BACKEND_PORT, 10) : 3000;
+  const port = process.env.PORT
+    ? parseInt(process.env.PORT, 10)
+    : process.env.BACKEND_PORT
+      ? parseInt(process.env.BACKEND_PORT, 10)
+      : 3000;
   await app.listen(port, '0.0.0.0');
 
   logger.log(`=======================================================`);

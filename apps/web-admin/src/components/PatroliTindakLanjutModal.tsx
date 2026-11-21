@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 
 interface PatroliTindakLanjutModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ export const PatroliTindakLanjutModal: React.FC<PatroliTindakLanjutModalProps> =
     const token = typeof window !== 'undefined' ? localStorage.getItem('patrol_auth_token') || '' : '';
 
     try {
-      await fetch(`http://localhost:3000/api/v1/patrol/${patrolId}/tl`, {
+      await fetch(`${API_BASE_URL}/patrol/${patrolId}/tl`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

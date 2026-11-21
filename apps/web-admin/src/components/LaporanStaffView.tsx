@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useData } from '../lib/DataContext';
+import { API_BASE_URL } from '@/lib/api';
 
 export interface StaffActivityItem {
   id: string;
@@ -50,7 +51,7 @@ export const LaporanStaffView: React.FC = () => {
         ? localStorage.getItem('token') || localStorage.getItem('patrol_auth_token') || ''
         : '';
 
-    fetch('http://localhost:3000/api/v1/reports/staff-activities', {
+    fetch(`${API_BASE_URL}/reports/staff-activities`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {

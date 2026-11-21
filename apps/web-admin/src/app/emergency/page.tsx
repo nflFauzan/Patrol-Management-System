@@ -29,6 +29,7 @@ import { SkeuomorphicButton } from '../../components/ui/SkeuomorphicButton';
 import { InsetInput } from '../../components/ui/InsetInput';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import axios from 'axios';
+import { API_BASE_URL } from '@/lib/api';
 
 // Dynamically import Leaflet map with SSR disabled
 const EmergencyLeafletMap = dynamic(
@@ -139,7 +140,7 @@ export default function EmergencyPage() {
   const fetchLogs = async () => {
     setIsLoading(true);
     try {
-      const res = await axios.get('http://localhost:3000/api/v1/sos/logs', {
+      const res = await axios.get(`${API_BASE_URL}/sos/logs`, {
         params: {
           page: 1,
           limit: 100,
@@ -248,11 +249,10 @@ export default function EmergencyPage() {
             <button
               type="button"
               onClick={() => setIsSirenMuted(!isSirenMuted)}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition ${
-                isSirenMuted
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition ${isSirenMuted
                   ? 'bg-slate-100 text-slate-600 border-slate-300'
                   : 'bg-rose-50 text-rose-700 border-rose-300 shadow-2xs'
-              }`}
+                }`}
             >
               {isSirenMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 animate-pulse" />}
               <span>{isSirenMuted ? 'Sirine Muted' : 'Sirine Audio Aktif'}</span>
@@ -427,11 +427,10 @@ export default function EmergencyPage() {
 
                     <td className="py-3 px-4 text-center">
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                          row.alertStatus === 'ACTIVE'
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${row.alertStatus === 'ACTIVE'
                             ? 'bg-rose-50 text-rose-700 border border-rose-200 animate-pulse'
                             : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        }`}
+                          }`}
                       >
                         {row.alertStatus}
                       </span>
@@ -492,11 +491,10 @@ export default function EmergencyPage() {
                 key={pg}
                 type="button"
                 onClick={() => setCurrentPage(pg)}
-                className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition ${
-                  currentPage === pg
+                className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition ${currentPage === pg
                     ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
                     : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-2xs'
-                }`}
+                  }`}
               >
                 {pg}
               </button>

@@ -1,7 +1,20 @@
 import axios from 'axios';
 import { RegisterRequestDto, ApproveUserDto, RejectUserDto, RoleDefinition, PermissionDefinition, User } from '@patrol/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+
+// Base host URL (e.g. https://patrol-api.onrender.com or empty if relative)
+export const BACKEND_URL = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+
+/**
+ * Returns a fully-qualified media URL for uploaded photos
+ */
+export function getMediaUrl(path?: string | null): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return BACKEND_URL ? `${BACKEND_URL}${cleanPath}` : cleanPath;
+}
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

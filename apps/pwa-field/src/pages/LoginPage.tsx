@@ -43,7 +43,7 @@ export const LoginPage: React.FC = () => {
       <div className="w-full max-w-[360px] bg-white rounded-2xl shadow-xl p-6 text-center border border-slate-200">
         {/* LOGO */}
         <div className="mb-6 flex justify-center">
-          <img src="/logo-ps.png" alt="PATROLI SITE" className="w-48 object-contain" />
+          <img src="/logo-ps.png" alt="PT Berdikari Maju Selaras" className="w-48 object-contain" />
         </div>
 
         {errorMessage && (
@@ -132,7 +132,7 @@ export const LoginPage: React.FC = () => {
 
       {/* Floating WhatsApp helpdesk button */}
       <a
-        href="https://wa.me/6281215293593"
+        href="https://wa.me/6281299887766"
         className="whatsapp-float"
         target="_blank"
         rel="noopener noreferrer"

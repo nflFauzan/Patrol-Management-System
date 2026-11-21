@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { DollarSign, Download, Printer, RefreshCw, CheckCircle2, AlertTriangle, AlertCircle, Search } from 'lucide-react';
 import { PayrollReportRow, Division } from '@patrol/types';
 import { useData } from '../lib/DataContext';
+import { API_BASE_URL } from '@/lib/api';
 
 interface PayrollTabProps {
   selectedSiteId?: string;
@@ -52,7 +53,7 @@ export const PayrollTab: React.FC<PayrollTabProps> = ({ selectedSiteId: initialS
         queryParams.append('posisi', selectedPosisi);
       }
 
-      const res = await fetch(`http://localhost:3000/api/v1/reports/payroll?${queryParams.toString()}`, {
+      const res = await fetch(`${API_BASE_URL}/reports/payroll?${queryParams.toString()}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('patrol_auth_token') || ''}`,
         },
@@ -709,15 +710,14 @@ export const PayrollTab: React.FC<PayrollTabProps> = ({ selectedSiteId: initialS
                       {r.fullName || r.nama_anggota}
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                        String(r.posisi || r.division).toLowerCase().includes('security')
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${String(r.posisi || r.division).toLowerCase().includes('security')
                           ? 'bg-blue-100 text-blue-700'
                           : String(r.posisi || r.division).toLowerCase().includes('cleaning')
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : String(r.posisi || r.division).toLowerCase().includes('driver')
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}>
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : String(r.posisi || r.division).toLowerCase().includes('driver')
+                              ? 'bg-purple-100 text-purple-700'
+                              : 'bg-amber-100 text-amber-800'
+                        }`}>
                         {r.posisi || r.division}
                       </span>
                     </td>

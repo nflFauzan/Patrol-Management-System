@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 
 export interface CleaningTindakLanjutModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ export const CleaningTindakLanjutModal: React.FC<CleaningTindakLanjutModalProps>
     const token = typeof window !== 'undefined' ? localStorage.getItem('patrol_auth_token') || '' : '';
 
     try {
-      await fetch(`http://localhost:3000/api/v1/cleaning/${recordId}/tl`, {
+      await fetch(`${API_BASE_URL}/cleaning/${recordId}/tl`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

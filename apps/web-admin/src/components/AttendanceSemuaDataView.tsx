@@ -1,19 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  AttendanceRecordItem, 
-  AttendanceRecordsResponse, 
+import { API_BASE_URL } from '@/lib/api';
+import {
+  AttendanceRecordItem,
+  AttendanceRecordsResponse,
   AttendancePersonilOption,
   Division
 } from '@patrol/types';
-import { 
-  Clock, 
-  MapPin, 
-  Search, 
-  Eye, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  Clock,
+  MapPin,
+  Search,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
   ChevronDown,
   CheckCircle2,
   AlertTriangle,
@@ -62,7 +63,7 @@ export const AttendanceSemuaDataView: React.FC = () => {
     if (selectedSiteName) params.append('siteName', selectedSiteName);
     if (selectedPosisi) params.append('division', selectedPosisi);
 
-    fetch(`http://localhost:3000/api/v1/attendance/personil-options?${params.toString()}`, {
+    fetch(`${API_BASE_URL}/attendance/personil-options?${params.toString()}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -114,7 +115,7 @@ export const AttendanceSemuaDataView: React.FC = () => {
     if (searchTerm) params.append('search', searchTerm);
 
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/attendance/records?${params.toString()}`, {
+      const res = await fetch(`${API_BASE_URL}/attendance/records?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -317,13 +318,12 @@ export const AttendanceSemuaDataView: React.FC = () => {
                     <td className="py-3 px-4">
                       <div className="font-bold text-slate-900">{row.personilName}</div>
                       <span
-                        className={`inline-block mt-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded-full uppercase ${
-                          row.division === 'SECURITY'
+                        className={`inline-block mt-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded-full uppercase ${row.division === 'SECURITY'
                             ? 'bg-sky-50 text-sky-700 border border-sky-200'
                             : row.division === 'CLEANING'
-                            ? 'bg-teal-50 text-teal-700 border border-teal-200'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        }`}
+                              ? 'bg-teal-50 text-teal-700 border border-teal-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}
                       >
                         {row.division}
                       </span>
@@ -340,20 +340,18 @@ export const AttendanceSemuaDataView: React.FC = () => {
                       <div className="text-[10px] text-slate-400 font-medium">{row.clockInDateStr}</div>
                       <div className="flex items-center space-x-1.5 mt-1">
                         <span
-                          className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
-                            row.isLate
+                          className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${row.isLate
                               ? 'bg-rose-50 text-rose-700 border border-rose-200'
                               : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          }`}
+                            }`}
                         >
                           {row.isLate ? (row.lateText || 'Terlambat') : 'Tepat Waktu'}
                         </span>
                         <span
-                          className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
-                            row.clockInWithinGeofence
+                          className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${row.clockInWithinGeofence
                               ? 'bg-sky-50 text-sky-700 border border-sky-200'
                               : 'bg-rose-50 text-rose-700 border border-rose-200'
-                          }`}
+                            }`}
                         >
                           {row.clockInWithinGeofence ? 'Dalam Radius' : 'Luar Radius'}
                         </span>
@@ -368,11 +366,10 @@ export const AttendanceSemuaDataView: React.FC = () => {
                           <div className="text-[10px] text-slate-400 font-medium">{row.clockOutDateStr}</div>
                           <div className="mt-1">
                             <span
-                              className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
-                                row.clockOutWithinGeofence
+                              className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${row.clockOutWithinGeofence
                                   ? 'bg-sky-50 text-sky-700 border border-sky-200'
                                   : 'bg-rose-50 text-rose-700 border border-rose-200'
-                              }`}
+                                }`}
                             >
                               {row.clockOutWithinGeofence ? 'Dalam Radius' : 'Luar Radius'}
                             </span>
@@ -429,11 +426,10 @@ export const AttendanceSemuaDataView: React.FC = () => {
                 key={pg}
                 type="button"
                 onClick={() => setCurrentPage(pg)}
-                className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition ${
-                  currentPage === pg
+                className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition ${currentPage === pg
                     ? 'bg-sky-600 text-white shadow-skeuo-button-primary'
                     : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-2xs'
-                }`}
+                  }`}
               >
                 {pg}
               </button>

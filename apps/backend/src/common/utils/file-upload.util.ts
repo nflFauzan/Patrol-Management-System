@@ -51,8 +51,10 @@ export function saveBase64Image(
  */
 export function normalizePhotoUrl(photoKey?: string | null): string | null {
   if (!photoKey || typeof photoKey !== 'string') return null;
-  if (photoKey.startsWith('http://') || photoKey.startsWith('https://') || photoKey.startsWith('/')) {
+  if (photoKey.startsWith('http://') || photoKey.startsWith('https://')) {
     return photoKey;
   }
-  return `/uploads/${photoKey}`;
+  const backendBase = process.env.PUBLIC_BACKEND_URL?.replace(/\/$/, '') || '';
+  const cleanKey = photoKey.startsWith('/') ? photoKey : `/uploads/${photoKey}`;
+  return backendBase ? `${backendBase}${cleanKey}` : cleanKey;
 }

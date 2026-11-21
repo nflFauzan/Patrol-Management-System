@@ -62,7 +62,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user: User = {
       id: userRow.id,
       username: userRow.username,
-      email: userRow.email || `${userRow.username}@mahakarya-ops.co.id`,
+      email: userRow.email || `${userRow.username}@berdikarimajuselaras.id`,
       fullName: userRow.fullName || userRow.full_name,
       phone: userRow.phone || userRow.phone_number || '',
       role: userRow.role,

@@ -191,7 +191,7 @@ export class AuthService {
     const user: User = {
       id: userRow.id,
       username: userRow.username,
-      email: userRow.email || `${userRow.username}@mahakarya-ops.co.id`,
+      email: userRow.email || `${userRow.username}@berdikarimajuselaras.id`,
       fullName: userRow.full_name,
       phone: userRow.phone || '',
       role: userRow.role,
@@ -229,7 +229,7 @@ export class AuthService {
         u.id, 
         u.nik,
         u.username, 
-        COALESCE(u.email, CONCAT(u.username, '@mahakarya-ops.co.id')) as email, 
+        COALESCE(u.email, CONCAT(u.username, '@berdikarimajuselaras.id')) as email, 
         u.full_name as "fullName", 
         COALESCE(u.phone_number, '') as phone, 
         u.role, 

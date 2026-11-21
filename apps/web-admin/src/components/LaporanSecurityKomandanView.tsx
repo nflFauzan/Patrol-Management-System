@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Eye, Users, Building, Clock, ChevronLeft, ChevronRight, Shield, ClipboardCheck } from 'lucide-react';
 import { useData } from '../lib/DataContext';
 import { KomandanDetailModal, KomandanLogItem } from './KomandanDetailModal';
+import { API_BASE_URL } from '@/lib/api';
 
 export const LaporanSecurityKomandanView: React.FC = () => {
   const { sites } = useData();
@@ -50,7 +51,7 @@ export const LaporanSecurityKomandanView: React.FC = () => {
         ? localStorage.getItem('token') || localStorage.getItem('patrol_auth_token') || ''
         : '';
 
-    fetch('http://localhost:3000/api/v1/reports/komandan-logs', {
+    fetch(`${API_BASE_URL}/reports/komandan-logs`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -271,11 +272,10 @@ export const LaporanSecurityKomandanView: React.FC = () => {
                 key={pg}
                 type="button"
                 onClick={() => setCurrentPage(pg)}
-                className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
-                  pg === currentPage
+                className={`w-8 h-8 rounded-lg text-xs font-bold transition ${pg === currentPage
                     ? 'bg-teal-600 text-white shadow-xs'
                     : 'text-slate-700 hover:bg-slate-100 border border-slate-200'
-                }`}
+                  }`}
               >
                 {pg}
               </button>

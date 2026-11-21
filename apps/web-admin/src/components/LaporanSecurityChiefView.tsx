@@ -5,6 +5,7 @@ import { Search, Eye, Award, Building, Clock, ChevronLeft, ChevronRight, CheckCi
 import { useData } from '../lib/DataContext';
 import { ChiefEvaluationItem } from '@patrol/types';
 import { ChiefDetailModal } from './ChiefDetailModal';
+import { API_BASE_URL } from '@/lib/api';
 
 export const LaporanSecurityChiefView: React.FC = () => {
   const { sites } = useData();
@@ -41,7 +42,7 @@ export const LaporanSecurityChiefView: React.FC = () => {
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') || localStorage.getItem('patrol_auth_token') || '' : '';
-    fetch('http://localhost:3000/api/v1/reports/chief-evaluations', {
+    fetch(`${API_BASE_URL}/reports/chief-evaluations`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -194,11 +195,10 @@ export const LaporanSecurityChiefView: React.FC = () => {
                     <td className="py-3.5 px-4 max-w-sm">
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span
-                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                            row.insiden.toLowerCase().includes('tidak')
+                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${row.insiden.toLowerCase().includes('tidak')
                               ? 'bg-slate-100 text-slate-600'
                               : 'bg-rose-50 text-rose-700 border border-rose-200'
-                          }`}
+                            }`}
                         >
                           Insiden: {row.insiden}
                         </span>
@@ -260,11 +260,10 @@ export const LaporanSecurityChiefView: React.FC = () => {
                 key={pg}
                 type="button"
                 onClick={() => setCurrentPage(pg)}
-                className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
-                  pg === currentPage
+                className={`w-8 h-8 rounded-lg text-xs font-bold transition ${pg === currentPage
                     ? 'bg-teal-600 text-white shadow-xs'
                     : 'text-slate-700 hover:bg-slate-100 border border-slate-200'
-                }`}
+                  }`}
               >
                 {pg}
               </button>

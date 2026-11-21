@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { ChiefEvaluationItem } from '@patrol/types';
+import { API_BASE_URL } from '@/lib/api';
 
 interface ChiefDetailModalProps {
   isOpen: boolean;
@@ -37,7 +38,7 @@ export const ChiefDetailModal: React.FC<ChiefDetailModalProps> = ({
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') || localStorage.getItem('patrol_auth_token') || '' : '';
 
-    fetch(`http://localhost:3000/api/v1/reports/chief-evaluations/${chiefId}`, {
+    fetch(`${API_BASE_URL}/reports/chief-evaluations/${chiefId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -94,7 +95,8 @@ export const ChiefDetailModal: React.FC<ChiefDetailModalProps> = ({
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
       />
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .komandan-detail {
           width: 100%;
           max-width: 1100px;

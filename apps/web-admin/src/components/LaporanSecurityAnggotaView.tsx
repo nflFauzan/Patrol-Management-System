@@ -10,6 +10,7 @@ import { SurfaceCard } from './ui/SurfaceCard';
 import { InsetInput } from './ui/InsetInput';
 import { SkeuomorphicButton } from './ui/SkeuomorphicButton';
 import { StatusBadge } from './ui/StatusBadge';
+import { API_BASE_URL } from '@/lib/api';
 
 export const LaporanSecurityAnggotaView: React.FC = () => {
   const { sites } = useData();
@@ -48,7 +49,7 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
     if (searchTerm) params.append('search', searchTerm);
 
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/patrol/records?${params.toString()}`, {
+      const res = await fetch(`${API_BASE_URL}/patrol/records?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('API offline');
@@ -216,11 +217,10 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
                       <td className="py-3.5 px-4 max-w-sm">
                         <div className="flex items-center space-x-2">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] border ${
-                              isAnomaly
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] border ${isAnomaly
                                 ? 'bg-rose-50 text-rose-700 border-rose-200'
                                 : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            }`}
+                              }`}
                           >
                             {isAnomaly ? (
                               <AlertCircle className="w-3 h-3 text-rose-600" />
@@ -319,11 +319,10 @@ export const LaporanSecurityAnggotaView: React.FC = () => {
                 key={pg}
                 type="button"
                 onClick={() => setCurrentPage(pg)}
-                className={`w-7 h-7 text-xs rounded font-medium transition ${
-                  pg === currentPage
+                className={`w-7 h-7 text-xs rounded font-medium transition ${pg === currentPage
                     ? 'bg-sky-500 text-white shadow-xs'
                     : 'hover:bg-slate-100 text-slate-700'
-                }`}
+                  }`}
               >
                 {pg}
               </button>

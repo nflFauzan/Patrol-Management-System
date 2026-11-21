@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Eye, Car, Building, Clock, ChevronLeft, ChevronRight, Navigation, MapPin } from 'lucide-react';
 import { useData } from '../lib/DataContext';
 import { DriverDetailModal, DriverDetailData } from './DriverDetailModal';
+import { API_BASE_URL } from '@/lib/api';
 
 export const LaporanDriverView: React.FC = () => {
   const { sites } = useData();
@@ -60,7 +61,7 @@ export const LaporanDriverView: React.FC = () => {
         ? localStorage.getItem('token') || localStorage.getItem('patrol_auth_token') || ''
         : '';
 
-    fetch('http://localhost:3000/api/v1/driver/trips', {
+    fetch(`${API_BASE_URL}/driver/trips`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -235,11 +236,10 @@ export const LaporanDriverView: React.FC = () => {
                       {/* Status & Waktu */}
                       <td className="py-3.5 px-4">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full font-bold text-[10px] border ${
-                            isCompleted
+                          className={`inline-block px-2.5 py-0.5 rounded-full font-bold text-[10px] border ${isCompleted
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : 'bg-amber-50 text-amber-700 border-amber-200'
-                          }`}
+                            }`}
                         >
                           {trip.status}
                         </span>
@@ -294,11 +294,10 @@ export const LaporanDriverView: React.FC = () => {
                 key={pg}
                 type="button"
                 onClick={() => setCurrentPage(pg)}
-                className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
-                  pg === currentPage
+                className={`w-8 h-8 rounded-lg text-xs font-bold transition ${pg === currentPage
                     ? 'bg-amber-600 text-white shadow-xs'
                     : 'text-slate-700 hover:bg-slate-100 border border-slate-200'
-                }`}
+                  }`}
               >
                 {pg}
               </button>

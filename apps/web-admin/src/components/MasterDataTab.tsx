@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Building2, 
-  MapPin, 
-  Users, 
-  Upload, 
-  Printer, 
-  Plus, 
-  Clock, 
-  Shield, 
+import {
+  Building2,
+  MapPin,
+  Users,
+  Upload,
+  Printer,
+  Plus,
+  Clock,
+  Shield,
   QrCode,
   DollarSign,
   RefreshCw,
@@ -73,11 +73,11 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
   const [sites, setSites] = useState<any[]>([
     {
       id: '11111111-1111-1111-1111-111111111111',
-      name: 'Head Office Sudirman',
-      code: 'HQ-SDR',
-      address: 'Kav. 52-53 SCBD, Jakarta Selatan',
-      latitude: -6.2255,
-      longitude: 106.8090,
+      name: 'Kantor Pusat & Operasional Bogor',
+      code: 'BMS-BGR',
+      address: 'Jl. Raya Sholeh Iskandar No. 22–23, Kedung Jaya, Tanah Sareal, Kota Bogor, Jawa Barat',
+      latitude: -6.564061,
+      longitude: 106.810320,
       geofenceRadiusMeters: 100,
       shiftPagiIn: '07:00:00',
       shiftPagiOut: '15:00:00',
@@ -92,12 +92,12 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
     },
     {
       id: '22222222-2222-2222-2222-222222222222',
-      name: 'Warehouse & Factory Cikarang',
-      code: 'WH-CKR',
-      address: 'Kawasan Industri GIIC Delta Silicon, Cikarang',
-      latitude: -6.3712,
-      longitude: 107.1654,
-      geofenceRadiusMeters: 250,
+      name: 'Pos Logistik & Distribusi Mitra',
+      code: 'LOG-STL',
+      address: 'Kawasan Industri Sentul, Jl. Babakan Madang, Kabupaten Bogor, Jawa Barat',
+      latitude: -6.535000,
+      longitude: 106.857800,
+      geofenceRadiusMeters: 200,
       shiftPagiIn: '06:00:00',
       shiftPagiOut: '14:00:00',
       shiftSiangIn: '14:00:00',
@@ -115,43 +115,43 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
   const [checkpoints, setCheckpoints] = useState<any[]>([
     {
       id: 'c1',
-      qrCodeToken: 'QR-HQ-GATE-01',
+      qrCodeToken: 'QR-BMS-GATE-01',
       name: 'Pos Utama Gerbang Masuk',
-      locationDetail: 'Gate A Pintu Barat',
+      locationDetail: 'Gate A Pintu Masuk Utama',
       category: 'Security',
       assetType: 'Gerbang & Pos Satpam',
       taskDescription: 'Periksa ID Card pengunjung dan kendaraan masuk',
-      siteName: 'Head Office Sudirman',
+      siteName: 'Kantor Pusat & Operasional Bogor',
     },
     {
       id: 'c2',
-      qrCodeToken: 'QR-HQ-LOBBY-02',
+      qrCodeToken: 'QR-BMS-LOBBY-02',
       name: 'Lobby & Resepsionis Lt 1',
       locationDetail: 'Main Hall Ground Floor',
       category: 'Security',
       assetType: 'Aset Elektronik & Pintu Kaca',
       taskDescription: 'Pastikan area steril dan pintu akses terkunci',
-      siteName: 'Head Office Sudirman',
+      siteName: 'Kantor Pusat & Operasional Bogor',
     },
     {
       id: 'c3',
-      qrCodeToken: 'QR-HQ-SERVER-03',
+      qrCodeToken: 'QR-BMS-SERVER-03',
       name: 'Ruang Server IT Lt 3',
       locationDetail: 'Lt 3 Ruang 304',
       category: 'Security',
       assetType: 'Server & Rack IT',
       taskDescription: 'Cek suhu AC ruangan dan lampu indikator UPS',
-      siteName: 'Head Office Sudirman',
+      siteName: 'Kantor Pusat & Operasional Bogor',
     },
     {
       id: 'c4',
-      qrCodeToken: 'QR-HQ-REST-04',
+      qrCodeToken: 'QR-BMS-REST-04',
       name: 'Restroom Eksekutif Lt 2',
       locationDetail: 'Lt 2 Sayap Barat',
       category: 'Cleaning',
       assetType: 'Fasilitas Sanitasi',
       taskDescription: 'Pembersihan lantai, wastafel, dan pengisian tisu',
-      siteName: 'Head Office Sudirman',
+      siteName: 'Kantor Pusat & Operasional Bogor',
     },
   ]);
 
@@ -242,25 +242,22 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
         <div className="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
           <button
             onClick={() => setSubTab('AREA')}
-            className={`px-3 py-1.5 rounded-lg transition ${
-              subTab === 'AREA' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`px-3 py-1.5 rounded-lg transition ${subTab === 'AREA' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             Area & Shift Fasilitas
           </button>
           <button
             onClick={() => setSubTab('CHECKPOINT')}
-            className={`px-3 py-1.5 rounded-lg transition ${
-              subTab === 'CHECKPOINT' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`px-3 py-1.5 rounded-lg transition ${subTab === 'CHECKPOINT' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             Checkpoint / Aset
           </button>
           <button
             onClick={() => setSubTab('PERSONIL')}
-            className={`px-3 py-1.5 rounded-lg transition ${
-              subTab === 'PERSONIL' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`px-3 py-1.5 rounded-lg transition ${subTab === 'PERSONIL' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             Personil & Finansial
           </button>
@@ -323,9 +320,8 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
                     <td className="py-2.5 px-3 font-mono font-bold text-blue-600">{c.qrCodeToken}</td>
                     <td className="py-2.5 px-3 font-semibold text-slate-900">{c.name}</td>
                     <td className="py-2.5 px-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        c.category === 'Security' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${c.category === 'Security' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
+                        }`}>
                         {c.category}
                       </span>
                     </td>
@@ -401,11 +397,10 @@ export const MasterDataTab: React.FC<MasterDataTabProps> = ({
                     <td className="py-2.5 px-3 font-semibold text-slate-900">{u.fullName}</td>
                     <td className="py-2.5 px-3 font-mono text-slate-600">{u.username}</td>
                     <td className="py-2.5 px-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        u.division === 'SECURITY' ? 'bg-blue-100 text-blue-700' :
-                        u.division === 'CLEANING' ? 'bg-emerald-100 text-emerald-700' :
-                        'bg-purple-100 text-purple-700'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${u.division === 'SECURITY' ? 'bg-blue-100 text-blue-700' :
+                          u.division === 'CLEANING' ? 'bg-emerald-100 text-emerald-700' :
+                            'bg-purple-100 text-purple-700'
+                        }`}>
                         {u.division} • {u.securityRank}
                       </span>
                     </td>

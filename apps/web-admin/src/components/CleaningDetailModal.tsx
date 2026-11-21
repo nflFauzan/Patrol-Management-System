@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { CleaningDetailResponse } from '@patrol/types';
+import { API_BASE_URL } from '@/lib/api';
 
 interface CleaningDetailModalProps {
   isOpen: boolean;
@@ -43,7 +44,7 @@ export const CleaningDetailModal: React.FC<CleaningDetailModalProps> = ({
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('patrol_auth_token') || '' : '';
 
-    fetch(`http://localhost:3000/api/v1/cleaning/${cleaningId}/detail`, {
+    fetch(`${API_BASE_URL}/cleaning/${cleaningId}/detail`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {

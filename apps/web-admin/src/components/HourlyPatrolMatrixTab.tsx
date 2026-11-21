@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Download, CheckCircle2, RefreshCw, MapPin, ShieldCheck, Sparkles } from 'lucide-react';
 import { HourlyPatrolMatrixResponse, Division } from '@patrol/types';
+import { API_BASE_URL } from '@/lib/api';
 
 interface HourlyPatrolMatrixTabProps {
   selectedSiteId: string;
@@ -21,7 +22,7 @@ export const HourlyPatrolMatrixTab: React.FC<HourlyPatrolMatrixTabProps> = ({ se
   const fetchHourlyMatrix = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/patrol/hourly-monitoring?date=${selectedDate}&siteId=${selectedSiteId}`, {
+      const res = await fetch(`${API_BASE_URL}/patrol/hourly-monitoring?date=${selectedDate}&siteId=${selectedSiteId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('patrol_auth_token') || ''}`,
         },
@@ -232,9 +233,8 @@ export const HourlyPatrolMatrixTab: React.FC<HourlyPatrolMatrixTabProps> = ({ se
                     </span>
                   </td>
                   <td className="py-2 px-2 border-r border-slate-200">
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                      String(row.category).toLowerCase().includes('sec') ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
-                    }`}>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${String(row.category).toLowerCase().includes('sec') ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
+                      }`}>
                       {row.category}
                     </span>
                   </td>

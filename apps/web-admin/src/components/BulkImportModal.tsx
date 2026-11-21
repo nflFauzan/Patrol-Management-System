@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { X, Upload, Download, FileSpreadsheet, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { useData } from '../lib/DataContext';
 import { downloadPersonilExcelTemplate, parsePersonilExcel, PersonilExcelRow } from '../lib/personilTemplateExcel';
+import { API_BASE_URL } from '@/lib/api';
 
 interface BulkImportModalProps {
   isOpen: boolean;
@@ -173,10 +174,10 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
           division: rawPosisi.toLowerCase().includes('clean')
             ? 'CLEANING'
             : rawPosisi.toLowerCase().includes('driver')
-            ? 'DRIVER'
-            : rawPosisi.toLowerCase().includes('staf')
-            ? 'STAFF'
-            : 'SECURITY',
+              ? 'DRIVER'
+              : rawPosisi.toLowerCase().includes('staf')
+                ? 'STAFF'
+                : 'SECURITY',
           securityRank: 'ANGGOTA',
           siteName,
           workingHoursPerDay,
@@ -193,8 +194,8 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
     // 2. Dispatch to Backend
     const endpoint =
       type === 'CHECKPOINT'
-        ? 'http://localhost:3000/api/v1/checkpoints/bulk-import'
-        : 'http://localhost:3000/api/v1/auth/bulk-import';
+        ? `${API_BASE_URL}/checkpoints/bulk-import`
+        : `${API_BASE_URL}/auth/bulk-import`;
 
     try {
       const payload =

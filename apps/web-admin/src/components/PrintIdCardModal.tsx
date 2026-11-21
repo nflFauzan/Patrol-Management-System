@@ -96,7 +96,7 @@ export const PrintIdCardModal: React.FC<PrintIdCardModalProps> = ({
   };
 
   const currentTheme = designStyles[selectedDesign];
-  const companyName = 'PT ENTERPRISE CORPORATE';
+  const companyName = 'PT BERDIKARI MAJU SELARAS';
 
   const handlePrint = () => {
     window.print();
@@ -164,11 +164,10 @@ export const PrintIdCardModal: React.FC<PrintIdCardModalProps> = ({
                   <button
                     key={ds}
                     onClick={() => setSelectedDesign(ds)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 cursor-pointer ${
-                      isSelected
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 cursor-pointer ${isSelected
                         ? 'ring-2 ring-blue-500 ring-offset-1 shadow-md ' + theme.btnClass
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
-                    }`}
+                      }`}
                   >
                     {isSelected && <Check className="w-3.5 h-3.5" />}
                     <span>{theme.name}</span>

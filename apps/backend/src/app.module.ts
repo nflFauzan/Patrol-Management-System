@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Controller, Get } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { GatewayModule } from './modules/gateway/gateway.module';
@@ -14,6 +14,20 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { BroadcastModule } from './modules/broadcast/broadcast.module';
 import { UsersModule } from './modules/users/users.module';
 import { LegacyModule } from './modules/legacy/legacy.module';
+
+@Controller('health')
+export class HealthController {
+  @Get()
+  check() {
+    return {
+      status: 'ok',
+      service: 'Patrol Management System Backend API',
+      company: 'PT Berdikari Maju Selaras',
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+    };
+  }
+}
 
 @Module({
   imports: [
@@ -36,5 +50,6 @@ import { LegacyModule } from './modules/legacy/legacy.module';
     BroadcastModule,
     LegacyModule,
   ],
+  controllers: [HealthController],
 })
-export class AppModule {}
+export class AppModule { }

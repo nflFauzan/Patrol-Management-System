@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { PatrolDetailResponse } from '@patrol/types';
+import { API_BASE_URL } from '@/lib/api';
 import 'leaflet/dist/leaflet.css';
 
 interface PatroliDetailModalProps {
@@ -42,7 +43,7 @@ export const PatroliDetailModal: React.FC<PatroliDetailModalProps> = ({
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('patrol_auth_token') || '' : '';
 
-    fetch(`http://localhost:3000/api/v1/patrol/${patrolId}/detail`, {
+    fetch(`${API_BASE_URL}/patrol/${patrolId}/detail`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {

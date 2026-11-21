@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Download, Filter, RefreshCw, CheckCircle2, AlertCircle, Eye } from 'lucide-react';
 import { AttendanceMatrixResponse, AttendanceMatrixStatusCode, Division } from '@patrol/types';
 import { AttendanceDetailModal, AttendanceDetailData } from './AttendanceDetailModal';
+import { API_BASE_URL } from '@/lib/api';
 
 interface AttendanceMatrixTabProps {
   selectedSiteId: string;
@@ -24,7 +25,7 @@ export const AttendanceMatrixTab: React.FC<AttendanceMatrixTabProps> = ({ select
     setIsLoading(true);
     try {
       const divisionParam = selectedDivision !== 'ALL' ? `&division=${selectedDivision}` : '';
-      const res = await fetch(`http://localhost:3000/api/v1/attendance/monitoring-matrix?month=${selectedMonth}&siteId=${selectedSiteId}${divisionParam}`, {
+      const res = await fetch(`${API_BASE_URL}/attendance/monitoring-matrix?month=${selectedMonth}&siteId=${selectedSiteId}${divisionParam}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('patrol_auth_token') || ''}`,
         },
@@ -257,11 +258,10 @@ export const AttendanceMatrixTab: React.FC<AttendanceMatrixTabProps> = ({ select
                     {row.fullName}
                   </td>
                   <td className="py-2 px-2 border-r border-slate-200">
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                      row.division === 'SECURITY' ? 'bg-blue-100 text-blue-700' :
-                      row.division === 'CLEANING' ? 'bg-emerald-100 text-emerald-700' :
-                      'bg-purple-100 text-purple-700'
-                    }`}>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${row.division === 'SECURITY' ? 'bg-blue-100 text-blue-700' :
+                        row.division === 'CLEANING' ? 'bg-emerald-100 text-emerald-700' :
+                          'bg-purple-100 text-purple-700'
+                      }`}>
                       {row.division}
                     </span>
                   </td>

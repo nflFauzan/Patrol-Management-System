@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 
 export interface DriverDetailData {
   id: string;
@@ -59,7 +60,7 @@ export const DriverDetailModal: React.FC<DriverDetailModalProps> = ({
         ? localStorage.getItem('token') || localStorage.getItem('patrol_auth_token') || ''
         : '';
 
-    fetch(`http://localhost:3000/api/v1/driver/trips?id=${tripId}`, {
+    fetch(`${API_BASE_URL}/driver/trips?id=${tripId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -143,7 +144,8 @@ export const DriverDetailModal: React.FC<DriverDetailModalProps> = ({
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
       />
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .driver-modal-wrap {
           width: 100%;
           max-width: 680px;

@@ -8,16 +8,33 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private pool: Pool;
 
   constructor(private configService: ConfigService) {
-    this.pool = new Pool({
-      host: this.configService.get<string>('DB_HOST', 'localhost'),
-      port: this.configService.get<number>('DB_PORT', 5432),
-      user: this.configService.get<string>('DB_USER', 'patrol_admin'),
-      password: this.configService.get<string>('DB_PASSWORD', 'patrol_secret_2026'),
-      database: this.configService.get<string>('DB_NAME', 'patrol_management'),
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
-    });
+    const databaseUrl = this.configService.get<string>('DATABASE_URL');
+    const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+    const dbSsl = this.configService.get<string>('DB_SSL');
+    const useSsl = isProduction || dbSsl === 'true' || (databaseUrl && databaseUrl.includes('sslmode=require'));
+    const maxPool = this.configService.get<number>('DB_POOL_MAX', 10);
+
+    if (databaseUrl) {
+      this.pool = new Pool({
+        connectionString: databaseUrl,
+        ssl: useSsl ? { rejectUnauthorized: false } : false,
+        max: maxPool,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+      });
+    } else {
+      this.pool = new Pool({
+        host: this.configService.get<string>('DB_HOST', 'localhost'),
+        port: this.configService.get<number>('DB_PORT', 5432),
+        user: this.configService.get<string>('DB_USER', 'patrol_admin'),
+        password: this.configService.get<string>('DB_PASSWORD', 'patrol_secret_2026'),
+        database: this.configService.get<string>('DB_NAME', 'patrol_management'),
+        ssl: useSsl ? { rejectUnauthorized: false } : false,
+        max: maxPool,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+      });
+    }
   }
 
   async onModuleInit() {

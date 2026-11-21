@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AttendanceMatrixResponse, AttendanceMatrixStatusCode, Division } from '@patrol/types';
 import { useData } from '../lib/DataContext';
+import { API_BASE_URL } from '@/lib/api';
 
 interface AttendanceMonitoringViewProps {
   initialMonth?: string;
@@ -69,7 +70,7 @@ export const AttendanceMonitoringView: React.FC<AttendanceMonitoringViewProps> =
       if (lokasi && lokasi !== 'ALL') params.append('siteId', lokasi);
       if (posisi && posisi !== 'ALL') params.append('division', posisi);
 
-      const res = await fetch(`http://localhost:3000/api/v1/attendance/monitoring-matrix?${params.toString()}`, {
+      const res = await fetch(`${API_BASE_URL}/attendance/monitoring-matrix?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('patrol_auth_token') || ''}`,
         },
@@ -193,7 +194,7 @@ export const AttendanceMonitoringView: React.FC<AttendanceMonitoringViewProps> =
     const XLSX = (await import('xlsx-js-style')).default;
     const wb = XLSX.utils.book_new();
 
-    const namaPerusahaan = 'tes-pt';
+    const namaPerusahaan = 'PT BERDIKARI MAJU SELARAS';
     const bulanExcel = monthName;
     const lokasiExcel = selectedSiteLabel;
     const posisiExcel = selectedPosisiLabel;
@@ -578,9 +579,8 @@ export const AttendanceMonitoringView: React.FC<AttendanceMonitoringViewProps> =
       });
     }
 
-    const filename = `Monitoring_Absensi_${bulan}${
-      posisi && posisi !== 'ALL' ? '_' + posisi : ''
-    }.pdf`;
+    const filename = `Monitoring_Absensi_${bulan}${posisi && posisi !== 'ALL' ? '_' + posisi : ''
+      }.pdf`;
 
     pdf.save(filename);
   };
@@ -1085,12 +1085,12 @@ export const AttendanceMonitoringView: React.FC<AttendanceMonitoringViewProps> =
                               dayData.logs && dayData.logs.length > 0
                                 ? dayData.logs
                                 : [
-                                    {
-                                      type: dayData.status,
-                                      time: dayData.clockInTime,
-                                      shiftColor: dayData.shiftColor || '#4caf50',
-                                    },
-                                  ];
+                                  {
+                                    type: dayData.status,
+                                    time: dayData.clockInTime,
+                                    shiftColor: dayData.shiftColor || '#4caf50',
+                                  },
+                                ];
 
                             return (
                               <td

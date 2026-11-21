@@ -19,7 +19,7 @@ export class SosService {
     private db: DatabaseService,
     private configService: ConfigService,
     private eventsGateway: EventsGateway,
-  ) {}
+  ) { }
 
   /**
    * FR-04.1 & FR-04.3: Trigger Panic Button SOS & Dispatch WhatsApp Gateway
@@ -72,10 +72,10 @@ export class SosService {
     let isDispatched = false;
     let dispatchResponse = 'Simulated / Dev mode';
 
-    const waMessage = 
+    const waMessage =
       `🚨 *[ALARM DARURAT - PANIC BUTTON SOS]* 🚨\n\n` +
       `👤 *Petugas:* ${user?.full_name || 'Personil Lapangan'} (${user?.division || 'Security'})\n` +
-      `🏢 *Fasilitas:* ${site?.name || 'Head Office Sudirman'}\n` +
+      `🏢 *Fasilitas:* ${site?.name || 'Kantor Pusat Sholeh Iskandar Bogor'}\n` +
       `⏰ *Waktu:* ${timeStr} WIB\n` +
       `📍 *Koordinat:* ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)}\n` +
       `🗺 *Peta Lokasi:* ${mapsUrl}\n` +

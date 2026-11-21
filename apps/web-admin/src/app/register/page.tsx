@@ -309,7 +309,7 @@ export default function RegisterPage() {
 
       {/* Footer */}
       <footer className="w-full max-w-xl text-center py-2 z-10 text-[11px] font-medium text-slate-400">
-        © 2026 PT Korporat In-House • Registrasi Internal Personil
+        © 2026 PT Berdikari Maju Selaras • Registrasi Internal Personil
       </footer>
     </div>
   );

@@ -65,7 +65,7 @@ export default function PreLoginPage() {
 
       {/* Minimalist Corporate Footer */}
       <footer className="w-full max-w-5xl text-center py-2 z-10 text-[11px] font-medium text-slate-400">
-        © 2026 PT Korporat In-House • Single-Tenant Command Center
+        © 2026 PT Berdikari Maju Selaras • Command Center & Operasional
       </footer>
     </div>
   );

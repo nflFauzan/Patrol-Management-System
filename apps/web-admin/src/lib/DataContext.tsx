@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import io, { Socket } from 'socket.io-client';
 import { AreaSiteData } from '../components/AreaManagementView';
+import { API_BASE_URL } from '@/lib/api';
 
 export interface CheckpointItem {
   id: string;
@@ -95,12 +96,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [sites, setSites] = useState<AreaSiteData[]>([
     {
       id: '11111111-1111-1111-1111-111111111111',
-      name: 'Site Proyek Demo',
-      code: 'HQ-DEMO',
-      address: 'Kav. 52-53 SCBD, Jakarta Selatan',
-      latitude: -6.566873,
-      longitude: 106.857802,
-      geofenceRadiusMeters: 50,
+      name: 'Kantor Pusat & Operasional Bogor',
+      code: 'BMS-BGR',
+      address: 'Jl. Raya Sholeh Iskandar No. 22–23, Kedung Jaya, Tanah Sareal, Kota Bogor, Jawa Barat',
+      latitude: -6.564061,
+      longitude: 106.810320,
+      geofenceRadiusMeters: 100,
       shiftPagiIn: '07:00:00',
       shiftPagiOut: '15:00:00',
       shiftSiangIn: '15:00:00',
@@ -114,12 +115,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     {
       id: '22222222-2222-2222-2222-222222222222',
-      name: 'Warehouse & Factory Cikarang',
-      code: 'WH-CKR',
-      address: 'Kawasan Industri GIIC Delta Silicon, Cikarang',
-      latitude: -6.3712,
-      longitude: 107.1654,
-      geofenceRadiusMeters: 250,
+      name: 'Pos Logistik & Distribusi Mitra',
+      code: 'LOG-STL',
+      address: 'Kawasan Industri Sentul, Jl. Babakan Madang, Kabupaten Bogor, Jawa Barat',
+      latitude: -6.535000,
+      longitude: 106.857800,
+      geofenceRadiusMeters: 200,
       shiftPagiIn: '06:00:00',
       shiftPagiOut: '14:00:00',
       shiftSiangIn: '14:00:00',
@@ -225,9 +226,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Connect Socket.io for Real-time SOS alerts
   useEffect(() => {
     const socketUrl =
-      typeof window !== 'undefined' && window.location.port === '8080'
+      process.env.NEXT_PUBLIC_WS_URL ||
+      (typeof window !== 'undefined' && window.location.port === '8080'
         ? window.location.origin
-        : 'http://localhost:3000';
+        : 'http://localhost:3000');
 
     const socket: Socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
@@ -240,10 +242,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         officerName: alertData.officerName || 'Budi Satpam Test',
         officerPhone: alertData.officerPhone || '0812-3456-7890',
         division: alertData.division || 'Security',
-        siteName: alertData.siteName || 'Site Proyek Demo',
-        latitude: alertData.latitude || -6.566873,
-        longitude: alertData.longitude || 106.857802,
-        mapsUrl: alertData.mapsUrl || `https://www.google.com/maps?q=${alertData.latitude || -6.566873},${alertData.longitude || 106.857802}`,
+        siteName: alertData.siteName || 'Kantor Pusat Sholeh Iskandar Bogor',
+        latitude: alertData.latitude || -6.564061,
+        longitude: alertData.longitude || 106.810320,
+        mapsUrl: alertData.mapsUrl || `https://www.google.com/maps?q=${alertData.latitude || -6.564061},${alertData.longitude || 106.810320}`,
         triggeredAt: alertData.triggeredAt || new Date().toISOString(),
         alertStatus: 'ACTIVE',
         isWhatsappDispatched: alertData.isWhatsappDispatched ?? true,
@@ -284,7 +286,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUsers((prev) => [user, ...prev]);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      await fetch('http://localhost:3000/api/v1/users', {
+      await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -319,7 +321,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUsers((prev) => prev.map((u) => (u.id === user.id ? user : u)));
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      await fetch(`http://localhost:3000/api/v1/users/${user.id}`, {
+      await fetch(`${API_BASE_URL}/users/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -360,7 +362,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<{ success: boolean; message: string }> => {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const res = await fetch('http://localhost:3000/api/v1/users/verify-delete', {
+      const res = await fetch(`${API_BASE_URL}/users/verify-delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

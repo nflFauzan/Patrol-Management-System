@@ -6,6 +6,7 @@ import { useData } from '../lib/DataContext';
 import { CleaningRecordItem, CleaningRecordsResponse } from '@patrol/types';
 import { CleaningDetailModal } from './CleaningDetailModal';
 import { CleaningTindakLanjutModal } from './CleaningTindakLanjutModal';
+import { API_BASE_URL } from '@/lib/api';
 
 export const LaporanCleaningServiceView: React.FC = () => {
   const { sites } = useData();
@@ -68,7 +69,7 @@ export const LaporanCleaningServiceView: React.FC = () => {
       if (selectedSiteName) queryParams.set('siteName', selectedSiteName);
       if (searchTerm) queryParams.set('search', searchTerm);
 
-      const res = await fetch(`http://localhost:3000/api/v1/cleaning/records?${queryParams.toString()}`, {
+      const res = await fetch(`${API_BASE_URL}/cleaning/records?${queryParams.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -229,11 +230,10 @@ export const LaporanCleaningServiceView: React.FC = () => {
                       <td className="py-3.5 px-4 max-w-sm">
                         <div className="flex items-center space-x-2">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] border ${
-                              isClean
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] border ${isClean
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 : 'bg-rose-50 text-rose-700 border-rose-200'
-                            }`}
+                              }`}
                           >
                             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                             <span>{row.status}</span>
@@ -323,11 +323,10 @@ export const LaporanCleaningServiceView: React.FC = () => {
                 key={pg}
                 type="button"
                 onClick={() => setCurrentPage(pg)}
-                className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
-                  pg === currentPage
+                className={`w-8 h-8 rounded-lg text-xs font-bold transition ${pg === currentPage
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : 'text-slate-700 hover:bg-slate-100 border border-slate-200'
-                }`}
+                  }`}
               >
                 {pg}
               </button>
