@@ -127,6 +127,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* 2x2 Bento Stat Grid */}
+        {/* 2x2 Bento Stat Grid */}
         <div className="grid grid-cols-2 gap-3">
           {/* Card 1: Personel */}
           <SurfaceCard className="p-3.5 flex items-center space-x-3">
@@ -135,18 +136,18 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div>
               <p className="text-[11px] font-medium text-slate-500">Personel</p>
-              <p className="text-base font-extrabold text-slate-800 tracking-tight">124</p>
+              <p className="text-base font-extrabold text-slate-800 tracking-tight">8</p>
             </div>
           </SurfaceCard>
 
-          {/* Card 2: Area */}
+          {/* Card 2: Checkpoint Pos */}
           <SurfaceCard className="p-3.5 flex items-center space-x-3">
             <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 shrink-0">
               <MapPin className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-slate-500">Area</p>
-              <p className="text-base font-extrabold text-slate-800 tracking-tight">12</p>
+              <p className="text-[11px] font-medium text-slate-500">Pos / Checkpoint</p>
+              <p className="text-base font-extrabold text-slate-800 tracking-tight">7</p>
             </div>
           </SurfaceCard>
 
@@ -156,19 +157,21 @@ export const DashboardPage: React.FC = () => {
               <Building2 className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-slate-500">Site</p>
-              <p className="text-base font-extrabold text-slate-800 tracking-tight">48</p>
+              <p className="text-[11px] font-medium text-slate-500">Site Fasilitas</p>
+              <p className="text-base font-extrabold text-slate-800 tracking-tight">2</p>
             </div>
           </SurfaceCard>
 
-          {/* Card 4: Absensi Hari Ini */}
+          {/* Card 4: Status Kehadiran */}
           <SurfaceCard className="p-3.5 flex items-center space-x-3">
             <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
               <CheckCircle2 className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-slate-500">Absensi Hari Ini</p>
-              <p className="text-base font-extrabold text-slate-800 tracking-tight">96%</p>
+              <p className="text-[11px] font-medium text-slate-500">Status Kehadiran</p>
+              <p className="text-base font-extrabold text-emerald-700 tracking-tight">
+                {isClockedIn ? 'Hadir' : 'Siaga'}
+              </p>
             </div>
           </SurfaceCard>
         </div>
@@ -185,7 +188,7 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="text-left">
               <div className="text-xs font-extrabold tracking-wide">Patroli Aktif</div>
-              <div className="text-[11px] text-sky-100 font-medium">7 Personel Bertugas</div>
+              <div className="text-[11px] text-sky-100 font-medium">7 Checkpoint Pos Terdaftar</div>
             </div>
           </div>
           <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
@@ -289,7 +292,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-800">Patroli Selesai</p>
-                  <p className="text-[10px] text-slate-500">Site Produksi • 08:50</p>
+                  <p className="text-[10px] text-slate-500">Kantor Pusat Sholeh Iskandar • Pos Gerbang Masuk</p>
                 </div>
               </div>
             </div>
@@ -301,21 +304,21 @@ export const DashboardPage: React.FC = () => {
                   <Info className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Absensi Masuk</p>
-                  <p className="text-[10px] text-slate-500">Area Utama • 08:40</p>
+                  <p className="text-xs font-bold text-slate-800">Tugas Terjadwal</p>
+                  <p className="text-[10px] text-slate-500">Kantor Pusat Sholeh Iskandar • Restroom & Sanitasi Lt 2</p>
                 </div>
               </div>
             </div>
 
-            {/* Feed 3: Panic Alert */}
+            {/* Feed 3: Armada Siaga */}
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/70">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 shrink-0">
-                  <AlertTriangle className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                  <Car className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Panic Alert</p>
-                  <p className="text-[10px] text-slate-500">Area Gudang • 09:12</p>
+                  <p className="text-xs font-bold text-slate-800">Armada Siaga</p>
+                  <p className="text-[10px] text-slate-500">Pos Logistik Sentul • Pemeriksaan Armada</p>
                 </div>
               </div>
             </div>

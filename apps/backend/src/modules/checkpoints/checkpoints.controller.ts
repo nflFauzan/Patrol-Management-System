@@ -10,6 +10,11 @@ import { UserRole } from '@patrol/types';
 export class CheckpointsController {
   constructor(private checkpointsService: CheckpointsService) {}
 
+  @Get()
+  async getAll(@Query('category') category?: string): Promise<CheckpointItem[]> {
+    return this.checkpointsService.findAll(category);
+  }
+
   @Get('site/:siteId')
   async getBySite(
     @Param('siteId') siteId: string,

@@ -21,6 +21,45 @@ export interface CheckpointItem {
 export class CheckpointsService {
   constructor(private db: DatabaseService) {}
 
+  async findAll(category?: string): Promise<CheckpointItem[]> {
+    let query = `
+      SELECT 
+        c.id, 
+        c.site_id AS "siteId", 
+        s.name AS "siteName",
+        c.qr_code_token AS "qrCodeToken", 
+        c.category, 
+        c.name, 
+        c.location_detail AS "locationDetail",
+        c.task_description AS "taskDescription",
+        ST_Y(s.coordinates::geometry) AS latitude,
+        ST_X(s.coordinates::geometry) AS longitude,
+        s.geofence_radius_meters AS "allowedDistanceMeters",
+        c.is_active AS "isActive",
+        c.created_at AS "createdAt",
+        c.updated_at AS "updatedAt"
+      FROM checkpoints c
+      JOIN sites s ON c.site_id = s.id
+      WHERE c.is_active = true
+    `;
+    const params: any[] = [];
+
+    if (category) {
+      query += ` AND c.category ILIKE $1`;
+      params.push(`%${category}%`);
+    }
+
+    query += ` ORDER BY s.name ASC, c.name ASC`;
+
+    const rows = await this.db.query<any>(query, params);
+    return rows.map((r) => ({
+      ...r,
+      latitude: Number(r.latitude),
+      longitude: Number(r.longitude),
+      allowedDistanceMeters: Number(r.allowedDistanceMeters),
+    }));
+  }
+
   async findBySite(siteId: string, category?: string): Promise<CheckpointItem[]> {
     let query = `
       SELECT 

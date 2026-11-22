@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import io, { Socket } from 'socket.io-client';
 import { AreaSiteData } from '../components/AreaManagementView';
 import { API_BASE_URL } from '@/lib/api';
@@ -61,6 +61,7 @@ interface DataContextType {
   sites: AreaSiteData[];
   checkpoints: CheckpointItem[];
   users: UserItem[];
+  refreshData: () => Promise<void>;
   addSite: (site: AreaSiteData) => void;
   updateSite: (site: AreaSiteData) => void;
   deleteSite: (id: string) => void;
@@ -223,6 +224,87 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeSosAlert, setActiveSosAlert] = useState<SosAlert | null>(null);
   const [isSirenMuted, setIsSirenMuted] = useState<boolean>(false);
 
+  // Synchronize master data from live backend API
+  const refreshData = useCallback(async () => {
+    try {
+      const token =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('patrol_auth_token') || localStorage.getItem('token')
+          : null;
+      if (!token) return;
+
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // 1. Fetch sites
+      const sitesRes = await fetch(`${API_BASE_URL}/sites`, { headers });
+      if (sitesRes.ok) {
+        const sitesData = await sitesRes.json();
+        if (Array.isArray(sitesData) && sitesData.length > 0) {
+          setSites(sitesData);
+        }
+      }
+
+      // 2. Fetch checkpoints
+      const cpRes = await fetch(`${API_BASE_URL}/checkpoints`, { headers });
+      if (cpRes.ok) {
+        const cpData = await cpRes.json();
+        if (Array.isArray(cpData) && cpData.length > 0) {
+          const mappedCp: CheckpointItem[] = cpData.map((c: any) => ({
+            id: c.id,
+            qrCodeToken: c.qrCodeToken,
+            name: c.name,
+            locationDetail: c.locationDetail || '-',
+            category: c.category || 'Security',
+            assetType: c.category === 'Cleaning Service' ? 'Fasilitas Sanitasi' : 'Pos Keamanan & Gerbang',
+            taskDescription: c.taskDescription || 'Pemeriksaan rutin berkala',
+            siteName: c.siteName || 'Kantor Pusat & Operasional Bogor',
+            siteId: c.siteId,
+          }));
+          setCheckpoints(mappedCp);
+        }
+      }
+
+      // 3. Fetch users
+      const usersRes = await fetch(`${API_BASE_URL}/users`, { headers });
+      if (usersRes.ok) {
+        const usersData = await usersRes.json();
+        if (Array.isArray(usersData) && usersData.length > 0) {
+          const mappedUsers: UserItem[] = usersData.map((u: any) => ({
+            id: u.id,
+            nik: u.nik || `NIK-${u.username?.toUpperCase() || 'EMP'}`,
+            fullName: u.fullName || u.username,
+            username: u.username,
+            role: u.role,
+            division: u.division || 'SECURITY',
+            securityRank: u.securityRank || (u.role === 'ADMIN_SUPER' ? 'Chief' : 'Anggota'),
+            siteName: u.siteName || 'Kantor Pusat & Operasional Bogor',
+            siteId: u.siteId,
+            multiSiteIds: u.multiSiteIds,
+            photoUrl: u.avatarUrl || u.photoUrl,
+            phone: u.phone,
+            workingHoursPerDay: u.workingHoursPerDay || 8,
+            gajiPokok: u.gajiPokok || 5000000,
+            tunjangan: u.tunjangan || 750000,
+            lemburPerJam: u.lemburPerJam || 30000,
+            potonganBpjs: u.potonganBpjs || 0,
+            potonganAlpa: u.potonganAlpa || 0,
+            potonganLupaAbsen: u.potonganLupaAbsen || 0,
+          }));
+          setUsers(mappedUsers);
+        }
+      }
+    } catch (err) {
+      console.warn('DataContext: Failed to fetch live data from API', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshData();
+    const handleStorage = () => refreshData();
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [refreshData]);
+
   // Connect Socket.io for Real-time SOS alerts
   useEffect(() => {
     const socketUrl =
@@ -285,7 +367,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addUser = async (user: UserItem) => {
     setUsers((prev) => [user, ...prev]);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('patrol_auth_token') || localStorage.getItem('token') : null;
       await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: {
@@ -320,7 +402,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateUser = async (user: UserItem) => {
     setUsers((prev) => prev.map((u) => (u.id === user.id ? user : u)));
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('patrol_auth_token') || localStorage.getItem('token') : null;
       await fetch(`${API_BASE_URL}/users/${user.id}`, {
         method: 'PUT',
         headers: {
@@ -361,7 +443,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     adminId?: string,
   ): Promise<{ success: boolean; message: string }> => {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('patrol_auth_token') || localStorage.getItem('token') : null;
       const res = await fetch(`${API_BASE_URL}/users/verify-delete`, {
         method: 'POST',
         headers: {
@@ -422,6 +504,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sites,
         checkpoints,
         users,
+        refreshData,
         addSite,
         updateSite,
         deleteSite,

@@ -52,6 +52,33 @@ describe('CheckpointsService (Checkpoint & QR Management)', () => {
     });
   });
 
+  describe('findAll', () => {
+    it('TC-CHK-02B: should return all active checkpoints with site names', async () => {
+      const mockList = [
+        {
+          id: 'cp-01',
+          siteId: 'site-01',
+          siteName: 'Kantor Pusat Bogor',
+          qrCodeToken: 'QR-01',
+          category: 'Security',
+          name: 'Pos Gate',
+          latitude: -6.56,
+          longitude: 106.81,
+          allowedDistanceMeters: 100,
+          isActive: true,
+          createdAt: '2026-10-12T00:00:00Z',
+          updatedAt: '2026-10-12T00:00:00Z',
+        },
+      ];
+      (dbMock.query as jest.Mock).mockResolvedValueOnce(mockList);
+
+      const result = await service.findAll();
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('Pos Gate');
+      expect(result[0].latitude).toBe(-6.56);
+    });
+  });
+
   describe('create', () => {
     it('TC-CHK-03: should insert and return newly created checkpoint', async () => {
       (dbMock.queryOne as jest.Mock)

@@ -19,6 +19,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useData } from '../../lib/DataContext';
+import { useAuth } from '../../lib/AuthContext';
 import { DashboardHeroBanner } from '../../components/dashboard/DashboardHeroBanner';
 import { DashboardStatCard } from '../../components/dashboard/DashboardStatCard';
 import { DashboardActivityChart } from '../../components/dashboard/DashboardActivityChart';
@@ -28,7 +29,10 @@ import { SurfaceCard } from '../../components/ui/SurfaceCard';
 import { SkeuomorphicButton } from '../../components/ui/SkeuomorphicButton';
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const { sites, checkpoints, users, activeSosAlert } = useData();
+
+  const currentUserName = user?.fullName || 'Administrator Utama';
 
   // Active filter state
   const [selectedSiteId, setSelectedSiteId] = useState<string>('ALL');
@@ -53,15 +57,16 @@ export default function DashboardPage() {
   }, [users, selectedSiteId]);
 
   // Aggregate Metrics
-  const totalPersonil = filteredUsers.length || 124;
-  const securityPersonil = filteredUsers.filter((u) => u.division === 'SECURITY').length || 62;
-  const cleaningPersonil = filteredUsers.filter((u) => u.division === 'CLEANING').length || 42;
-  const driverPersonil = filteredUsers.filter((u) => u.division === 'DRIVER').length || 20;
+  const totalPersonil = filteredUsers.length;
+  const securityPersonil = filteredUsers.filter((u) => u.division === 'SECURITY').length;
+  const cleaningPersonil = filteredUsers.filter((u) => u.division === 'CLEANING').length;
+  const driverPersonil = filteredUsers.filter((u) => u.division === 'DRIVER').length;
 
-  const totalSitesCount = sites.length || 48;
-  const totalCheckpoints = filteredCheckpoints.length || 86;
-  const securityCheckpoints = filteredCheckpoints.filter((c) => c.category === 'Security').length || 54;
-  const cleaningCheckpoints = filteredCheckpoints.filter((c) => c.category === 'Cleaning Service').length || 32;
+  const totalSitesCount = sites.length;
+  const totalCheckpoints = filteredCheckpoints.length;
+  const totalAreaCount = filteredCheckpoints.length > 0 ? filteredCheckpoints.length : (sites.length * 2);
+  const securityCheckpoints = filteredCheckpoints.filter((c) => c.category === 'Security').length;
+  const cleaningCheckpoints = filteredCheckpoints.filter((c) => c.category === 'Cleaning Service').length;
 
   // Dynamic Shift Compliance Calculations
   const shiftComplianceData = useMemo(() => {
@@ -115,7 +120,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 pb-12 font-sans select-none">
       {/* 1. HERO WELCOME BANNER (Matching Reference Image) */}
-      <DashboardHeroBanner userName="Muhamad Naufal" />
+      <DashboardHeroBanner userName={currentUserName} userRole={user?.role} />
 
       {/* 2. 5 STAT CARDS ROW (Matching Reference Image) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
@@ -132,7 +137,7 @@ export default function DashboardPage() {
         {/* Total Area */}
         <DashboardStatCard
           title="Total Area"
-          value="12"
+          value={totalAreaCount}
           trend="↑ 0%"
           trendDirection="neutral"
           icon={MapPin}
