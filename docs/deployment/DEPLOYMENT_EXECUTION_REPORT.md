@@ -131,6 +131,7 @@ Sebelum commit dan push ke remote, seluruh lapisan monorepo telah diuji secara k
 | **GAP-04** | Port binding Render gagal | Render menginjeksi `$PORT`, sedangkan backend hanya membaca `BACKEND_PORT` | `main.ts` disesuaikan untuk membaca `process.env.PORT || process.env.BACKEND_PORT || 3000`. |
 | **GAP-08** | Inactivity sleep Render 15 menit | Render Free mematikan kontainer jika tidak ada request masuk | Dibuat endpoint ringan `GET /api/v1/health` untuk target UptimeRobot ping 5 menit. |
 | **GAP-09** | Broken image links antar-domain | File upload disimpan sebagai path lokal `./uploads/...` | Ditambahkan utilitas resolusi `PUBLIC_BACKEND_URL` dan helper `getMediaUrl()`. |
+| **GAP-10** | `sh: 1: nest: not found` saat build di Render | Render berjalan dengan `NODE_ENV=production` sehingga `npm install` melewati `devDependencies` | Memindahkan `@nestjs/cli`, `typescript`, `ts-loader`, `tsconfig-paths` ke `dependencies` utama agar selalu terpasang pada kontainer build. |
 
 ---
 
