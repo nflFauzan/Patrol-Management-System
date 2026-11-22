@@ -17,12 +17,12 @@ async function main() {
   
   try {
     // 1. Get test user and site
-    const userRes = await pool.query(`SELECT id, username, full_name, division FROM users WHERE username IN ('satpamtest', 'testi') LIMIT 1`);
-    if (userRes.rows.length === 0) throw new Error('User satpamtest not found');
+    const userRes = await pool.query(`SELECT id, username, full_name, division FROM users WHERE division ILIKE '%security%' OR role ILIKE '%security%' OR username IN ('satpamtest', 'testi') LIMIT 1`);
+    if (userRes.rows.length === 0) throw new Error('Security test user not found');
     const user = userRes.rows[0];
 
-    const siteRes = await pool.query(`SELECT id, name, geofence_radius_meters, ST_AsText(coordinates) as coords FROM sites WHERE name = 'Head Office Sudirman'`);
-    if (siteRes.rows.length === 0) throw new Error('Site Head Office Sudirman not found');
+    const siteRes = await pool.query(`SELECT id, name, geofence_radius_meters, ST_AsText(coordinates) as coords FROM sites WHERE name ILIKE '%Head Office%' OR name ILIKE '%Kantor Pusat%' LIMIT 1`);
+    if (siteRes.rows.length === 0) throw new Error('Site Head Office / Kantor Pusat not found');
     const site = siteRes.rows[0];
 
     console.log(`👤 User: ${user.full_name} (${user.division})`);

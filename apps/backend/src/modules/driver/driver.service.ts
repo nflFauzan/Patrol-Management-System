@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { EventsGateway } from '../gateway/events.gateway';
+import { saveBase64Image } from '../../common/utils/file-upload.util';
 
 export interface StartTripDto {
   siteId: string;
@@ -10,11 +11,17 @@ export interface StartTripDto {
   destinationLocation: string;
   odometerStart: number;
   tripNotes?: string;
+  photoBase64?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface CompleteTripDto {
   odometerEnd: number;
   tripNotes?: string;
+  photoBase64?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 @Injectable()
@@ -35,17 +42,19 @@ export class DriverService {
       throw new BadRequestException('Driver masih memiliki perjalanan aktif yang belum diselesaikan');
     }
 
+    const photoKeyStart = data.photoBase64 ? saveBase64Image(data.photoBase64, 'driver', driverId) : null;
+
     const row = await this.db.queryOne<any>(
       `
       INSERT INTO driver_trip_logs (
         site_id, driver_id, vehicle_plate_number, vehicle_type,
         origin_location, destination_location, started_at, trip_status,
-        odometer_start, trip_notes
+        odometer_start, trip_notes, photo_key_start
       )
       VALUES (
         $1, $2, $3, $4,
         $5, $6, CURRENT_TIMESTAMP, 'IN_PROGRESS',
-        $7, $8
+        $7, $8, $9
       )
       RETURNING 
         id, site_id AS "siteId", driver_id AS "driverId",
@@ -56,7 +65,8 @@ export class DriverService {
         started_at AS "startedAt",
         trip_status AS "tripStatus",
         odometer_start AS "odometerStart",
-        trip_notes AS "tripNotes"
+        trip_notes AS "tripNotes",
+        photo_key_start AS "photoKeyStart"
     `,
       [
         data.siteId,
@@ -67,6 +77,7 @@ export class DriverService {
         data.destinationLocation,
         data.odometerStart,
         data.tripNotes || null,
+        photoKeyStart,
       ],
     );
 
@@ -104,6 +115,7 @@ export class DriverService {
     }
 
     const totalDistanceKm = data.odometerEnd - trip.odometer_start;
+    const photoKeyEnd = data.photoBase64 ? saveBase64Image(data.photoBase64, 'driver', driverId) : null;
 
     const row = await this.db.queryOne<any>(
       `
@@ -111,7 +123,8 @@ export class DriverService {
       SET trip_status = 'COMPLETED',
           arrived_at = CURRENT_TIMESTAMP,
           odometer_end = $2,
-          trip_notes = COALESCE($3, trip_notes)
+          trip_notes = COALESCE($3, trip_notes),
+          photo_key_end = COALESCE($4, photo_key_end)
       WHERE id = $1
       RETURNING 
         id, site_id AS "siteId", driver_id AS "driverId",
@@ -124,9 +137,11 @@ export class DriverService {
         trip_status AS "tripStatus",
         odometer_start AS "odometerStart",
         odometer_end AS "odometerEnd",
-        trip_notes AS "tripNotes"
+        trip_notes AS "tripNotes",
+        photo_key_start AS "photoKeyStart",
+        photo_key_end AS "photoKeyEnd"
     `,
-      [tripId, data.odometerEnd, data.tripNotes || null],
+      [tripId, data.odometerEnd, data.tripNotes || null, photoKeyEnd],
     );
 
     // Broadcast trip completed to Command Center
@@ -153,7 +168,8 @@ export class DriverService {
         started_at AS "startedAt",
         trip_status AS "tripStatus",
         odometer_start AS "odometerStart",
-        trip_notes AS "tripNotes"
+        trip_notes AS "tripNotes",
+        photo_key_start AS "photoKeyStart"
       FROM driver_trip_logs
       WHERE driver_id = $1 AND trip_status = 'IN_PROGRESS'
       ORDER BY started_at DESC
@@ -180,6 +196,8 @@ export class DriverService {
         dtl.odometer_end AS "odometerEnd",
         COALESCE(dtl.odometer_end - dtl.odometer_start, 0) AS "distanceKm",
         dtl.trip_notes AS "tripNotes",
+        dtl.photo_key_start AS "photoKeyStart",
+        dtl.photo_key_end AS "photoKeyEnd",
         u.full_name AS "driverName",
         s.name AS "siteName"
       FROM driver_trip_logs dtl

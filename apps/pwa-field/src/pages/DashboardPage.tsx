@@ -70,7 +70,9 @@ export const DashboardPage: React.FC = () => {
       navigate('/validasi-patroli/xxxxx_xxxxxxxxxxxx.php');
     } else if (userProfile.division === 'DRIVER' || userProfile.role === 'DRIVER') {
       navigate('/validasi-patroli/xxxxx_xxxxxxxxxx.php');
-    } else if (userProfile.division === 'CLEANING' || userProfile.role === 'STAFF') {
+    } else if (userProfile.division === 'CLEANING' || userProfile.role === 'CLEANER') {
+      navigate('/validasi-patroli/cleaning-checklist');
+    } else if (userProfile.division === 'STAFF' || userProfile.role === 'STAFF') {
       navigate('/validasi-patroli/xxxxx_xxxxxxxxxxxxxx.php');
     } else {
       navigate('/validasi-patroli/xxxxx_xxxxxxxxx.php');

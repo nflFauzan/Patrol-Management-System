@@ -16,6 +16,7 @@ import { DriverTripPage } from './pages/DriverTripPage';
 import { CommanderReportPage } from './pages/CommanderReportPage';
 import { ChiefReportPage } from './pages/ChiefReportPage';
 import { StaffActivityPage } from './pages/StaffActivityPage';
+import { CleaningChecklistPage } from './pages/CleaningChecklistPage';
 
 export default function App() {
   return (
@@ -149,6 +150,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <StaffActivityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/validasi-patroli/cleaning-checklist"
+            element={
+              <ProtectedRoute>
+                <CleaningChecklistPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cleaning-checklist"
+            element={
+              <ProtectedRoute>
+                <CleaningChecklistPage />
               </ProtectedRoute>
             }
           />

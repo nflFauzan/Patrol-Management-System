@@ -13,6 +13,7 @@ import { SosModule } from './modules/sos/sos.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { BroadcastModule } from './modules/broadcast/broadcast.module';
 import { UsersModule } from './modules/users/users.module';
+import { StaffModule } from './modules/staff/staff.module';
 import { LegacyModule } from './modules/legacy/legacy.module';
 
 @Controller('health')
@@ -48,6 +49,7 @@ export class HealthController {
     SosModule,
     ReportsModule,
     BroadcastModule,
+    StaffModule,
     LegacyModule,
   ],
   controllers: [HealthController],
