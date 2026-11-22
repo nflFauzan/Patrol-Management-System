@@ -1,0 +1,70 @@
+{
+  "text": "ABSEN MASUK Pilih Status Absen Piket Rutin Lembur Penugasan lain Foto Refresh Batal Lokasi: Terdeteksi ✅ | Kamera: Mencari kamera... Silahkan klik Foto dan Simpan..! Pastikan izin lokasi aktif. Jika belum silahkan aktifkan izin lokasi dan klik tombol refresh!",
+  "forms": [
+    {
+      "action": "https://patroli.site/insert-presensi.php",
+      "method": "post",
+      "inputs": [
+        {
+          "name": "csrf_token",
+          "type": "hidden",
+          "id": "",
+          "value": "c78cd319bdd791f335d9c274388665bc219480b8e4e55a33b08425199cce83f4",
+          "required": false
+        },
+        {
+          "name": "kode_anggota",
+          "type": "hidden",
+          "id": "",
+          "value": "1453",
+          "required": false
+        },
+        {
+          "name": "lokasi_site",
+          "type": "hidden",
+          "id": "",
+          "value": "aeon mall sentul",
+          "required": false
+        },
+        {
+          "name": "image",
+          "type": "hidden",
+          "id": "",
+          "value": "",
+          "required": false
+        },
+        {
+          "name": "status_absen",
+          "type": "hidden",
+          "id": "",
+          "value": "1",
+          "required": false
+        },
+        {
+          "name": "latitude_in",
+          "type": "hidden",
+          "id": "latin",
+          "value": "-6.566877",
+          "required": true
+        },
+        {
+          "name": "longitude_in",
+          "type": "hidden",
+          "id": "longin",
+          "value": "106.857619",
+          "required": true
+        },
+        {
+          "name": "alasan",
+          "type": "select-one",
+          "id": "",
+          "value": "",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "scriptsSnippet": [
+    "\nlet cameraActive=false,cameraInitializing=false,locationDetected=false,locationInitializing=false,idleTimer;\nfunction resetIdleTimer(){clearTimeout(idleTimer);idleTimer=setTimeout(()=>{window.location.href=\"index.php\"},60000)}\nfunction updateNotificationGlobal(){\n    let notif=document.getElementById('notification'),locText,locColor;\n    if(locationDetected){locText='Terdeteksi ✅';locColor='green'}\n    else if(locationInitializing){locText='Mencari lokasi...';locColor='#ff9900'}\n    else{locTex"
+  ]
+}

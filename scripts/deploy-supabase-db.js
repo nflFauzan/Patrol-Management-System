@@ -89,7 +89,7 @@ async function main() {
     console.error('\n❌ Database Deployment Failed:', err.message);
     if (err.detail) console.error('Detail:', err.detail);
     if (err.where) console.error('Where:', err.where);
-    await client.end().catch(() => {});
+    await client.end().catch(() => { });
     process.exit(1);
   }
 }

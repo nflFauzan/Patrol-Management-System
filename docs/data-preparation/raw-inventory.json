@@ -1,0 +1,6346 @@
+{
+  "dashboard": [
+    "AI",
+    "HOME",
+    "DATA INDUK",
+    "ABSENSI",
+    "LAPORAN",
+    "GAJI",
+    "PESAN SIARAN",
+    "EMERGENCY",
+    "EXPORT LAPORAN",
+    "UBAH PASSWORD",
+    "LOGOUT",
+    "TOTAL PERSONIL",
+    "2",
+    "HADIR HARI INI",
+    "0",
+    "KEGIATAN HARI INI",
+    "0",
+    "PERJALANAN SELESAI",
+    "0",
+    "TEMUAN AKTIF",
+    "0",
+    "TOTAL CHECKPOINT",
+    "2",
+    "SECURITY",
+    "MONITORING KEAMANAN & PATROLI",
+    "PERSONIL",
+    "2",
+    "HADIR",
+    "0",
+    "PATROLI",
+    "0",
+    "HARI INI",
+    "CHECKPOINT",
+    "1",
+    "SECURITY",
+    "TEMUAN",
+    "0",
+    "AKTIF",
+    "CLEANING SERVICE",
+    "MONITORING KEGIATAN KEBERSIHAN",
+    "PERSONIL",
+    "0",
+    "HADIR",
+    "0",
+    "KEGIATAN",
+    "0",
+    "HARI INI",
+    "CHECKPOINT",
+    "1",
+    "CLEANING",
+    "TEMUAN",
+    "0",
+    "AKTIF",
+    "DRIVER",
+    "MONITORING PERJALANAN KENDARAAN",
+    "DRIVER",
+    "0",
+    "HADIR",
+    "0",
+    "PERJALANAN",
+    "0",
+    "HARI INI",
+    "BERJALAN",
+    "0",
+    "BELUM SELESAI",
+    "STAF",
+    "ADMINISTRASI DAN LAPORAN",
+    "PERSONIL",
+    "0",
+    "HADIR",
+    "0",
+    "SELESAI BERTUGAS",
+    "0",
+    "IZIN",
+    "0",
+    "📊 RINGKASAN OPERASIONAL",
+    "TOTAL PERSONIL",
+    "2",
+    "HADIR HARI INI",
+    "0",
+    "KEGIATAN HARI INI",
+    "0",
+    "TOTAL CHECKPOINT",
+    "2",
+    "DRIVER SEDANG BERJALAN",
+    "0",
+    "TEMUAN HARI INI",
+    "TIDAK ADA TEMUAN",
+    "👥 STATUS PERSONIL HARI INI",
+    "SECURITY HADIR",
+    "0",
+    "CLEANING HADIR",
+    "0",
+    "DRIVER HADIR",
+    "0",
+    "STAF HADIR",
+    "0",
+    "IZIN TIDAK MASUK",
+    "0",
+    "SELESAI BERTUGAS",
+    "0",
+    "⚠️ SECURITY PERLU PERHATIAN",
+    "PERSONIL BELUM PATROLI",
+    "PERSONIL HADIR TETAPI BELUM MELAKUKAN PATROLI.",
+    "0",
+    "CHECKPOINT BELUM DIPATROLI",
+    "CHECKPOINT SECURITY TANPA PATROLI HARI INI.",
+    "1",
+    "TEMUAN AKTIF",
+    "TEMUAN SECURITY YANG MASIH AKTIF.",
+    "0",
+    "🧹 CLEANING SERVICE",
+    "KEGIATAN HARI INI",
+    "AKTIVITAS CLEANING SERVICE.",
+    "0",
+    "CHECKPOINT",
+    "TOTAL CHECKPOINT CLEANING SERVICE.",
+    "1",
+    "BELUM DICEK",
+    "CHECKPOINT CLEANING SERVICE YANG BELUM DIPERIKSA HARI INI.",
+    "1",
+    "TEMUAN AKTIF",
+    "TEMUAN CLEANING SERVICE.",
+    "0",
+    "🚗 DRIVER PERLU PERHATIAN",
+    "TIDAK ADA PERJALANAN YANG MASIH BERJALAN",
+    "🏆 TOP 5 SECURITY HARI INI",
+    "👤 SECURITY BELUM PATROLI",
+    "SEMUA SECURITY SUDAH PATROLI",
+    "0 PERSONIL",
+    "🚨 TEMUAN AKTIF",
+    "TIDAK ADA TEMUAN AKTIF",
+    "⚠️ AREA SECURITY PERLU PERHATIAN",
+    "COVERAGE MONITORING TERENDAH NOVEMBER 2026",
+    "COVERAGE SECURITY BAIK",
+    "🚨 CHECKPOINT SECURITY BELUM DIPATROLI",
+    "POS 1 GERBANG UTAMA - GERBANG UTAMA SENTUL",
+    "AEON MALL SENTUL",
+    "1 CHECKPOINT",
+    "🚨 CHECKPOINT SECURITY PERLU PERHATIAN",
+    "POS 1 GERBANG UTAMA - GERBANG UTAMA SENTUL",
+    "AEON MALL SENTUL",
+    "28 HARI TERAKHIR",
+    "2",
+    "PATROLI",
+    "🧹 AREA CLEANING PERLU PERHATIAN",
+    "COVERAGE MONITORING TERENDAH NOVEMBER 2026",
+    "AEON MALL SENTUL",
+    "0 / 1 CHECKPOINT",
+    "0%",
+    "🧹 CHECKPOINT CLEANING BELUM DICEK",
+    "TOILET LANTAI 1 TIMUR - LANTAI 1 SAYAP TIMUR",
+    "AEON MALL SENTUL",
+    "1 CHECKPOINT",
+    "🧹 CHECKPOINT CLEANING PERLU PERHATIAN",
+    "TOILET LANTAI 1 TIMUR - LANTAI 1 SAYAP TIMUR",
+    "AEON MALL SENTUL",
+    "28 HARI TERAKHIR",
+    "0",
+    "KEGIATAN",
+    "📋 IZIN TIDAK MASUK HARI INI",
+    "TIDAK ADA PERSONIL YANG IZIN HARI INI"
+  ],
+  "area": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "DATA LOKASI AREA / SITE",
+          "LATITUDE",
+          "LONGITUDE",
+          "AKSI"
+        ],
+        "rowCount": 1,
+        "rows": [
+          [
+            "AEON MALL SENTUL",
+            "-6.566877",
+            "106.857619",
+            "EDIT\n \n HAPUS"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "insert-area.php",
+        "method": "post",
+        "id": "formTambahArea",
+        "inputs": [
+          {
+            "name": "",
+            "type": "text",
+            "placeholder": "Search...",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "text",
+            "placeholder": "Contoh: PT. Mall Jakarta atau PT. Kimia C4",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "nama_perusahaan",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "ai"
+          },
+          {
+            "name": "csrf_token",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "064225132a2d41e3f66e7540975aa1e8129ac415c7ec2e7c017971c776d70957"
+          },
+          {
+            "name": "latitude",
+            "type": "text",
+            "placeholder": "Latitude akan terisi dari peta",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "longitude",
+            "type": "text",
+            "placeholder": "Longitude akan terisi dari peta",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "pagi_masuk_jam",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "pagi_masuk_menit",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "pagi_pulang_jam",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "pagi_pulang_menit",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "siang_masuk_jam",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "siang_masuk_menit",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "siang_pulang_jam",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "siang_pulang_menit",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "malam_masuk_jam",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "malam_masuk_menit",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "malam_pulang_jam",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "malam_pulang_menit",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "staf_masuk_jam",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "staf_masuk_menit",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "staf_pulang_jam",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "staf_pulang_menit",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "chief_masuk_jam",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "chief_masuk_menit",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "chief_pulang_jam",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "chief_pulang_menit",
+            "type": "select-one",
+            "required": false,
+            "value": "00",
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "action": "hapus-area.php",
+        "method": "POST",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_area",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "password",
+            "type": "password",
+            "placeholder": "Masukkan password Anda",
+            "required": true,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "exampleModalCenter",
+        "title": "Form Tambah Data Area / Site",
+        "inputs": [
+          {
+            "name": "",
+            "type": "text",
+            "placeholder": "Search...",
+            "required": false
+          },
+          {
+            "name": "lokasi_area",
+            "type": "text",
+            "placeholder": "Contoh: PT. Mall Jakarta atau PT. Kimia C4",
+            "required": true
+          },
+          {
+            "name": "nama_perusahaan",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "csrf_token",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "latitude",
+            "type": "text",
+            "placeholder": "Latitude akan terisi dari peta",
+            "required": true
+          },
+          {
+            "name": "longitude",
+            "type": "text",
+            "placeholder": "Longitude akan terisi dari peta",
+            "required": true
+          },
+          {
+            "name": "pagi_masuk_jam",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "pagi_masuk_menit",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "pagi_pulang_jam",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "pagi_pulang_menit",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "siang_masuk_jam",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "siang_masuk_menit",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "siang_pulang_jam",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "siang_pulang_menit",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "malam_masuk_jam",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "malam_masuk_menit",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "malam_pulang_jam",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "malam_pulang_menit",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "staf_masuk_jam",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "staf_masuk_menit",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "staf_pulang_jam",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "staf_pulang_menit",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "chief_masuk_jam",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "chief_masuk_menit",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          },
+          {
+            "name": "chief_pulang_jam",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "01",
+                "text": "01"
+              },
+              {
+                "value": "02",
+                "text": "02"
+              },
+              {
+                "value": "03",
+                "text": "03"
+              },
+              {
+                "value": "04",
+                "text": "04"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "06",
+                "text": "06"
+              },
+              {
+                "value": "07",
+                "text": "07"
+              },
+              {
+                "value": "08",
+                "text": "08"
+              },
+              {
+                "value": "09",
+                "text": "09"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "11",
+                "text": "11"
+              },
+              {
+                "value": "12",
+                "text": "12"
+              },
+              {
+                "value": "13",
+                "text": "13"
+              },
+              {
+                "value": "14",
+                "text": "14"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "16",
+                "text": "16"
+              },
+              {
+                "value": "17",
+                "text": "17"
+              },
+              {
+                "value": "18",
+                "text": "18"
+              },
+              {
+                "value": "19",
+                "text": "19"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "21",
+                "text": "21"
+              },
+              {
+                "value": "22",
+                "text": "22"
+              },
+              {
+                "value": "23",
+                "text": "23"
+              }
+            ]
+          },
+          {
+            "name": "chief_pulang_menit",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "00",
+                "text": "00"
+              },
+              {
+                "value": "05",
+                "text": "05"
+              },
+              {
+                "value": "10",
+                "text": "10"
+              },
+              {
+                "value": "15",
+                "text": "15"
+              },
+              {
+                "value": "20",
+                "text": "20"
+              },
+              {
+                "value": "25",
+                "text": "25"
+              },
+              {
+                "value": "30",
+                "text": "30"
+              },
+              {
+                "value": "35",
+                "text": "35"
+              },
+              {
+                "value": "40",
+                "text": "40"
+              },
+              {
+                "value": "45",
+                "text": "45"
+              },
+              {
+                "value": "50",
+                "text": "50"
+              },
+              {
+                "value": "55",
+                "text": "55"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "modalHapusArea",
+        "title": "Konfirmasi Hapus Area / Site",
+        "inputs": [
+          {
+            "name": "kode_area",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "password",
+            "type": "password",
+            "placeholder": "Masukkan password Anda",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "checkpoint": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "SEMUA LOKASI\naeon mall sentul",
+          "SEMUA KATEGORI\nCleaning Service\nSecurity",
+          "NAMA ASET",
+          "LOKASI ASET",
+          "DESKRIPSI TUGAS",
+          "AKSI"
+        ],
+        "rowCount": 2,
+        "rows": [
+          [
+            "AEON MALL SENTUL",
+            "CLEANING SERVICE",
+            "TOILET LANTAI 1 TIMUR",
+            "LANTAI 1 SAYAP TIMUR",
+            "MEMBERSIHKAN DAN MEMASTIKAN KEBERSIHAN TOILET",
+            ""
+          ],
+          [
+            "AEON MALL SENTUL",
+            "SECURITY",
+            "POS 1 GERBANG UTAMA",
+            "GERBANG UTAMA SENTUL",
+            "PATROLI & PEMERIKSAAN PINTU MASUK UTAMA",
+            ""
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "insert-aset.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "csrf_token",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "064225132a2d41e3f66e7540975aa1e8129ac415c7ec2e7c017971c776d70957"
+          },
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "kategori",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "Pilih Jenis Checkpoint"
+              },
+              {
+                "value": "Security",
+                "text": "Security"
+              },
+              {
+                "value": "Cleaning Service",
+                "text": "Cleaning Service"
+              }
+            ]
+          },
+          {
+            "name": "nama_aset",
+            "type": "text",
+            "placeholder": "Pilih jenis checkpoint terlebih dahulu...",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "deskripsi_aset",
+            "type": "text",
+            "placeholder": "Pilih jenis checkpoint terlebih dahulu...",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "lokasi",
+            "type": "text",
+            "placeholder": "Pilih jenis checkpoint terlebih dahulu...",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "jenis_aset",
+            "type": "text",
+            "placeholder": "Pilih jenis checkpoint terlebih dahulu...",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "Pilih Area / Site"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "Aeon Mall Sentul"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "exampleModalCenter",
+        "inputs": [
+          {
+            "name": "csrf_token",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "kategori",
+            "type": "select-one",
+            "required": true,
+            "options": [
+              {
+                "value": "",
+                "text": "Pilih Jenis Checkpoint"
+              },
+              {
+                "value": "Security",
+                "text": "Security"
+              },
+              {
+                "value": "Cleaning Service",
+                "text": "Cleaning Service"
+              }
+            ]
+          },
+          {
+            "name": "nama_aset",
+            "type": "text",
+            "placeholder": "Pilih jenis checkpoint terlebih dahulu...",
+            "required": true
+          },
+          {
+            "name": "deskripsi_aset",
+            "type": "text",
+            "placeholder": "Pilih jenis checkpoint terlebih dahulu...",
+            "required": true
+          },
+          {
+            "name": "lokasi",
+            "type": "text",
+            "placeholder": "Pilih jenis checkpoint terlebih dahulu...",
+            "required": true
+          },
+          {
+            "name": "jenis_aset",
+            "type": "text",
+            "placeholder": "Pilih jenis checkpoint terlebih dahulu...",
+            "required": true
+          },
+          {
+            "name": "lokasi_area",
+            "type": "select-one",
+            "required": true,
+            "options": [
+              {
+                "value": "",
+                "text": "Pilih Area / Site"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "Aeon Mall Sentul"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "myModal",
+        "title": "Edit Checkpoint",
+        "inputs": []
+      }
+    ]
+  },
+  "personil": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "SEMUA LOKASI\naeon mall sentul",
+          "ADMIN AREA / SITE\n─── PERSONEL OPERASIONAL ───\nSecurity\nCleaning Service\nDriver\nStaf\n────── PILIHAN ──────\nSemua Personel",
+          "SEMUA NAMA",
+          "FOTO",
+          "AKSI"
+        ],
+        "rowCount": 2,
+        "rows": [
+          [
+            "AEON MALL SENTUL",
+            "ANGGOTA\n\nSECURITY",
+            "AGUS PRATAMA",
+            "",
+            "Hapus\n \n EDIT"
+          ],
+          [
+            "AEON MALL SENTUL",
+            "KOMANDAN\n\nSECURITY",
+            "DANRU BUDI SANTOSO",
+            "",
+            "Hapus\n \n EDIT"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "insert-personil.php",
+        "method": "post",
+        "id": "formTambahPersonil",
+        "inputs": [
+          {
+            "name": "nama_perusahaan",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "ai"
+          },
+          {
+            "name": "csrf_token",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "064225132a2d41e3f66e7540975aa1e8129ac415c7ec2e7c017971c776d70957"
+          },
+          {
+            "name": "image",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "jabatan",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "posisi_hidden",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "posisi_final",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "nama_anggota",
+            "type": "text",
+            "placeholder": "Nama lengkap personel",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "jam_kerja",
+            "type": "number",
+            "placeholder": "Masukkan jam kerja (8–24 jam)",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Buat username",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Buat password",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "posisi",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "Pilih Posisi"
+              },
+              {
+                "value": "Admin Area",
+                "text": "Admin Area / Pengelola Area (Klien)"
+              },
+              {
+                "value": "Security",
+                "text": "Security"
+              },
+              {
+                "value": "Cleaning Service",
+                "text": "Cleaning Service"
+              },
+              {
+                "value": "Driver",
+                "text": "Driver"
+              },
+              {
+                "value": "Staf",
+                "text": "Staf"
+              }
+            ]
+          },
+          {
+            "name": "",
+            "type": "select-one",
+            "required": false,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- Pilih Jabatan Security --"
+              },
+              {
+                "value": "anggota",
+                "text": "Anggota / Personel"
+              },
+              {
+                "value": "komandan",
+                "text": "Komandan"
+              },
+              {
+                "value": "chief",
+                "text": "Chief"
+              }
+            ]
+          },
+          {
+            "name": "lokasi_site_member[]",
+            "type": "select-multiple",
+            "required": false,
+            "value": "",
+            "options": [
+              {
+                "value": "aeon mall sentul",
+                "text": "aeon mall sentul"
+              }
+            ]
+          },
+          {
+            "name": "",
+            "type": "search",
+            "placeholder": "Pilih Area / Site",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "lokasi_site_anggota",
+            "type": "select-one",
+            "required": false,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "Pilih Area / Site Penempatan"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "aeon mall sentul"
+              }
+            ]
+          },
+          {
+            "name": "gaji_pokok",
+            "type": "text",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "tunjangan",
+            "type": "text",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "lembur",
+            "type": "text",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "potongan_bpjs",
+            "type": "text",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "potongan_tidak_masuk",
+            "type": "text",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "potongan_lupa_absensi",
+            "type": "text",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "hapus-pengguna.php",
+        "method": "POST",
+        "id": "formHapus",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "password",
+            "type": "password",
+            "placeholder": "Masukkan password Anda",
+            "required": true,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "exampleModalCenter",
+        "title": "FORM TAMBAH PERSONEL",
+        "inputs": [
+          {
+            "name": "nama_perusahaan",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "csrf_token",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "image",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "jabatan",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "posisi_hidden",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "posisi_final",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "nama_anggota",
+            "type": "text",
+            "placeholder": "Nama lengkap personel",
+            "required": true
+          },
+          {
+            "name": "jam_kerja",
+            "type": "number",
+            "placeholder": "Masukkan jam kerja (8–24 jam)",
+            "required": true
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Buat username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Buat password",
+            "required": true
+          },
+          {
+            "name": "posisi",
+            "type": "select-one",
+            "required": true,
+            "options": [
+              {
+                "value": "",
+                "text": "Pilih Posisi"
+              },
+              {
+                "value": "Admin Area",
+                "text": "Admin Area / Pengelola Area (Klien)"
+              },
+              {
+                "value": "Security",
+                "text": "Security"
+              },
+              {
+                "value": "Cleaning Service",
+                "text": "Cleaning Service"
+              },
+              {
+                "value": "Driver",
+                "text": "Driver"
+              },
+              {
+                "value": "Staf",
+                "text": "Staf"
+              }
+            ]
+          },
+          {
+            "name": "",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "",
+                "text": "-- Pilih Jabatan Security --"
+              },
+              {
+                "value": "anggota",
+                "text": "Anggota / Personel"
+              },
+              {
+                "value": "komandan",
+                "text": "Komandan"
+              },
+              {
+                "value": "chief",
+                "text": "Chief"
+              }
+            ]
+          },
+          {
+            "name": "lokasi_site_member[]",
+            "type": "select-multiple",
+            "required": false,
+            "options": [
+              {
+                "value": "aeon mall sentul",
+                "text": "aeon mall sentul"
+              }
+            ]
+          },
+          {
+            "name": "",
+            "type": "search",
+            "placeholder": "Pilih Area / Site",
+            "required": false
+          },
+          {
+            "name": "lokasi_site_anggota",
+            "type": "select-one",
+            "required": false,
+            "options": [
+              {
+                "value": "",
+                "text": "Pilih Area / Site Penempatan"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "aeon mall sentul"
+              }
+            ]
+          },
+          {
+            "name": "gaji_pokok",
+            "type": "text",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "tunjangan",
+            "type": "text",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "lembur",
+            "type": "text",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "potongan_bpjs",
+            "type": "text",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "potongan_tidak_masuk",
+            "type": "text",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "potongan_lupa_absensi",
+            "type": "text",
+            "placeholder": "",
+            "required": false
+          }
+        ]
+      },
+      {
+        "id": "myModal",
+        "title": "Form Edit Personel",
+        "inputs": []
+      },
+      {
+        "id": "modalHapus",
+        "title": "Konfirmasi Hapus Data",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "password",
+            "type": "password",
+            "placeholder": "Masukkan password Anda",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "absensi": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "LOKASI / SITE",
+          "POSISI",
+          "NAMA PERSONIL",
+          "ABSENSI",
+          "AKSI",
+          "MASUK",
+          "PULANG"
+        ],
+        "rowCount": 2,
+        "rows": [
+          [
+            "AEON MALL SENTUL",
+            "SECURITY\nANGGOTA",
+            "AGUS PRATAMA",
+            "SELASA, 17 NOV 2026\n00:26:00\nJAM KERJA MASUK: 00:00\n JAM MASUK BELUM DIATUR\nDALAM RADIUS AREA",
+            "SELASA, 17 NOV 2026\n00:26:55\nJAM KERJA PULANG: 00:00\n JAM PULANG BELUM DIATUR\nDALAM RADIUS AREA",
+            "DETAIL"
+          ],
+          [
+            "AEON MALL SENTUL",
+            "SECURITY\nKOMANDAN",
+            "DANRU BUDI SANTOSO",
+            "SENIN, 16 NOV 2026\n22:31:32\nJAM KERJA MASUK: 00:00\n JAM MASUK BELUM DIATUR\nDALAM RADIUS AREA",
+            "BELUM ABSEN PULANG",
+            "DETAIL"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "myModalab",
+        "title": "DETAIL ABSENSI",
+        "inputs": []
+      }
+    ]
+  },
+  "absensiMonitoring": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "NO",
+          "NAMA PETUGAS",
+          "LOKASI",
+          "TANGGAL",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24",
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30"
+        ],
+        "rowCount": 3,
+        "rows": [
+          [
+            "1",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "2",
+            "AGUS PRATAMA",
+            "AEON MALL SENTUL",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "M\n00:26\n\n\nP\n00:26",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "3",
+            "DANRU BUDI SANTOSO",
+            "AEON MALL SENTUL",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "M\n22:31\n\n\nX",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": null,
+        "method": "GET",
+        "id": "filterForm",
+        "inputs": [
+          {
+            "name": "bulan",
+            "type": "month",
+            "placeholder": "",
+            "required": true,
+            "value": "2026-11"
+          },
+          {
+            "name": "lokasi_site",
+            "type": "select-one",
+            "required": true,
+            "value": "ALL",
+            "options": [
+              {
+                "value": "ALL",
+                "text": "-- Semua Area --"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "Aeon Mall Sentul"
+              }
+            ]
+          },
+          {
+            "name": "posisi",
+            "type": "select-one",
+            "required": true,
+            "value": "ALL",
+            "options": [
+              {
+                "value": "ALL",
+                "text": "-- Semua Posisi --"
+              },
+              {
+                "value": "Security",
+                "text": "Security"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "laporanAnggota": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "LOKASI / SITE",
+          "NAMA PERSONIL",
+          "KEGIATAN / TEMUAN",
+          "WAKTU",
+          "AKSI"
+        ],
+        "rowCount": 2,
+        "rows": [
+          [
+            "AEON MALL SENTUL",
+            "AGUS PRATAMA",
+            "🟢 SITUASI AMAN TERKENDALI\n\nPATROLI &AMP; PEMERIKSAAN PINTU MASUK UTAMA DI POS 1 GERBANG UTAMA GERBANG UTAMA SENTUL",
+            "SELASA, 17 NOV 2026 | 00:26:00",
+            "DETAIL"
+          ],
+          [
+            "AEON MALL SENTUL",
+            "DANRU BUDI SANTOSO",
+            "🟢 SITUASI AMAN TERKENDALI\n\nPATROLI &AMP; PEMERIKSAAN PINTU MASUK UTAMA DI POS 1 GERBANG UTAMA GERBANG UTAMA SENTUL",
+            "SENIN, 16 NOV 2026 | 23:33:00",
+            "DETAIL"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "cetak-patroli-pdf.php",
+        "method": "GET",
+        "id": "form-cetak-pdf",
+        "inputs": [
+          {
+            "name": "tanggal_awal",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "tanggal_akhir",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "myModalpat",
+        "inputs": []
+      },
+      {
+        "id": "myModaltl",
+        "title": "KONFIRMASI TINDAK LANJUT",
+        "inputs": []
+      }
+    ]
+  },
+  "laporanKomandan": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "LOKASI / SITE",
+          "WAKTU",
+          "SHIFT",
+          "NAMA KOMANDAN",
+          "KEHADIRAN PERSONIL",
+          "CATATAN",
+          "AKSI"
+        ],
+        "rowCount": 1,
+        "rows": [
+          [
+            "AEON MALL SENTUL",
+            "SENIN, 2026-11-16",
+            "PAGI",
+            "DANRU BUDI SANTOSO",
+            "LENGKAP",
+            "SERAH TERIMA SHIFT PAGI SELESAI, SELURUH POS DAN INVENTARIS LENGKAP, SITUASI KONDUSIF.",
+            "DETAIL"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "cetak-komandan-pdf.php",
+        "method": "GET",
+        "id": "form-cetak-pdf",
+        "inputs": [
+          {
+            "name": "tanggal_awal",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "tanggal_akhir",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "myModalKomandan",
+        "title": "DETAIL KEGIATAN KOMANDAN",
+        "inputs": []
+      }
+    ]
+  },
+  "laporanChief": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "LOKASI / SITE",
+          "TANGGAL LAPOR",
+          "NAMA KOMANDAN",
+          "HASIL KEGIATAN",
+          "AKSI"
+        ],
+        "rowCount": 1,
+        "rows": [
+          [
+            "AEON MALL SENTUL",
+            "16-11-2026\n 22:33",
+            "DANRU BUDI SANTOSO",
+            "DISIPLIN: BAIK\n KOORDINASI: BAIK\n KEHADIRAN: LENGKAP\n INSIDEN: TIDAK ADA",
+            "DETAIL"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "cetak-chief-pdf.php",
+        "method": "GET",
+        "id": "form-cetak-chief",
+        "inputs": [
+          {
+            "name": "tanggal_awal",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "tanggal_akhir",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "myModalChief",
+        "inputs": []
+      }
+    ]
+  },
+  "laporanStaff": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "LOKASI / SITE",
+          "WAKTU",
+          "NAMA STAFF",
+          "JENIS KEGIATAN",
+          "DESKRIPSI",
+          "STATUS"
+        ],
+        "rowCount": 1,
+        "rows": [
+          [
+            "NO DATA AVAILABLE IN TABLE"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "cetak-staf-pdf.php",
+        "method": "GET",
+        "id": "form-cetak-pdf",
+        "inputs": [
+          {
+            "name": "tanggal_awal",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "tanggal_akhir",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "filter_area",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "laporanCleaning": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "LOKASI / SITE",
+          "NAMA PERSONIL",
+          "KEGIATAN / TEMUAN",
+          "WAKTU",
+          "AKSI"
+        ],
+        "rowCount": 1,
+        "rows": [
+          [
+            "NO DATA AVAILABLE IN TABLE"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "cetak-cleaning-pdf.php",
+        "method": "GET",
+        "id": "form-cetak-pdf",
+        "inputs": [
+          {
+            "name": "tanggal_awal",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "tanggal_akhir",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "jenis_cleaning",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "myModalpat",
+        "inputs": []
+      },
+      {
+        "id": "myModaltl",
+        "title": "KONFIRMASI TINDAK LANJUT",
+        "inputs": []
+      }
+    ]
+  },
+  "laporanDriver": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "LOKASI / SITE",
+          "NAMA PERSONEL",
+          "JENIS KENDARAAN",
+          "WAKTU",
+          "TUJUAN",
+          "STATUS",
+          "ACTION"
+        ],
+        "rowCount": 1,
+        "rows": [
+          [
+            "NO DATA AVAILABLE IN TABLE"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "cetak-driver-pdf.php",
+        "method": "GET",
+        "id": "form-cetak-driver",
+        "inputs": [
+          {
+            "name": "tanggal_awal",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "tanggal_akhir",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "status",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "myModaldri",
+        "title": "DETAIL KEGIATAN DRIVER",
+        "inputs": []
+      }
+    ]
+  },
+  "rekapKegiatan": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "NAMA PERSONIL",
+          "POSISI",
+          "LOKASI SITE",
+          "BULAN",
+          "TAHUN",
+          "TOTAL KEGIATAN"
+        ],
+        "rowCount": 2,
+        "rows": [
+          [
+            "DANRU BUDI SANTOSO",
+            "SECURITY",
+            "AEON MALL SENTUL",
+            "NOVEMBER",
+            "2026",
+            "1"
+          ],
+          [
+            "AGUS PRATAMA",
+            "SECURITY",
+            "AEON MALL SENTUL",
+            "NOVEMBER",
+            "2026",
+            "1"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "gaji": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "NAMA PERSONIL",
+          "POSISI",
+          "LOKASI SITE",
+          "BULAN",
+          "TAHUN",
+          "TOTAL",
+          "H",
+          "L",
+          "I",
+          "GAJI BULANAN",
+          "GAJI DITERIMA",
+          "DETAIL"
+        ],
+        "rowCount": 2,
+        "rows": [
+          [
+            "AGUS PRATAMA",
+            "SECURITY",
+            "AEON MALL SENTUL",
+            "NOVEMBER",
+            "2026",
+            "1",
+            "0",
+            "0",
+            "RP 3.800.000",
+            "RP 4.200.000",
+            "Slip Gaji"
+          ],
+          [
+            "DANRU BUDI SANTOSO",
+            "SECURITY",
+            "AEON MALL SENTUL",
+            "NOVEMBER",
+            "2026",
+            "0",
+            "1",
+            "0",
+            "RP 4.500.000",
+            "RP 4.850.000",
+            "Slip Gaji"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "pesanSiaran": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "ISI PESAN SIARAN",
+          "LOKASI PESAN SIARAN",
+          "AKSI"
+        ],
+        "rowCount": 1,
+        "rows": [
+          [
+            "PERHATIAN: SELURUH PERSONIL WAJIB MELAKUKAN PATROLI PRESISI DAN PELAPORAN TEPAT WAKTU.",
+            "AEON MALL SENTUL",
+            "HAPUS\n EDIT"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "insert-info.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "isi_pesan",
+            "type": "textarea",
+            "placeholder": "Tulis pengumuman / informasi pesan siaran",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "Pilih Area / Site"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "aeon mall sentul"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "exampleModalCenter",
+        "inputs": [
+          {
+            "name": "isi_pesan",
+            "type": "textarea",
+            "placeholder": "Tulis pengumuman / informasi pesan siaran",
+            "required": true
+          },
+          {
+            "name": "lokasi_area",
+            "type": "select-one",
+            "required": true,
+            "options": [
+              {
+                "value": "",
+                "text": "Pilih Area / Site"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "aeon mall sentul"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "myModalx",
+        "title": "Form Edit Pesan Siaran",
+        "inputs": []
+      }
+    ]
+  },
+  "emergency": {
+    "title": "PATROLI SITE",
+    "tables": [
+      {
+        "headers": [
+          "FOTO",
+          "NAMA PERSONIL",
+          "WAKTU",
+          "LOKASI AREA/SITE",
+          "AKSI"
+        ],
+        "rowCount": 1,
+        "rows": [
+          [
+            "",
+            "DANRU BUDI SANTOSO\nSECURITY",
+            "SENIN, 16 NOV 2026 | 22:32:00",
+            "AEON MALL SENTUL",
+            "CEK LOKASI"
+          ]
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "myModalpan",
+        "title": "DETAIL LOG EMERGENCY",
+        "inputs": []
+      }
+    ]
+  },
+  "exportLaporan": {
+    "title": "PATROLI SITE",
+    "tables": [],
+    "forms": [
+      {
+        "action": "ganti-pass.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": "1451"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true,
+            "value": "nun"
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true,
+            "value": ""
+          }
+        ]
+      },
+      {
+        "action": "cetak-absensi-excel.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "dari",
+            "type": "date",
+            "placeholder": "",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "sampai",
+            "type": "date",
+            "placeholder": "",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- PILIH AREA --"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "AEON MALL SENTUL"
+              }
+            ]
+          },
+          {
+            "name": "kategori",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- PILIH KATEGORI --"
+              }
+            ]
+          },
+          {
+            "name": "nama_personil",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- PILIH PERSONIL --"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "action": "cetak-absensi-excel.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "dari",
+            "type": "date",
+            "placeholder": "",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "sampai",
+            "type": "date",
+            "placeholder": "",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- PILIH AREA --"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "AEON MALL SENTUL"
+              }
+            ]
+          },
+          {
+            "name": "kategori",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- PILIH KATEGORI --"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "action": "cetak-kegiatan-excel.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "kategori_nama",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "dari",
+            "type": "date",
+            "placeholder": "",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "sampai",
+            "type": "date",
+            "placeholder": "",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- PILIH AREA --"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "AEON MALL SENTUL"
+              }
+            ]
+          },
+          {
+            "name": "kategori",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- PILIH KATEGORI --"
+              }
+            ]
+          },
+          {
+            "name": "nama_personil",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- PILIH PERSONIL --"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "action": "cetak-kegiatan-excel.php",
+        "method": "post",
+        "id": "",
+        "inputs": [
+          {
+            "name": "kategori_nama",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false,
+            "value": ""
+          },
+          {
+            "name": "dari",
+            "type": "date",
+            "placeholder": "",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "sampai",
+            "type": "date",
+            "placeholder": "",
+            "required": true,
+            "value": ""
+          },
+          {
+            "name": "lokasi_area",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- PILIH AREA --"
+              },
+              {
+                "value": "aeon mall sentul",
+                "text": "AEON MALL SENTUL"
+              }
+            ]
+          },
+          {
+            "name": "kategori",
+            "type": "select-one",
+            "required": true,
+            "value": "",
+            "options": [
+              {
+                "value": "",
+                "text": "-- PILIH KATEGORI --"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "modals": [
+      {
+        "id": "ubahpassword",
+        "title": "Form ubah password",
+        "inputs": [
+          {
+            "name": "kode_anggota",
+            "type": "hidden",
+            "placeholder": "",
+            "required": false
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "placeholder": "Input Username",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "text",
+            "placeholder": "Input password baru",
+            "required": true
+          },
+          {
+            "name": "kfpassword",
+            "type": "text",
+            "placeholder": "Input konfirmasi password baru",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  "slipGajiContent": null
+}

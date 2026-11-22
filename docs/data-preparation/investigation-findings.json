@@ -1,0 +1,55 @@
+{
+  "indexLinks": [
+    "https://patroli.site/index.php#",
+    "https://patroli.site/xxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/index.php#",
+    "https://patroli.site/xxxx_xxxxxxx",
+    "https://patroli.site/xxxx_xxxxxxxxxx",
+    "https://patroli.site/xxxx_xxxxxxxx",
+    "https://patroli.site/index.php#",
+    "https://patroli.site/xxxx_xxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/index.php#",
+    "https://patroli.site/index.php#",
+    "https://patroli.site/xxxx_xxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxxxxxxxxx",
+    "https://patroli.site/xxxxx_xxxxxxxxxxxx",
+    "https://patroli.site/index.php#",
+    "https://patroli.site/logout.php"
+  ],
+  "modalAbsensi": "\n\n    <div class=\"modal-dialog modal-lg modal-dialog-centered\">\n\n        <div class=\"modal-content\">\n\n            <div class=\"modal-header alert bg-primary text-light\">\n\n                <h4 class=\"modal-title\" id=\"myModalLabel\">\n                    DETAIL ABSENSI\n                </h4>\n\n                <button type=\"button\" class=\"close\" data-dismiss=\"modal\">\n\n                    <span aria-hidden=\"true\">×</span>\n                    <span class=\"sr-only\">Close</span>\n\n                </button>\n\n            </div>\n\n            <div class=\"modal-body-absen\">\n   \n   <div class=\"container\">\n    <div class=\"main-body\">\n          <div class=\"row gutters-sm\">\n            <div class=\"col-md-12 mb-3\">\n              <div class=\"card\">\n                <div class=\"card-body\">\n                  <div class=\"d-flex flex-column align-items-center text-center\">\n                     <img src=\"img/noimage.png\" alt=\"Foto\" class=\"rounded-circle\" width=\"150px\" height=\"150px\" onerror=\"this.src='img/noimage.png';\">\n                    <div class=\"mt-3\">\n                      <h4>Agus Pratama</h4>\n                      <p class=\"text-muted font-size-sm\">aeon mall sentul</p>\n                    </div>\n                  </div>\n                </div>\n              </div>\n            </div>\n            <div class=\"col-md-12\">\n              <div class=\"card mb-3\">\n                <div class=\"card-body\">\n                  <div class=\"row\">\n                    <div class=\"col-sm-3\">\n                      <h6",
+  "modalPatroli": "\n\n                                <option value=\"\">\n                                    SEMUA PATROLI\n                                </option>\n\n                                <option value=\"rutin\">\n                                    KEGIATAN RUTIN\n                                </option>\n\n                                <option value=\"temuan\">\n                                    TEMUAN\n                                </option>\n\n                                <option value=\"tindak_lanjut\">\n                                    TINDAK LANJUT\n                                </option>\n\n                            ",
+  "editButtonsData": [
+    {
+      "dataId": "1467",
+      "rowText": "AEON MALL SENTUL \t ANGGOTA DRIVER \t JOKO WAHYUDI \t \t  Hapus    EDIT"
+    },
+    {
+      "dataId": "1466",
+      "rowText": "AEON MALL SENTUL \t ANGGOTA CLEANING SERVICE \t SITI AMINAH \t \t  Hapus    EDIT"
+    },
+    {
+      "dataId": "1465",
+      "rowText": "AEON MALL SENTUL \t CHIEF SECURITY \t CHIEF HENDRA WIJAYA \t \t  Hapus    EDIT"
+    },
+    {
+      "dataId": "1453",
+      "rowText": "AEON MALL SENTUL \t ANGGOTA SECURITY \t AGUS PRATAMA \t \t  Hapus    EDIT"
+    },
+    {
+      "dataId": "1452",
+      "rowText": "AEON MALL SENTUL \t KOMANDAN SECURITY \t DANRU BUDI SANTOSO \t \t  Hapus    EDIT"
+    }
+  ],
+  "sitiFormData": null
+}

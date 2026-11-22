@@ -1,0 +1,135 @@
+[
+  {
+    "account": "clean_siti",
+    "role": "Cleaning Service",
+    "url": "https://patroli.site/login.php",
+    "title": "PATROLI SITE",
+    "screenshot": "docs/data-preparation/screenshot-login-clean_siti.png",
+    "info": {
+      "links": [
+        {
+          "text": "Lupa username / password ?",
+          "href": "validasi_akun"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Login",
+          "id": "",
+          "className": "button"
+        },
+        {
+          "text": "Buat Akun",
+          "id": "",
+          "className": "button"
+        },
+        {
+          "text": "Install Aplikasi",
+          "id": "installBtn",
+          "className": ""
+        },
+        {
+          "text": "×",
+          "id": "",
+          "className": "close"
+        },
+        {
+          "text": "Close",
+          "id": "",
+          "className": "btn btn-secondary"
+        },
+        {
+          "text": "Daftar",
+          "id": "",
+          "className": "btn btn-primary"
+        }
+      ],
+      "textPreview": "Username atau password salah!      Buat Akun Lupa username / password ?"
+    }
+  },
+  {
+    "account": "driver_joko",
+    "role": "Driver",
+    "url": "https://patroli.site/login.php",
+    "title": "PATROLI SITE",
+    "screenshot": "docs/data-preparation/screenshot-login-driver_joko.png",
+    "info": {
+      "links": [
+        {
+          "text": "Lupa username / password ?",
+          "href": "validasi_akun"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Login",
+          "id": "",
+          "className": "button"
+        },
+        {
+          "text": "Buat Akun",
+          "id": "",
+          "className": "button"
+        },
+        {
+          "text": "Install Aplikasi",
+          "id": "installBtn",
+          "className": ""
+        },
+        {
+          "text": "×",
+          "id": "",
+          "className": "close"
+        },
+        {
+          "text": "Close",
+          "id": "",
+          "className": "btn btn-secondary"
+        },
+        {
+          "text": "Daftar",
+          "id": "",
+          "className": "btn btn-primary"
+        }
+      ],
+      "textPreview": "Username atau password salah!      Buat Akun Lupa username / password ?"
+    }
+  },
+  {
+    "account": "chief_hendra",
+    "role": "Chief Security",
+    "url": "https://patroli.site/login.php",
+    "title": "Access denied | patroli.site used Cloudflare to restrict access | patroli.site | Cloudflare",
+    "screenshot": "docs/data-preparation/screenshot-login-chief_hendra.png",
+    "info": {
+      "links": [
+        {
+          "text": "this troubleshooting page",
+          "href": "https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1015/"
+        },
+        {
+          "text": "Cloudflare",
+          "href": "https://www.cloudflare.com/5xx-error-landing"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Yes",
+          "id": "feedback-button-yes",
+          "className": "border border-solid bg-white cf-button cursor-pointer ml-4 px-4 py-2 rounded"
+        },
+        {
+          "text": "No",
+          "id": "feedback-button-no",
+          "className": "border border-solid bg-white cf-button cursor-pointer ml-4 px-4 py-2 rounded"
+        },
+        {
+          "text": "Click to reveal",
+          "id": "cf-footer-ip-reveal",
+          "className": "cf-footer-ip-reveal-btn"
+        }
+      ],
+      "textPreview": "Error 1015 Ray ID: a5e7805a1d0fb0a2 • 2026-11-22 11:12:50 UTC You are being rate limited What happened? The owner of this website (patroli.site) has banned you temporarily from accessing this website. Please see this troubleshooting page for more details. Was this page helpful? Yes No Cloudflare Ray ID: a5e7805a1d0fb0a2 Your IP: Click to reveal Performance & security by Cloudflare"
+    }
+  }
+]

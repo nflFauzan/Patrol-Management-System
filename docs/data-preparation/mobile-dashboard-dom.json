@@ -1,0 +1,57 @@
+{
+  "links": [
+    {
+      "text": "ABSEN MASUK",
+      "href": "https://patroli.site/validasi-patroli/xxxxx_xx.php",
+      "pathname": "/validasi-patroli/xxxxx_xx.php"
+    },
+    {
+      "text": "IZIN ALPHA",
+      "href": "https://patroli.site/validasi-patroli/xxxxx_xxxx.php",
+      "pathname": "/validasi-patroli/xxxxx_xxxx.php"
+    },
+    {
+      "text": "RIWAYAT ABSEN",
+      "href": "https://patroli.site/validasi-patroli/xxxxx_xxxxx.php",
+      "pathname": "/validasi-patroli/xxxxx_xxxxx.php"
+    },
+    {
+      "text": "RIWAYAT KEGIATAN",
+      "href": "https://patroli.site/validasi-patroli/xxxxx_xxxxxx.php",
+      "pathname": "/validasi-patroli/xxxxx_xxxxxx.php"
+    },
+    {
+      "text": "PANIC BUTTON",
+      "href": "https://patroli.site/validasi-patroli/xxxxx_xxxxxxx.php",
+      "pathname": "/validasi-patroli/xxxxx_xxxxxxx.php"
+    },
+    {
+      "text": "UPDATE PROFILE",
+      "href": "https://patroli.site/validasi-patroli/xxxxx_xxxxxxxx.php",
+      "pathname": "/validasi-patroli/xxxxx_xxxxxxxx.php"
+    },
+    {
+      "text": "BANTUAN TEKNIS",
+      "href": "https://api.whatsapp.com/send?phone=6281215293593&text=Halo%21%20Admin%20Patroli%20Site.%20(patroli.site)%20",
+      "pathname": "/send"
+    },
+    {
+      "text": "LOGOUT SISTEM",
+      "href": "https://patroli.site/logout.php",
+      "pathname": "/logout.php"
+    }
+  ],
+  "buttons": [
+    {
+      "text": "×",
+      "onclick": "if (!window.__cfRLUnblockHandlers) return false; tutupPanduan()",
+      "dataTarget": null
+    },
+    {
+      "text": "Saya Mengerti",
+      "onclick": "if (!window.__cfRLUnblockHandlers) return false; tutupPanduan()",
+      "dataTarget": null
+    }
+  ],
+  "fullHtmlSnippet": "\n<div style=\"background:linear-gradient(135deg,#0d6efd,#4dabf7);color:#fff;padding:12px 10px;text-align:center;font-family:'Segoe UI',Arial,sans-serif;box-shadow:0 4px 10px rgba(0,0,0,.4)\">\n<div style=\"font-size:16px;font-weight:600;letter-spacing:.5px\">👋 HELLO, AGUS PRATAMA</div><div style=\"margin-top:6px\"><span style=\"background:rgba(255,255,255,.1);padding:4px 10px;font-size:12px;display:inline-block;border:1px solid rgba(255,255,255,.2)\">SECURITY</span><span style=\"background:rgba(255,255,255,.15);padding:4px 10px;font-size:12px;display:inline-block;margin-left:5px;border:1px solid rgba(255,255,255,.2)\">📍 AEON MALL SENTUL</span></div></div>\n<div class=\"panel-body\" style=\"visibility:hidden\"><form action=\"../cek.php\" method=\"post\"><input type=\"hidden\" name=\"nama\" class=\"input\" id=\"result\" readonly=\"\"></form></div>\n<div class=\"container\" style=\"margin-top:15px\">\n<a href=\"xxxxx_xx.php\" class=\"text\"><div class=\"card\" style=\"background-color:#198754\">ABSEN<br>MASUK</div></a><a href=\"xxxxx_xxxx.php\" class=\"text\"><div class=\"card\" style=\"background-color:#0d6efd\">IZIN<br>ALPHA</div></a><a href=\"xxxxx_xxxxx.php\" class=\"text\"><div class=\"card\" style=\"background-color:#6f42c1\">RIWAYAT<br>ABSEN</div></a><a href=\"xxxxx_xxxxxx.php\" class=\"text\"><div class=\"card\" style=\"background-color:#6f42c1\">RIWAYAT<br>KEGIATAN</div></a><a href=\"xxxxx_xxxxxxx.php\" class=\"text\"><div class=\"card\" style=\"background-color:#dc3545\">PANIC<br>BUTTON</div></a><a href=\"xxxxx_xxxxxxxx.php\" class=\"text\"><div class=\"card\" style=\"background-color:#17a2b8\">UPDATE<br>PROFILE</div></a><a href=\"https://api.whatsapp.com/send?phone=6281215293593&amp;text=Halo%21%20Admin%20Patroli%20Site.%20(patroli.site)%20\" class=\"text\"><div class=\"card\" style=\"background-color:#20c997\">BANTUAN<br>TEKNIS</div></a><a href=\"../logout.php\" class=\"text\"><div class=\"card\" style=\"background-color:#000\">LOGOUT<br>SISTEM</div></a></div>\n<div class=\"marquee-container\"><div class=\"marquee-text\">\n <span style=\"COLOR:RED;\">**</span> DISIPLIN ABSENSI MASUK DAN PULANG KERJA ADALAH BAGIAN PENTING DARI BUDAYA KERJA YANG BAIK <span style=\"COLOR:RED;\">**</span> PERHATIAN: SELURUH PERSONIL WAJIB MELAKUKAN PATROLI PRESISI DAN PELAPORAN TEPAT WAKTU. <span style=\"COLOR:RED;\">**</span> </div></div>\n<div id=\"modalPanduanAwal\" class=\"custom-modal show\"><div class=\"custom-modal-box\"><div class=\"custom-modal-header\">📌 Informasi Sistem <span class=\"close-btn\" onclick=\"if (!window.__cfRLUnblockHandlers) return false; tutupPanduan()\">×</span></div><div class=\"custom-modal-body\" style=\"display:flex;justify-content:center;align-items:center\"><div class=\"info-box\" style=\"text-align:center;width:100%\">⚠️ Silakan absen masuk terlebih dahulu untuk dapat input kegiatan. Jangan lupa absen pulang saat selesai shift/jaga.</div></div><div class=\"custom-modal-footer\"><button onclick=\"if (!window.__cfRLUnblockHandlers) return false; tutupPanduan()\">Saya Mengerti</button></div></div></div>\n<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js\" type=\"text/javascript\"></script><script type=\"text/javascript\">$(document).ready(function(){setTimeout(function(){$(\".pesan\").fadeIn(\"slow\")},500);setTimeout(function(){$(\".pesan\").fadeOut(\"slow\")},3000)});</script>\n<script type=\"text/javascript\">document.addEventListener(\"DOMContentLoaded\",function(){setTimeout(function(){document.getElementById(\"modalPanduanAwal\").classList.add(\"show\")},500)});function tutupPanduan(){document.getElementById(\"modalPanduanAwal\").classList.remove(\"show\")}</script><script type=\"module\" src=\"https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092\" integrity=\"sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==\" data-cf-beacon=\"{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;108f19ab97d546c3adda3fbf979b8068&quot;,&quot;r&quot;:1,&quot;spa&quot;:2}\" crossorigin=\"anonymous\"></script>\n"
+}

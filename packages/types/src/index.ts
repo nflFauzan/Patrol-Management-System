@@ -446,19 +446,78 @@ export interface StaffActivityLog {
   createdAt: string;
 }
 
+export interface CreateStaffActivityDto {
+  siteId: string;
+  activityType: string;
+  description: string;
+  status?: string;
+  photoBase64?: string;
+  deviceTimestamp?: string;
+}
+
+export interface StaffActivityItem {
+  id: string;
+  siteId: string;
+  siteName: string;
+  userId: string;
+  staffName: string;
+  activityType: string;
+  description: string;
+  status: string;
+  createdAt: string;
+  formattedDate?: string;
+  formattedTime?: string;
+}
+
 export interface DriverTripLog {
   id: string;
   siteId: string;
+  siteName?: string;
   userId: string;
+  driverId?: string;
+  driverName?: string;
   vehicleType: string;
-  licensePlate: string;
+  licensePlate?: string;
+  vehiclePlateNumber: string;
+  originLocation?: string;
+  destination: string;
+  destinationLocation?: string;
   odometerStart?: number | null;
   odometerEnd?: number | null;
-  destination: string;
+  distanceKm?: number | null;
   cargoNotes?: string | null;
+  tripNotes?: string | null;
   status: string;
+  tripStatus?: string;
+  departurePhotoKey?: string | null;
+  arrivalPhotoKey?: string | null;
+  startedAt: string;
+  arrivedAt?: string | null;
   createdAt: string;
   completedAt?: string | null;
+}
+
+export interface StartDriverTripDto {
+  siteId: string;
+  vehiclePlateNumber: string;
+  vehicleType: string;
+  originLocation: string;
+  destinationLocation: string;
+  odometerStart: number;
+  tripNotes?: string;
+  photoBase64?: string;
+  latitude?: number;
+  longitude?: number;
+  deviceTimestamp?: string;
+}
+
+export interface CompleteDriverTripDto {
+  odometerEnd: number;
+  tripNotes?: string;
+  photoBase64?: string;
+  latitude?: number;
+  longitude?: number;
+  deviceTimestamp?: string;
 }
 
 export interface AuditLog {
@@ -792,7 +851,30 @@ export type OfflineTransactionType =
   | 'ATTENDANCE_CLOCK_IN'
   | 'ATTENDANCE_CLOCK_OUT'
   | 'PATROL_SCAN'
-  | 'LEAVE_REQUEST';
+  | 'LEAVE_REQUEST'
+  | 'CLEANING_CHECKLIST'
+  | 'DRIVER_START_TRIP'
+  | 'DRIVER_COMPLETE_TRIP'
+  | 'STAFF_ACTIVITY'
+  | 'EMERGENCY_ALERT';
+
+export interface SubmitCleaningChecklistDto {
+  siteId: string;
+  checkpointId?: string;
+  qrPayload?: string;
+  floorCleaned: boolean;
+  trashEmptied: boolean;
+  suppliesRestocked?: boolean; // legacy compatibility alias
+  soapRestocked?: boolean;
+  mirrorCleaned?: boolean;
+  tissueRestocked?: boolean;
+  odorNormal?: boolean; // legacy compatibility alias
+  odorFreshened?: boolean;
+  notes?: string;
+  photoKey?: string;
+  photoBase64?: string;
+  deviceTimestamp?: string;
+}
 
 export type OfflineTransactionStatus =
   | 'PENDING_OFFLINE'

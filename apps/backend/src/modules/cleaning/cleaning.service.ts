@@ -1,18 +1,10 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { EventsGateway } from '../gateway/events.gateway';
+import { saveBase64Image, normalizePhotoUrl } from '../../common/utils/file-upload.util';
+import { SubmitCleaningChecklistDto } from '@patrol/types';
 
-export interface SubmitCleaningChecklistDto {
-  siteId: string;
-  checkpointId?: string;
-  qrPayload?: string;
-  floorCleaned: boolean;
-  trashEmptied: boolean;
-  suppliesRestocked: boolean;
-  odorNormal: boolean;
-  notes?: string;
-  photoKey?: string;
-}
+export { SubmitCleaningChecklistDto };
 
 @Injectable()
 export class CleaningService {
@@ -45,18 +37,27 @@ export class CleaningService {
       throw new NotFoundException('Checkpoint sanitasi tidak ditemukan');
     }
 
+    const savedPhotoKey = data.photoKey || (data.photoBase64 ? saveBase64Image(data.photoBase64, 'cleaning', officerId) : null);
+    const soapRestocked = data.soapRestocked ?? (data.suppliesRestocked ?? true);
+    const mirrorCleaned = data.mirrorCleaned ?? true;
+    const tissueRestocked = data.tissueRestocked ?? (data.suppliesRestocked ?? true);
+    const odorFreshened = data.odorFreshened ?? (data.odorNormal ?? true);
+
     const row = await this.db.queryOne<any>(
       `
       INSERT INTO cleaning_checklists (
         site_id, checkpoint_id, officer_id,
         floor_cleaned, trash_emptied, supplies_restocked, odor_normal,
+        soap_restocked, mirror_cleaned, tissue_restocked, odor_freshened,
         notes, photo_key
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING 
         id, site_id AS "siteId", checkpoint_id AS "checkpointId", officer_id AS "officerId",
         floor_cleaned AS "floorCleaned", trash_emptied AS "trashEmptied",
         supplies_restocked AS "suppliesRestocked", odor_normal AS "odorNormal",
+        soap_restocked AS "soapRestocked", mirror_cleaned AS "mirrorCleaned",
+        tissue_restocked AS "tissueRestocked", odor_freshened AS "odorFreshened",
         notes, photo_key AS "photoKey",
         inspected_at AS "inspectedAt"
     `,
@@ -66,10 +67,14 @@ export class CleaningService {
         officerId,
         data.floorCleaned ?? true,
         data.trashEmptied ?? true,
-        data.suppliesRestocked ?? true,
-        data.odorNormal ?? true,
+        soapRestocked,
+        odorFreshened,
+        soapRestocked,
+        mirrorCleaned,
+        tissueRestocked,
+        odorFreshened,
         data.notes || null,
-        data.photoKey || null,
+        savedPhotoKey,
       ],
     );
 

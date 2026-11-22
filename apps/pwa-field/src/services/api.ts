@@ -191,10 +191,15 @@ export const cleaningApi = {
     qrPayload?: string;
     floorCleaned: boolean;
     trashEmptied: boolean;
-    suppliesRestocked: boolean;
-    odorNormal: boolean;
+    soapRestocked?: boolean;
+    mirrorCleaned?: boolean;
+    tissueRestocked?: boolean;
+    odorFreshened?: boolean;
+    suppliesRestocked?: boolean;
+    odorNormal?: boolean;
     notes?: string;
     photoKey?: string;
+    photoBase64?: string;
   }) => {
     const res = await apiClient.post('/cleaning/checklist', payload);
     return res.data;
@@ -262,7 +267,7 @@ export const driverApi = {
     });
     return res.data;
   },
-  completeTrip: async (tripId: string, payload: { odometerEnd: number; tripNotes?: string }) => {
+  completeTrip: async (tripId: string, payload: { odometerEnd: number; tripNotes?: string; photoBase64?: string }) => {
     const res = await apiClient.post(`/driver/trips/${tripId}/complete`, payload);
     return res.data;
   },
@@ -272,6 +277,27 @@ export const driverApi = {
   },
   getTrips: async (siteId?: string, limit?: number) => {
     const res = await apiClient.get('/driver/trips', { params: { siteId, limit } });
+    return res.data;
+  },
+};
+
+export const staffApi = {
+  createActivity: async (payload: {
+    siteId: string;
+    activityType: string;
+    description: string;
+    status?: string;
+    photoBase64?: string;
+  }) => {
+    const res = await apiClient.post('/staff/activities', payload);
+    return res.data;
+  },
+  getActivities: async (params?: { siteId?: string; limit?: number; search?: string }) => {
+    const res = await apiClient.get('/staff/activities', { params });
+    return res.data;
+  },
+  getCategories: async () => {
+    const res = await apiClient.get('/staff/categories');
     return res.data;
   },
 };

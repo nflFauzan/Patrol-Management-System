@@ -1,0 +1,22 @@
+{
+  "text": "Silakan Scan QR Code Arahkan kamera ke QR Code lokasi patroli ⌂ Kembali ke Dashboard ›",
+  "forms": [
+    {
+      "action": "https://patroli.site/cek.php",
+      "method": "post",
+      "id": "formScan",
+      "inputs": [
+        {
+          "name": "nama",
+          "type": "hidden",
+          "id": "result",
+          "value": ""
+        }
+      ]
+    }
+  ],
+  "buttons": [],
+  "scriptsSnippet": [
+    "\n\nlet scanner = null;\n\nlet isScanning = false;\n\nlet isScanned = false;\n\nlet cameras = [];\n\nlet currentCameraId = null;\n\n\nconst reader = document.getElementById(\"reader\");\n\nconst formScan = document.getElementById(\"formScan\");\n\nconst resultInput = document.getElementById(\"result\");\n\nconst cameraSelector = document.getElementById(\"camera-selector\");\n\nconst cameraSelect = document.getElementById(\"camera-select\");\n\n\n\n/* =========================================================\n   MENCARI KAMERA\n========================================================= */\n\nasync function getCameraList() {\n\n    try "
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "areas": [
+    {
+      "nama": "GUDANG LOGISTIK CAKUNG",
+      "lat": "-6.182431",
+      "lng": "106.945217"
+    },
+    {
+      "nama": "AEON MALL SENTUL",
+      "lat": "-6.566877",
+      "lng": "106.857619"
+    }
+  ],
+  "checkpoints": [
+    {
+      "lokasi": "AEON MALL SENTUL",
+      "kategori": "CLEANING SERVICE",
+      "aset": "KANTIN KARYAWAN"
+    },
+    {
+      "lokasi": "AEON MALL SENTUL",
+      "kategori": "CLEANING SERVICE",
+      "aset": "LOBBY UTAMA LANTAI 1"
+    },
+    {
+      "lokasi": "GUDANG LOGISTIK CAKUNG",
+      "kategori": "SECURITY",
+      "aset": "LOADING DOCK LOGISTIK"
+    },
+    {
+      "lokasi": "AEON MALL SENTUL",
+      "kategori": "SECURITY",
+      "aset": "RUANG SERVER LANTAI 2"
+    },
+    {
+      "lokasi": "AEON MALL SENTUL",
+      "kategori": "SECURITY",
+      "aset": "POS 2 PINTU BARAT"
+    }
+  ],
+  "personnel": [
+    {
+      "nama": "Joko Wahyudi",
+      "role": "Anggota                     Driver",
+      "lokasi": "aeon mall sentul"
+    },
+    {
+      "nama": "Siti Aminah",
+      "role": "Anggota                     Cleaning Service",
+      "lokasi": "aeon mall sentul"
+    },
+    {
+      "nama": "Chief Hendra Wijaya",
+      "role": "Chief                     Security",
+      "lokasi": "aeon mall sentul"
+    },
+    {
+      "nama": "Agus Pratama",
+      "role": "Anggota                     Security",
+      "lokasi": "aeon mall sentul"
+    },
+    {
+      "nama": "Danru Budi Santoso",
+      "role": "Komandan                     Security",
+      "lokasi": "aeon mall sentul"
+    }
+  ],
+  "gajiRows": [
+    {
+      "nama": "AGUS PRATAMA",
+      "posisi": "SECURITY",
+      "lokasi": "AEON MALL SENTUL",
+      "gaji": "RP 4.200.000",
+      "diterima": "Slip Gaji"
+    },
+    {
+      "nama": "DANRU BUDI SANTOSO",
+      "posisi": "SECURITY",
+      "lokasi": "AEON MALL SENTUL",
+      "gaji": "RP 4.850.000",
+      "diterima": "Slip Gaji"
+    }
+  ],
+  "pesanRows": [
+    {
+      "pesan": "SOP PENJAGAAN &AMP; LOGISTIK DI GUDANG CAKUNG AKTIF MULAI MINGGU INI. SELURUH PERSONEL WAJIB PATUHI PROTOKOL.",
+      "lokasi": "GUDANG LOGISTIK CAKUNG"
+    },
+    {
+      "pesan": "PERHATIAN: SELURUH PERSONIL WAJIB MELAKUKAN PATROLI PRESISI DAN PELAPORAN TEPAT WAKTU.",
+      "lokasi": "AEON MALL SENTUL"
+    }
+  ],
+  "dashboardSummary": [
+    "AI",
+    "HOME",
+    "DATA INDUK",
+    "ABSENSI",
+    "LAPORAN",
+    "GAJI",
+    "PESAN SIARAN",
+    "EMERGENCY",
+    "EXPORT LAPORAN",
+    "UBAH PASSWORD",
+    "LOGOUT",
+    "TOTAL PERSONIL",
+    "5",
+    "HADIR HARI INI",
+    "0",
+    "KEGIATAN HARI INI",
+    "0",
+    "PERJALANAN SELESAI",
+    "0",
+    "TEMUAN AKTIF",
+    "0",
+    "TOTAL CHECKPOINT",
+    "7",
+    "SECURITY",
+    "MONITORING KEAMANAN & PATROLI",
+    "PERSONIL",
+    "3",
+    "HADIR",
+    "0",
+    "PATROLI"
+  ]
+}
