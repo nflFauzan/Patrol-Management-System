@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { AlertTriangle, FileText, CheckCircle2, Radio, Bell } from 'lucide-react';
 import { SurfaceCard } from '../ui/SurfaceCard';
+import type { DashboardNotificationItem } from '@patrol/types';
 
 export interface NotificationItem {
   id: string;
@@ -14,43 +15,8 @@ export interface NotificationItem {
   link?: string;
 }
 
-const defaultNotifications: NotificationItem[] = [
-  {
-    id: 'notif-1',
-    type: 'PANIC',
-    title: 'Panic Alert',
-    subtitle: 'Area Gudang',
-    time: '09:12',
-    link: '/emergency',
-  },
-  {
-    id: 'notif-2',
-    type: 'PATROL',
-    title: 'Laporan Patroli',
-    subtitle: 'Site Produksi',
-    time: '08:50',
-    link: '/validasi-patroli',
-  },
-  {
-    id: 'notif-3',
-    type: 'ATTENDANCE',
-    title: 'Absensi Masuk',
-    subtitle: 'Area Utama',
-    time: '08:40',
-    link: '/absensi',
-  },
-  {
-    id: 'notif-4',
-    type: 'BROADCAST',
-    title: 'Pesan Siaran',
-    subtitle: 'Seluruh Personel',
-    time: '08:30',
-    link: '/pesan-siaran',
-  },
-];
-
-export const NotificationPanel: React.FC<{ items?: NotificationItem[] }> = ({
-  items = defaultNotifications,
+export const NotificationPanel: React.FC<{ items?: (NotificationItem | DashboardNotificationItem)[] }> = ({
+  items = [],
 }) => {
   const getIconConfig = (type: NotificationItem['type']) => {
     switch (type) {
@@ -97,40 +63,48 @@ export const NotificationPanel: React.FC<{ items?: NotificationItem[] }> = ({
         </Link>
       </div>
 
-      {/* List */}
-      <div className="divide-y divide-slate-100 mt-2">
-        {items.map((item) => {
-          const config = getIconConfig(item.type);
-          const Icon = config.icon;
+      {/* List or Empty State */}
+      {items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+          <Bell className="w-7 h-7 text-slate-300 mb-2" />
+          <p className="text-xs font-semibold text-slate-600">Belum ada notifikasi hari ini</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">Aktivitas real-time akan muncul di sini</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-slate-100 mt-2">
+          {items.map((item) => {
+            const config = getIconConfig(item.type);
+            const Icon = config.icon;
 
-          return (
-            <Link
-              key={item.id}
-              href={item.link || '#'}
-              className="py-2.5 first:pt-1 last:pb-1 -mx-2 px-2 rounded-xl flex items-center justify-between hover:bg-slate-50/90 transition group select-none"
-            >
-              <div className="flex items-center space-x-3 min-w-0">
-                <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${config.container}`}
-                >
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-slate-800 truncate group-hover:text-sky-700 transition">
-                    {item.title}
+            return (
+              <Link
+                key={item.id}
+                href={item.link || '#'}
+                className="py-2.5 first:pt-1 last:pb-1 -mx-2 px-2 rounded-xl flex items-center justify-between hover:bg-slate-50/90 transition group select-none"
+              >
+                <div className="flex items-center space-x-3 min-w-0">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${config.container}`}
+                  >
+                    <Icon className="w-4 h-4" />
                   </div>
-                  <div className="text-[11px] text-slate-500 truncate">
-                    {item.subtitle}
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-800 truncate group-hover:text-sky-700 transition">
+                      {item.title}
+                    </div>
+                    <div className="text-[11px] text-slate-500 truncate">
+                      {item.subtitle}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="text-[11px] font-mono text-slate-400 shrink-0 ml-2">
-                {item.time}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+                <div className="text-[11px] font-mono text-slate-400 shrink-0 ml-2">
+                  {item.time}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </SurfaceCard>
   );
 };

@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import io, { Socket } from 'socket.io-client';
 import { AreaSiteData } from '../components/AreaManagementView';
-import { API_BASE_URL } from '@/lib/api';
+import { API_BASE_URL, dashboardApi } from '@/lib/api';
+import type { DashboardSummary, DashboardNotificationItem, PatrolHourlyActivity } from '@patrol/types';
 
 export interface CheckpointItem {
   id: string;
@@ -89,6 +90,12 @@ interface DataContextType {
   setActiveSosAlert: (alert: SosAlert | null) => void;
   isSirenMuted: boolean;
   setIsSirenMuted: (muted: boolean) => void;
+
+  // Real-time Dashboard Command Center
+  dashboardSummary: DashboardSummary | null;
+  recentNotifications: DashboardNotificationItem[];
+  patrolActivity: PatrolHourlyActivity[];
+  refreshDashboard: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -224,6 +231,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeSosAlert, setActiveSosAlert] = useState<SosAlert | null>(null);
   const [isSirenMuted, setIsSirenMuted] = useState<boolean>(false);
 
+  // Real-time Dashboard Command Center State
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
+  const [recentNotifications, setRecentNotifications] = useState<DashboardNotificationItem[]>([]);
+  const [patrolActivity, setPatrolActivity] = useState<PatrolHourlyActivity[]>([]);
+
+  const refreshDashboard = useCallback(async () => {
+    try {
+      const [summary, notifications, activity] = await Promise.all([
+        dashboardApi.getSummary(),
+        dashboardApi.getNotifications(10),
+        dashboardApi.getPatrolActivity(),
+      ]);
+      setDashboardSummary(summary);
+      setRecentNotifications(notifications);
+      setPatrolActivity(activity);
+    } catch (err) {
+      console.warn('DataContext: Failed to fetch dashboard data', err);
+    }
+  }, []);
+
   // Synchronize master data from live backend API
   const refreshData = useCallback(async () => {
     try {
@@ -239,7 +266,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const sitesRes = await fetch(`${API_BASE_URL}/sites`, { headers });
       if (sitesRes.ok) {
         const sitesData = await sitesRes.json();
-        if (Array.isArray(sitesData) && sitesData.length > 0) {
+        if (Array.isArray(sitesData)) {
           setSites(sitesData);
         }
       }
@@ -248,7 +275,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const cpRes = await fetch(`${API_BASE_URL}/checkpoints`, { headers });
       if (cpRes.ok) {
         const cpData = await cpRes.json();
-        if (Array.isArray(cpData) && cpData.length > 0) {
+        if (Array.isArray(cpData)) {
           const mappedCp: CheckpointItem[] = cpData.map((c: any) => ({
             id: c.id,
             qrCodeToken: c.qrCodeToken,
@@ -268,7 +295,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const usersRes = await fetch(`${API_BASE_URL}/users`, { headers });
       if (usersRes.ok) {
         const usersData = await usersRes.json();
-        if (Array.isArray(usersData) && usersData.length > 0) {
+        if (Array.isArray(usersData)) {
           const mappedUsers: UserItem[] = usersData.map((u: any) => ({
             id: u.id,
             nik: u.nik || `NIK-${u.username?.toUpperCase() || 'EMP'}`,
@@ -293,10 +320,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUsers(mappedUsers);
         }
       }
+
+      // 4. Fetch dashboard summary & activities
+      await refreshDashboard();
     } catch (err) {
       console.warn('DataContext: Failed to fetch live data from API', err);
     }
-  }, []);
+  }, [refreshDashboard]);
 
   useEffect(() => {
     refreshData();
@@ -305,7 +335,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener('storage', handleStorage);
   }, [refreshData]);
 
-  // Connect Socket.io for Real-time SOS alerts
+  // Connect Socket.io for Real-time SOS alerts and live activity
   useEffect(() => {
     const socketUrl =
       process.env.NEXT_PUBLIC_WS_URL ||
@@ -319,12 +349,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     socket.on('sos:new', (alertData: any) => {
-      setActiveSosAlert({
+      const sosItem: SosAlert = {
         id: alertData.id || `sos-${Date.now()}`,
-        officerName: alertData.officerName || 'Budi Satpam Test',
+        officerName: alertData.officerName || 'Petugas Satpam',
         officerPhone: alertData.officerPhone || '0812-3456-7890',
         division: alertData.division || 'Security',
-        siteName: alertData.siteName || 'Kantor Pusat Sholeh Iskandar Bogor',
+        siteName: alertData.siteName || 'Kantor Pusat & Operasional Bogor',
         latitude: alertData.latitude || -6.564061,
         longitude: alertData.longitude || 106.810320,
         mapsUrl: alertData.mapsUrl || `https://www.google.com/maps?q=${alertData.latitude || -6.564061},${alertData.longitude || 106.810320}`,
@@ -332,13 +362,67 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         alertStatus: 'ACTIVE',
         isWhatsappDispatched: alertData.isWhatsappDispatched ?? true,
         message: alertData.message || 'Petugas membutuhkan bantuan darurat segera!',
-      });
+      };
+      setActiveSosAlert(sosItem);
+
+      const notifItem: DashboardNotificationItem = {
+        id: `sos-${Date.now()}`,
+        type: 'PANIC',
+        title: `🚨 Panic: ${sosItem.officerName}`,
+        subtitle: sosItem.siteName,
+        time: new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false }).format(new Date()) + ' WIB',
+        link: '/emergency',
+        createdAt: new Date().toISOString(),
+      };
+      setRecentNotifications((prev) => [notifItem, ...prev].slice(0, 20));
+      refreshDashboard();
+    });
+
+    socket.on('patrol:activity', (data: any) => {
+      const notifItem: DashboardNotificationItem = {
+        id: `patrol-${Date.now()}`,
+        type: 'PATROL',
+        title: `Patroli: ${data.checkpointName || 'Pos Checkpoint'}`,
+        subtitle: data.userName || data.officerName || 'Petugas',
+        time: new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false }).format(new Date()) + ' WIB',
+        link: '/validasi-patroli',
+        createdAt: new Date().toISOString(),
+      };
+      setRecentNotifications((prev) => [notifItem, ...prev].slice(0, 20));
+      refreshDashboard();
+    });
+
+    socket.on('attendance:clock_in', (data: any) => {
+      const notifItem: DashboardNotificationItem = {
+        id: `att-${Date.now()}`,
+        type: 'ATTENDANCE',
+        title: `Absensi Masuk: ${data.userName || data.fullName || 'Personel'}`,
+        subtitle: data.siteName || 'Site',
+        time: new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false }).format(new Date()) + ' WIB',
+        link: '/absensi',
+        createdAt: new Date().toISOString(),
+      };
+      setRecentNotifications((prev) => [notifItem, ...prev].slice(0, 20));
+      refreshDashboard();
+    });
+
+    socket.on('broadcast:new', (data: any) => {
+      const notifItem: DashboardNotificationItem = {
+        id: `bc-${Date.now()}`,
+        type: 'BROADCAST',
+        title: 'Pesan Siaran',
+        subtitle: (data.content || '').substring(0, 40),
+        time: new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false }).format(new Date()) + ' WIB',
+        link: '/pesan-siaran',
+        createdAt: new Date().toISOString(),
+      };
+      setRecentNotifications((prev) => [notifItem, ...prev].slice(0, 20));
     });
 
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [refreshDashboard]);
 
   const addSite = (site: AreaSiteData) => {
     setSites((prev) => [site, ...prev]);
@@ -469,17 +553,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (err.message && err.message.includes('Password verifikasi salah')) {
         throw err;
       }
-      // Demo / offline fallback validation
-      if (
-        adminPassword === 'admin123' ||
-        adminPassword === 'testing123' ||
-        adminPassword === 'adminSecret123' ||
-        adminPassword === 'superadmin'
-      ) {
-        setUsers((prev) => prev.filter((u) => u.id !== targetId));
-        return { success: true, message: 'Personil berhasil dihapus (Mode Lokal)' };
-      }
-      throw new Error('Password verifikasi admin salah');
+      throw new Error('Gagal menghubungi server verifikasi. Periksa koneksi internet.');
     }
   };
 
@@ -528,6 +602,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setActiveSosAlert,
         isSirenMuted,
         setIsSirenMuted,
+        dashboardSummary,
+        recentNotifications,
+        patrolActivity,
+        refreshDashboard,
       }}
     >
       {children}

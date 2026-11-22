@@ -9,10 +9,20 @@ export class SitesService {
   async findAll(): Promise<Site[]> {
     const rows = await this.db.query<any>(`
       SELECT 
-        id, name, address,
+        id, code, name, address,
         ST_Y(coordinates::geometry) AS latitude,
         ST_X(coordinates::geometry) AS longitude,
         geofence_radius_meters AS "geofenceRadiusMeters",
+        shift_pagi_in::text AS "shiftPagiIn",
+        shift_pagi_out::text AS "shiftPagiOut",
+        shift_siang_in::text AS "shiftSiangIn",
+        shift_siang_out::text AS "shiftSiangOut",
+        shift_malam_in::text AS "shiftMalamIn",
+        shift_malam_out::text AS "shiftMalamOut",
+        shift_staff_in::text AS "shiftStaffIn",
+        shift_staff_out::text AS "shiftStaffOut",
+        shift_chief_in::text AS "shiftChiefIn",
+        shift_chief_out::text AS "shiftChiefOut",
         shift_pagi_in::text AS "shiftPagiMasuk",
         shift_pagi_out::text AS "shiftPagiPulang",
         shift_siang_in::text AS "shiftSiangMasuk",
@@ -33,7 +43,7 @@ export class SitesService {
 
     return rows.map((r) => ({
       ...r,
-      code: r.id.substring(0, 8).toUpperCase(),
+      code: r.code || r.id.substring(0, 8).toUpperCase(),
       city: 'Indonesia',
       latitude: Number(r.latitude),
       longitude: Number(r.longitude),
@@ -44,10 +54,20 @@ export class SitesService {
     const row = await this.db.queryOne<any>(
       `
       SELECT 
-        id, name, address,
+        id, code, name, address,
         ST_Y(coordinates::geometry) AS latitude,
         ST_X(coordinates::geometry) AS longitude,
         geofence_radius_meters AS "geofenceRadiusMeters",
+        shift_pagi_in::text AS "shiftPagiIn",
+        shift_pagi_out::text AS "shiftPagiOut",
+        shift_siang_in::text AS "shiftSiangIn",
+        shift_siang_out::text AS "shiftSiangOut",
+        shift_malam_in::text AS "shiftMalamIn",
+        shift_malam_out::text AS "shiftMalamOut",
+        shift_staff_in::text AS "shiftStaffIn",
+        shift_staff_out::text AS "shiftStaffOut",
+        shift_chief_in::text AS "shiftChiefIn",
+        shift_chief_out::text AS "shiftChiefOut",
         shift_pagi_in::text AS "shiftPagiMasuk",
         shift_pagi_out::text AS "shiftPagiPulang",
         shift_siang_in::text AS "shiftSiangMasuk",
@@ -73,7 +93,7 @@ export class SitesService {
 
     return {
       ...row,
-      code: row.id.substring(0, 8).toUpperCase(),
+      code: row.code || row.id.substring(0, 8).toUpperCase(),
       city: 'Indonesia',
       latitude: Number(row.latitude),
       longitude: Number(row.longitude),

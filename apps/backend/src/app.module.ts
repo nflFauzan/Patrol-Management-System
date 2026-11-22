@@ -15,6 +15,7 @@ import { BroadcastModule } from './modules/broadcast/broadcast.module';
 import { UsersModule } from './modules/users/users.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { LegacyModule } from './modules/legacy/legacy.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Controller('health')
 export class HealthController {
@@ -51,6 +52,7 @@ export class HealthController {
     BroadcastModule,
     StaffModule,
     LegacyModule,
+    DashboardModule,
   ],
   controllers: [HealthController],
 })

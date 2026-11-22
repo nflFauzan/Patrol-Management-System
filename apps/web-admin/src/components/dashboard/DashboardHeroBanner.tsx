@@ -24,12 +24,17 @@ export const DashboardHeroBanner: React.FC<DashboardHeroBannerProps> = ({
         day: 'numeric',
         month: 'long',
         year: 'numeric',
+        timeZone: 'Asia/Jakarta',
       };
       setDateString(new Intl.DateTimeFormat('id-ID', optionsDate).format(now));
 
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      setTimeString(`${hours}:${minutes} WIB`);
+      const timeOptions: Intl.DateTimeFormatOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Jakarta',
+        hour12: false,
+      };
+      setTimeString(new Intl.DateTimeFormat('id-ID', timeOptions).format(now) + ' WIB');
     };
 
     updateDateTime();

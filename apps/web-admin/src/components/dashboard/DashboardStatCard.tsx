@@ -12,6 +12,7 @@ export interface DashboardStatCardProps {
   icon: React.ComponentType<{ className?: string }>;
   iconVariant?: 'sky' | 'emerald' | 'amber' | 'rose';
   className?: string;
+  isLoading?: boolean;
 }
 
 export const DashboardStatCard: React.FC<DashboardStatCardProps> = ({
@@ -22,7 +23,22 @@ export const DashboardStatCard: React.FC<DashboardStatCardProps> = ({
   icon: Icon,
   iconVariant = 'sky',
   className,
+  isLoading = false,
 }) => {
+  if (isLoading) {
+    return (
+      <SurfaceCard variant="elevated" padding="none" className={clsx('p-4 sm:p-5', className)}>
+        <div className="animate-pulse flex items-center space-x-3.5">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-slate-200 rounded-2xl shrink-0" />
+          <div className="space-y-2 flex-1">
+            <div className="h-3 bg-slate-200 rounded w-20" />
+            <div className="h-6 bg-slate-200 rounded w-16" />
+            <div className="h-3 bg-slate-100 rounded w-24" />
+          </div>
+        </div>
+      </SurfaceCard>
+    );
+  }
   const iconTheme = {
     sky: {
       container: 'bg-sky-50 text-sky-600 border border-sky-100 shadow-inner',

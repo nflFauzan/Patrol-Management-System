@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Users,
@@ -16,10 +16,10 @@ import {
   Sparkles,
   ChevronRight,
   X,
-  AlertTriangle,
 } from 'lucide-react';
 import { useData } from '../../lib/DataContext';
 import { useAuth } from '../../lib/AuthContext';
+import { dashboardApi } from '../../lib/api';
 import { DashboardHeroBanner } from '../../components/dashboard/DashboardHeroBanner';
 import { DashboardStatCard } from '../../components/dashboard/DashboardStatCard';
 import { DashboardActivityChart } from '../../components/dashboard/DashboardActivityChart';
@@ -27,16 +27,25 @@ import { DashboardMapPreview } from '../../components/dashboard/DashboardMapPrev
 import { NotificationPanel } from '../../components/dashboard/NotificationPanel';
 import { SurfaceCard } from '../../components/ui/SurfaceCard';
 import { SkeuomorphicButton } from '../../components/ui/SkeuomorphicButton';
+import type { ShiftComplianceData } from '@patrol/types';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { sites, checkpoints, users, activeSosAlert } = useData();
+  const {
+    sites,
+    checkpoints,
+    users,
+    dashboardSummary,
+    recentNotifications,
+    patrolActivity,
+  } = useData();
 
   const currentUserName = user?.fullName || 'Administrator Utama';
 
   // Active filter state
   const [selectedSiteId, setSelectedSiteId] = useState<string>('ALL');
   const [activeShiftFilter, setActiveShiftFilter] = useState<'PAGI' | 'SIANG' | 'MALAM'>('PAGI');
+  const [shiftCompliance, setShiftCompliance] = useState<ShiftComplianceData | null>(null);
 
   // Quick activity preview modal
   const [selectedActivity, setSelectedActivity] = useState<any | null>(null);
@@ -45,91 +54,69 @@ export default function DashboardPage() {
   const filteredCheckpoints = useMemo(() => {
     if (selectedSiteId === 'ALL') return checkpoints;
     return checkpoints.filter(
-      (cp) => cp.siteId === selectedSiteId || cp.siteName.toLowerCase().includes(selectedSiteId.toLowerCase())
+      (cp) => cp.siteId === selectedSiteId || cp.siteName.toLowerCase().includes(selectedSiteId.toLowerCase()),
     );
   }, [checkpoints, selectedSiteId]);
 
   const filteredUsers = useMemo(() => {
     if (selectedSiteId === 'ALL') return users;
     return users.filter(
-      (u) => u.siteId === selectedSiteId || u.siteName.toLowerCase().includes(selectedSiteId.toLowerCase())
+      (u) => u.siteId === selectedSiteId || u.siteName.toLowerCase().includes(selectedSiteId.toLowerCase()),
     );
   }, [users, selectedSiteId]);
 
-  // Aggregate Metrics
-  const totalPersonil = filteredUsers.length;
-  const securityPersonil = filteredUsers.filter((u) => u.division === 'SECURITY').length;
-  const cleaningPersonil = filteredUsers.filter((u) => u.division === 'CLEANING').length;
-  const driverPersonil = filteredUsers.filter((u) => u.division === 'DRIVER').length;
+  // Fetch shift compliance whenever selected site or shift changes
+  useEffect(() => {
+    const siteParam = selectedSiteId === 'ALL' ? undefined : selectedSiteId;
+    dashboardApi
+      .getShiftCompliance(siteParam, activeShiftFilter)
+      .then(setShiftCompliance)
+      .catch(() => setShiftCompliance(null));
+  }, [selectedSiteId, activeShiftFilter]);
 
-  const totalSitesCount = sites.length;
-  const totalCheckpoints = filteredCheckpoints.length;
-  const totalAreaCount = filteredCheckpoints.length > 0 ? filteredCheckpoints.length : (sites.length * 2);
-  const securityCheckpoints = filteredCheckpoints.filter((c) => c.category === 'Security').length;
-  const cleaningCheckpoints = filteredCheckpoints.filter((c) => c.category === 'Cleaning Service').length;
+  // Aggregate Metrics from live backend or fallback to loaded context
+  const totalPersonil = dashboardSummary?.totalPersonnel ?? filteredUsers.length;
+  const totalSitesCount = dashboardSummary?.totalSites ?? sites.length;
+  const totalAreaCount = dashboardSummary?.totalCheckpoints ?? filteredCheckpoints.length;
+  const absensiHariIni = dashboardSummary?.attendanceToday?.percentageStr ?? '—';
+  const patroliAktif = dashboardSummary?.activePatrol?.count ?? '—';
+  const securityCheckpoints =
+    dashboardSummary?.divisionCheckpointCounts?.security ??
+    filteredCheckpoints.filter((c) => c.category === 'Security').length;
+  const cleaningCheckpoints =
+    dashboardSummary?.divisionCheckpointCounts?.cleaning ??
+    filteredCheckpoints.filter((c) => c.category === 'Cleaning Service').length;
+  const driverArmada = dashboardSummary?.activeDriverTrips ?? 0;
 
-  // Dynamic Shift Compliance Calculations
-  const shiftComplianceData = useMemo(() => {
-    switch (activeShiftFilter) {
-      case 'PAGI':
-        return {
-          shiftName: 'Shift Pagi (07:00 - 15:00)',
-          completed: 24,
-          total: 28,
-          percent: 86,
-          pendingPos: [
-            { name: 'Pos Genset & Pompa Hydrant', lastScan: '3 jam lalu', pic: 'Budi (Satpam)' },
-            { name: 'Pintu Darurat Timur Lt 2', lastScan: '2 jam lalu', pic: 'Ahmad Fauzi' },
-          ],
-        };
-      case 'SIANG':
-        return {
-          shiftName: 'Shift Siang (15:00 - 23:00)',
-          completed: 9,
-          total: 28,
-          percent: 32,
-          pendingPos: [
-            { name: 'Loading Dock Bawah', lastScan: 'Standby Shift', pic: 'Regu Siang' },
-            { name: 'Perimeter Pagar Belakang', lastScan: 'Standby Shift', pic: 'Regu Siang' },
-          ],
-        };
-      case 'MALAM':
-        return {
-          shiftName: 'Shift Malam (23:00 - 07:00)',
-          completed: 0,
-          total: 28,
-          percent: 0,
-          pendingPos: [
-            { name: 'Seluruh Pos Perimeter (28 Titik)', lastScan: 'Jadwal 23:00', pic: 'Regu Malam' },
-          ],
-        };
-    }
-  }, [activeShiftFilter]);
-
-  // Map preview coordinates from checkpoints
+  // Map preview coordinates from actual sites and checkpoints
   const mapCheckpoints = useMemo(() => {
-    return filteredCheckpoints.slice(0, 6).map((cp, idx) => ({
-      id: cp.id,
-      name: cp.name,
-      lat: -6.2088 + (idx * 0.001 - 0.002),
-      lng: 106.8456 + (idx * 0.0012 - 0.002),
-      status: idx % 3 === 0 ? 'Pending' : 'Active',
-    }));
-  }, [filteredCheckpoints]);
+    const pendingIds = new Set(
+      shiftCompliance?.pendingCheckpoints.map((p) => p.checkpointId) ?? [],
+    );
+    return filteredCheckpoints.slice(0, 20).map((cp) => {
+      const parentSite = sites.find((s) => s.id === cp.siteId);
+      return {
+        id: cp.id,
+        name: cp.name,
+        lat: parentSite?.latitude ?? -6.564061,
+        lng: parentSite?.longitude ?? 106.81032,
+        status: pendingIds.has(cp.id) ? 'Pending' : 'Active',
+      };
+    });
+  }, [filteredCheckpoints, sites, shiftCompliance]);
 
   return (
     <div className="space-y-6 pb-12 font-sans select-none">
-      {/* 1. HERO WELCOME BANNER (Matching Reference Image) */}
+      {/* 1. HERO WELCOME BANNER */}
       <DashboardHeroBanner userName={currentUserName} userRole={user?.role} />
 
-      {/* 2. 5 STAT CARDS ROW (Matching Reference Image) */}
+      {/* 2. 5 STAT CARDS ROW */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
         {/* Total Personel */}
         <DashboardStatCard
           title="Total Personel"
           value={totalPersonil}
-          trend="↑ 2% dari kemarin"
-          trendDirection="up"
+          isLoading={dashboardSummary === null}
           icon={Users}
           iconVariant="sky"
         />
@@ -138,8 +125,7 @@ export default function DashboardPage() {
         <DashboardStatCard
           title="Total Area"
           value={totalAreaCount}
-          trend="↑ 0%"
-          trendDirection="neutral"
+          isLoading={dashboardSummary === null}
           icon={MapPin}
           iconVariant="sky"
         />
@@ -148,8 +134,7 @@ export default function DashboardPage() {
         <DashboardStatCard
           title="Total Site"
           value={totalSitesCount}
-          trend="↑ 1%"
-          trendDirection="up"
+          isLoading={dashboardSummary === null}
           icon={Building2}
           iconVariant="sky"
         />
@@ -157,9 +142,10 @@ export default function DashboardPage() {
         {/* Absensi Hari Ini */}
         <DashboardStatCard
           title="Absensi Hari Ini"
-          value="96%"
-          trend="↑ 3%"
+          value={absensiHariIni}
+          trend={dashboardSummary ? `${dashboardSummary.attendanceToday.hadir} Hadir` : undefined}
           trendDirection="up"
+          isLoading={dashboardSummary === null}
           icon={CheckCircle2}
           iconVariant="emerald"
         />
@@ -167,30 +153,35 @@ export default function DashboardPage() {
         {/* Patroli Aktif */}
         <DashboardStatCard
           title="Patroli Aktif"
-          value="7"
+          value={patroliAktif}
           trend="● Dalam Bertugas"
           trendDirection="up"
+          isLoading={dashboardSummary === null}
           icon={Activity}
           iconVariant="sky"
           className="col-span-2 sm:col-span-1"
         />
       </div>
 
-      {/* 3. THREE-COLUMN BENTO GRID (Aktivitas Patroli, Peta Lokasi Patroli, Notifikasi Terbaru) */}
+      {/* 3. THREE-COLUMN BENTO GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
         {/* Column 1: Aktivitas Patroli Line Chart */}
         <div className="h-full">
-          <DashboardActivityChart />
+          <DashboardActivityChart data={patrolActivity} />
         </div>
 
         {/* Column 2: Peta Lokasi Patroli Live Map Preview */}
         <div className="h-full">
-          <DashboardMapPreview checkpoints={mapCheckpoints} />
+          <DashboardMapPreview
+            checkpoints={mapCheckpoints}
+            centerLat={sites[0]?.latitude}
+            centerLng={sites[0]?.longitude}
+          />
         </div>
 
         {/* Column 3: Notifikasi Terbaru Feed */}
         <div className="h-full">
-          <NotificationPanel />
+          <NotificationPanel items={recentNotifications} />
         </div>
       </div>
 
@@ -262,62 +253,85 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 space-y-3">
             <div>
               <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
-                <span>Progres Putaran {shiftComplianceData.shiftName}</span>
-                <span className="tabular-nums font-bold text-sky-700">{shiftComplianceData.percent}%</span>
+                <span>Progres Putaran {shiftCompliance?.shiftName ?? `Shift ${activeShiftFilter}`}</span>
+                <span className="tabular-nums font-bold text-sky-700">
+                  {shiftCompliance?.percentageStr ?? '0%'}
+                </span>
               </div>
               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden shadow-inner">
                 <div
                   className="bg-gradient-to-r from-sky-500 to-sky-600 h-2.5 rounded-full transition-all duration-500"
-                  style={{ width: `${shiftComplianceData.percent}%` }}
+                  style={{ width: `${shiftCompliance ? parseInt(shiftCompliance.percentageStr) : 0}%` }}
                 />
               </div>
             </div>
 
             {/* Grid Timeline */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center">
-                <div className="text-[10px] font-bold text-slate-400">07:00 - 09:00</div>
-                <div className="text-xs font-bold text-slate-800 mt-0.5">Putaran 1</div>
-                <div className="text-[10px] font-semibold text-emerald-600 mt-0.5">✓ 28/28 Pos</div>
-              </div>
-
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center">
-                <div className="text-[10px] font-bold text-slate-400">09:30 - 11:30</div>
-                <div className="text-xs font-bold text-slate-800 mt-0.5">Putaran 2</div>
-                <div className="text-[10px] font-semibold text-emerald-600 mt-0.5">✓ 28/28 Pos</div>
-              </div>
-
-              <div className="bg-sky-600 text-white p-2.5 rounded-xl shadow-skeuo-button-primary text-center">
-                <div className="text-[10px] font-bold text-sky-100">12:30 - 14:30</div>
-                <div className="text-xs font-bold mt-0.5">Putaran 3</div>
-                <div className="text-[10px] font-bold text-sky-100 mt-0.5">Sedang Jalan (16/28)</div>
-              </div>
-
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center opacity-60">
-                <div className="text-[10px] font-bold text-slate-400">14:30 - 15:00</div>
-                <div className="text-xs font-bold text-slate-800 mt-0.5">Putaran 4</div>
-                <div className="text-[10px] font-medium text-slate-400 mt-0.5">Serah Terima</div>
-              </div>
+              {(shiftCompliance?.rounds ?? []).map((round) => (
+                <div
+                  key={round.roundNumber}
+                  className={
+                    round.isCurrentRound
+                      ? 'bg-sky-600 text-white p-2.5 rounded-xl shadow-skeuo-button-primary text-center'
+                      : 'bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center'
+                  }
+                >
+                  <div
+                    className={`text-[10px] font-bold ${
+                      round.isCurrentRound ? 'text-sky-100' : 'text-slate-400'
+                    }`}
+                  >
+                    {round.startTime} - {round.endTime}
+                  </div>
+                  <div
+                    className={`text-xs font-bold mt-0.5 ${
+                      round.isCurrentRound ? 'text-white' : 'text-slate-800'
+                    }`}
+                  >
+                    Putaran {round.roundNumber}
+                  </div>
+                  <div
+                    className={`text-[10px] font-semibold mt-0.5 ${
+                      round.isCompleted
+                        ? 'text-emerald-600'
+                        : round.isCurrentRound
+                        ? 'text-sky-100 font-bold'
+                        : 'text-slate-400'
+                    }`}
+                  >
+                    {round.isCompleted
+                      ? `✓ ${round.scannedCount}/${round.totalCheckpoints} Pos`
+                      : round.isCurrentRound
+                      ? `Sedang Jalan (${round.scannedCount}/${round.totalCheckpoints})`
+                      : 'Jadwal Berikutnya'}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Pending Pos */}
-            {shiftComplianceData.pendingPos.length > 0 && (
+            {(shiftCompliance?.pendingCheckpoints ?? []).length > 0 && (
               <div className="mt-3 pt-3 border-t border-slate-100">
                 <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase mb-2">
                   Pos Memerlukan Tindak Lanjut Pemindaian:
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {shiftComplianceData.pendingPos.map((pos, idx) => (
+                  {shiftCompliance!.pendingCheckpoints.map((pos) => (
                     <div
-                      key={idx}
+                      key={pos.checkpointId}
                       className="bg-amber-50/70 border border-amber-200/80 p-2.5 rounded-xl flex items-center justify-between text-xs"
                     >
                       <div>
-                        <div className="font-semibold text-slate-800 truncate">{pos.name}</div>
-                        <div className="text-[10px] text-slate-500 font-medium">Petugas: {pos.pic}</div>
+                        <div className="font-semibold text-slate-800 truncate">{pos.checkpointName}</div>
+                        <div className="text-[10px] text-slate-500 font-medium">
+                          Petugas: {pos.lastOfficerName ?? 'Belum ada scan'}
+                        </div>
                       </div>
                       <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
-                        {pos.lastScan}
+                        {pos.timeSinceLastScanMinutes !== null
+                          ? `${Math.round(pos.timeSinceLastScanMinutes / 60)} jam lalu`
+                          : 'Belum discan'}
                       </span>
                     </div>
                   ))}
@@ -373,7 +387,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <div className="text-xs font-bold text-slate-900">Driver Logistik</div>
-                  <div className="text-[10px] text-slate-500">5 Armada Operasional</div>
+                  <div className="text-[10px] text-slate-500">{driverArmada} Armada Aktif</div>
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition" />
@@ -399,7 +413,9 @@ export default function DashboardPage() {
             <div className="space-y-2.5 text-xs text-slate-700">
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Petugas</span>
-                <span className="font-semibold text-slate-900">{selectedActivity.name} ({selectedActivity.division})</span>
+                <span className="font-semibold text-slate-900">
+                  {selectedActivity.name} ({selectedActivity.division})
+                </span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Pos Checkpoint</span>
@@ -411,7 +427,9 @@ export default function DashboardPage() {
               </div>
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Catatan Laporan</span>
-                <p className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 mt-1">{selectedActivity.notes}</p>
+                <p className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 mt-1">
+                  {selectedActivity.notes}
+                </p>
               </div>
             </div>
             <div className="mt-5 text-right">

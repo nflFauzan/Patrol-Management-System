@@ -1,5 +1,16 @@
 import axios from 'axios';
-import { RegisterRequestDto, ApproveUserDto, RejectUserDto, RoleDefinition, PermissionDefinition, User } from '@patrol/types';
+import {
+  RegisterRequestDto,
+  ApproveUserDto,
+  RejectUserDto,
+  RoleDefinition,
+  PermissionDefinition,
+  User,
+  DashboardSummary,
+  ShiftComplianceData,
+  DashboardNotificationItem,
+  PatrolHourlyActivity,
+} from '@patrol/types';
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
@@ -168,3 +179,32 @@ export const reportsApi = {
     return res.data;
   },
 };
+
+export const dashboardApi = {
+  getSummary: async (siteId?: string): Promise<DashboardSummary> => {
+    const params = siteId && siteId !== 'ALL' ? { siteId } : {};
+    const res = await apiClient.get('/dashboard/summary', { params });
+    return res.data;
+  },
+  getShiftCompliance: async (
+    siteId?: string,
+    shift: 'PAGI' | 'SIANG' | 'MALAM' = 'PAGI',
+  ): Promise<ShiftComplianceData> => {
+    const params: Record<string, string> = { shift };
+    if (siteId && siteId !== 'ALL') params.siteId = siteId;
+    const res = await apiClient.get('/dashboard/shift-compliance', { params });
+    return res.data;
+  },
+  getNotifications: async (limit = 10): Promise<DashboardNotificationItem[]> => {
+    const res = await apiClient.get('/dashboard/notifications', { params: { limit } });
+    return res.data;
+  },
+  getPatrolActivity: async (date?: string, siteId?: string): Promise<PatrolHourlyActivity[]> => {
+    const params: Record<string, string> = {};
+    if (date) params.date = date;
+    if (siteId && siteId !== 'ALL') params.siteId = siteId;
+    const res = await apiClient.get('/dashboard/patrol-activity', { params });
+    return res.data;
+  },
+};
+

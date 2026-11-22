@@ -135,7 +135,18 @@ export interface Site {
   latitude: number;
   longitude: number;
   geofenceRadiusMeters: number;
-  // Shift Schedules per Site (Patroli.site parity)
+  // Shift Schedules per Site
+  shiftPagiIn?: string;
+  shiftPagiOut?: string;
+  shiftSiangIn?: string;
+  shiftSiangOut?: string;
+  shiftMalamIn?: string;
+  shiftMalamOut?: string;
+  shiftStaffIn?: string;
+  shiftStaffOut?: string;
+  shiftChiefIn?: string;
+  shiftChiefOut?: string;
+  // Shift Schedules per Site (Patroli.site parity aliases)
   shiftPagiMasuk?: string; // e.g. "07:00"
   shiftPagiPulang?: string; // e.g. "15:00"
   shiftSiangMasuk?: string; // e.g. "15:00"
@@ -1204,4 +1215,80 @@ export interface ExportAreaActivityResponse {
   kategori: string;
   records: ExportAreaActivityItem[];
 }
+
+// ----------------------------------------------------------------------------
+// DASHBOARD TYPES
+// ----------------------------------------------------------------------------
+
+export interface DashboardSummary {
+  totalPersonnel: number;
+  totalSites: number;
+  totalCheckpoints: number;
+  attendanceToday: {
+    hadir: number;
+    totalPersonnel: number;
+    percentageStr: string; // e.g. "96%"
+  };
+  activePatrol: {
+    count: number; // users clocked-in today, not yet clocked-out
+  };
+  divisionCounts: {
+    security: number;
+    cleaning: number;
+    driver: number;
+    staff: number;
+  };
+  divisionCheckpointCounts: {
+    security: number;
+    cleaning: number;
+  };
+  activeDriverTrips: number;
+}
+
+export interface PendingCheckpoint {
+  checkpointId: string;
+  checkpointName: string;
+  locationDetail: string;
+  lastScannedAt: string | null;
+  timeSinceLastScanMinutes: number | null;
+  lastOfficerName: string | null;
+}
+
+export interface ShiftRoundSlot {
+  roundNumber: number;         // 1, 2, 3, 4
+  startTime: string;           // "07:00"
+  endTime: string;             // "09:00"
+  scannedCount: number;
+  totalCheckpoints: number;
+  isCurrentRound: boolean;
+  isCompleted: boolean;
+}
+
+export interface ShiftComplianceData {
+  shiftName: string;
+  shiftStart: string;          // "07:00"
+  shiftEnd: string;            // "15:00"
+  scannedCount: number;
+  totalCheckpoints: number;
+  percentageStr: string;       // "86%"
+  rounds: ShiftRoundSlot[];
+  pendingCheckpoints: PendingCheckpoint[];
+}
+
+export interface DashboardNotificationItem {
+  id: string;
+  type: 'PANIC' | 'PATROL' | 'ATTENDANCE' | 'BROADCAST';
+  title: string;
+  subtitle: string;
+  time: string;    // HH:mm WIB
+  link: string;
+  createdAt: string; // ISO timestamp for sorting
+}
+
+export interface PatrolHourlyActivity {
+  hour: number;      // 0-23
+  scanCount: number;
+  checkpointName: string | null;
+}
+
 

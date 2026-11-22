@@ -2,11 +2,11 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Minus, MapPin, Shield, Maximize2 } from 'lucide-react';
+import { Plus, Minus, Maximize2 } from 'lucide-react';
 import { SurfaceCard } from '../ui/SurfaceCard';
 import 'leaflet/dist/leaflet.css';
 
-interface DashboardMapPreviewProps {
+export interface DashboardMapPreviewProps {
   checkpoints?: Array<{
     id: string;
     name: string;
@@ -14,18 +14,14 @@ interface DashboardMapPreviewProps {
     lng: number;
     status?: string;
   }>;
+  centerLat?: number;
+  centerLng?: number;
 }
 
-const defaultCheckpoints = [
-  { id: '1', name: 'Pos Gerbang Barat', lat: -6.2088, lng: 106.8456, status: 'Active' },
-  { id: '2', name: 'Gedung Utama Lt 1', lat: -6.2093, lng: 106.8462, status: 'Active' },
-  { id: '3', name: 'Ruang Server IT', lat: -6.2085, lng: 106.8452, status: 'Pending' },
-  { id: '4', name: 'Perimeter Gudang C', lat: -6.2079, lng: 106.8468, status: 'Active' },
-  { id: '5', name: 'Loading Dock Selatan', lat: -6.2098, lng: 106.8449, status: 'Active' },
-];
-
 export const DashboardMapPreview: React.FC<DashboardMapPreviewProps> = ({
-  checkpoints = defaultCheckpoints,
+  checkpoints = [],
+  centerLat,
+  centerLng,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -50,7 +46,7 @@ export const DashboardMapPreview: React.FC<DashboardMapPreviewProps> = ({
               <div style="
                 width: 22px;
                 height: 22px;
-                background: ${isActive ? '#0284C7' : '#94A3B8'};
+                background: ${isActive ? '#0284C7' : '#F59E0B'};
                 border: 2px solid #FFFFFF;
                 border-radius: 50%;
                 box-shadow: 0 2px 6px rgba(2,132,199,0.4);
@@ -65,8 +61,11 @@ export const DashboardMapPreview: React.FC<DashboardMapPreviewProps> = ({
             iconAnchor: [11, 11],
           });
 
+        const lat = centerLat ?? checkpoints[0]?.lat ?? -6.564061;
+        const lng = centerLng ?? checkpoints[0]?.lng ?? 106.810320;
+
         const map = L.map(mapContainerRef.current, {
-          center: [-6.2088, 106.8456],
+          center: [lat, lng],
           zoom: 16,
           zoomControl: false,
           attributionControl: false,
@@ -101,7 +100,7 @@ export const DashboardMapPreview: React.FC<DashboardMapPreviewProps> = ({
           iconAnchor: [16, 16],
         });
 
-        L.marker([-6.2088, 106.8456], { icon: centerIcon })
+        L.marker([lat, lng], { icon: centerIcon })
           .addTo(map)
           .bindPopup('<b>Pos Komando Utama</b><br/>Area Sentral Site');
 
@@ -121,7 +120,7 @@ export const DashboardMapPreview: React.FC<DashboardMapPreviewProps> = ({
           const marker = L.marker([cp.lat, cp.lng], {
             icon: createMarkerIcon(cp.status === 'Active'),
           }).addTo(map);
-          marker.bindPopup(`<b>${cp.name}</b><br/>Status: ${cp.status}`);
+          marker.bindPopup(`<b>${cp.name}</b><br/>Status: ${cp.status || 'Active'}`);
         });
 
         mapInstanceRef.current = map;
@@ -140,7 +139,7 @@ export const DashboardMapPreview: React.FC<DashboardMapPreviewProps> = ({
         mapInstanceRef.current = null;
       }
     };
-  }, [checkpoints]);
+  }, [checkpoints, centerLat, centerLng]);
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) mapInstanceRef.current.zoomIn();
@@ -180,6 +179,13 @@ export const DashboardMapPreview: React.FC<DashboardMapPreviewProps> = ({
       {/* Map Canvas */}
       <div className="relative mt-4 w-full h-[210px] rounded-xl overflow-hidden border border-slate-200 shadow-inner bg-slate-100">
         <div ref={mapContainerRef} className="w-full h-full" />
+
+        {/* Empty state overlay when checkpoints empty */}
+        {checkpoints.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-xs bg-slate-50/85 z-10 font-medium">
+            Belum ada checkpoint terdaftar
+          </div>
+        )}
 
         {/* Floating Custom Zoom Controls */}
         <div className="absolute bottom-2.5 right-2.5 z-[400] flex flex-col space-y-1 bg-white/95 backdrop-blur-xs rounded-xl p-1 shadow-skeuo-card border border-slate-200">
