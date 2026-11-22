@@ -15,8 +15,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     const maxPool = this.configService.get<number>('DB_POOL_MAX', 10);
 
     if (databaseUrl) {
+      const cleanUrl = databaseUrl.replace(/([?&])sslmode=[^&]+(&|$)/, '$1').replace(/[?&]$/, '');
       this.pool = new Pool({
-        connectionString: databaseUrl,
+        connectionString: cleanUrl,
         ssl: useSsl ? { rejectUnauthorized: false } : false,
         max: maxPool,
         idleTimeoutMillis: 30000,

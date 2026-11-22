@@ -4,9 +4,11 @@
 -- ============================================================================
 
 -- 1. Company Profile
+DELETE FROM company_profile;
 INSERT INTO
     company_profile (
         company_name,
+        address,
         contact_phone,
         contact_email,
         timezone,
@@ -16,6 +18,7 @@ INSERT INTO
     )
 VALUES (
         'PT Berdikari Maju Selaras',
+        'Jl. Raya Sholeh Iskandar No. 22–23, RT.01/RW.09, Kedung Jaya, Tanah Sareal, Kota Bogor, Jawa Barat 16164',
         '0812-9988-7766',
         'support@berdikarimajuselaras.id',
         'Asia/Jakarta',

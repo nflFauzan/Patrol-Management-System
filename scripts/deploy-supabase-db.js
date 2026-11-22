@@ -15,8 +15,10 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
+const cleanUrl = databaseUrl.replace(/([?&])sslmode=[^&]+(&|$)/, '$1').replace(/[?&]$/, '');
+
 const client = new Client({
-  connectionString: databaseUrl,
+  connectionString: cleanUrl,
   ssl: { rejectUnauthorized: false },
 });
 
@@ -59,26 +61,25 @@ async function main() {
     console.log('\n📊 Verifying Seeded Records:');
     const counts = await client.query(`
       SELECT 
-        (SELECT COUNT(*) FROM company_profiles) as company_count,
+        (SELECT COUNT(*) FROM company_profile) as company_count,
         (SELECT COUNT(*) FROM sites) as sites_count,
-        (SELECT COUNT(*) FROM divisions) as divisions_count,
         (SELECT COUNT(*) FROM checkpoints) as checkpoints_count,
         (SELECT COUNT(*) FROM users) as users_count,
         (SELECT COUNT(*) FROM roles) as roles_count,
         (SELECT COUNT(*) FROM permissions) as permissions_count
     `);
     const r = counts.rows[0];
-    console.log(`- Company Profiles : ${r.company_count}`);
+    console.log(`- Company Profile  : ${r.company_count}`);
     console.log(`- Sites            : ${r.sites_count}`);
-    console.log(`- Divisions        : ${r.divisions_count}`);
     console.log(`- Checkpoints      : ${r.checkpoints_count}`);
     console.log(`- Users            : ${r.users_count}`);
     console.log(`- Roles            : ${r.roles_count}`);
     console.log(`- Permissions      : ${r.permissions_count}`);
 
-    const companyRes = await client.query('SELECT company_name, city FROM company_profiles LIMIT 1;');
+    const companyRes = await client.query('SELECT company_name, address FROM company_profile LIMIT 1;');
     if (companyRes.rows.length > 0) {
-      console.log(`\n🏢 Active Company: ${companyRes.rows[0].company_name} (${companyRes.rows[0].city})`);
+      console.log(`\n🏢 Active Company : ${companyRes.rows[0].company_name}`);
+      console.log(`📍 Address        : ${companyRes.rows[0].address}`);
     }
 
     console.log('\n🎉 Database initialization and verification completed successfully!');
