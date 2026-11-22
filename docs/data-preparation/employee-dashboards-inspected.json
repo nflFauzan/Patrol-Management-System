@@ -1,0 +1,312 @@
+[
+  {
+    "id": "1453",
+    "username": "sec_agus",
+    "newPass": "SecAgus123",
+    "role": "Security Anggota",
+    "name": "Agus Pratama",
+    "url": "https://patroli.site/validasi-patroli/",
+    "screenshot": "docs/data-preparation/screenshot-mobile-sec_agus.png",
+    "dashboardData": {
+      "title": "PATROLI SITE",
+      "text": "👋 HELLO, AGUS PRATAMA SECURITY📍 AEON MALL SENTUL ABSEN MASUK IZIN ALPHA RIWAYAT ABSEN RIWAYAT KEGIATAN PANIC BUTTON UPDATE PROFILE BANTUAN TEKNIS LOGOUT SISTEM ** DISIPLIN ABSENSI MASUK DAN PULANG KERJA ADALAH BAGIAN PENTING DARI BUDAYA KERJA YANG BAIK ** PERHATIAN: SELURUH PERSONIL WAJIB MELAKUKAN PATROLI PRESISI DAN PELAPORAN TEPAT WAKTU. ** 📌 Informasi Sistem × ⚠️ Silakan absen masuk terlebih dahulu untuk dapat input kegiatan. Jangan lupa absen pulang saat selesai shift/jaga. Saya Mengerti",
+      "links": [
+        {
+          "text": "ABSEN MASUK",
+          "href": "xxxxx_xx.php",
+          "className": "text"
+        },
+        {
+          "text": "IZIN ALPHA",
+          "href": "xxxxx_xxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "RIWAYAT ABSEN",
+          "href": "xxxxx_xxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "RIWAYAT KEGIATAN",
+          "href": "xxxxx_xxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "PANIC BUTTON",
+          "href": "xxxxx_xxxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "UPDATE PROFILE",
+          "href": "xxxxx_xxxxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "BANTUAN TEKNIS",
+          "href": "https://api.whatsapp.com/send?phone=6281215293593&text=Halo%21%20Admin%20Patroli%20Site.%20(patroli.site)%20",
+          "className": "text"
+        },
+        {
+          "text": "LOGOUT SISTEM",
+          "href": "../logout.php",
+          "className": "text"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Saya Mengerti",
+          "id": "",
+          "className": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "1452",
+    "username": "danru_budi",
+    "newPass": "DanruBudi123",
+    "role": "Security Komandan",
+    "name": "Danru Budi Santoso",
+    "url": "https://patroli.site/validasi-patroli/",
+    "screenshot": "docs/data-preparation/screenshot-mobile-danru_budi.png",
+    "dashboardData": {
+      "title": "PATROLI SITE",
+      "text": "👋 HELLO, DANRU BUDI SANTOSO SECURITY📍 AEON MALL SENTUL ABSEN MASUK IZIN ALPHA RIWAYAT ABSEN RIWAYAT KEGIATAN PANIC BUTTON UPDATE PROFILE BANTUAN TEKNIS LOGOUT SISTEM ** DISIPLIN ABSENSI MASUK DAN PULANG KERJA ADALAH BAGIAN PENTING DARI BUDAYA KERJA YANG BAIK ** PERHATIAN: SELURUH PERSONIL WAJIB MELAKUKAN PATROLI PRESISI DAN PELAPORAN TEPAT WAKTU. ** 📌 Informasi Sistem × ⚠️ Silakan absen masuk terlebih dahulu untuk dapat input kegiatan. Jangan lupa absen pulang saat selesai shift/jaga. Saya Mengerti",
+      "links": [
+        {
+          "text": "ABSEN MASUK",
+          "href": "xxxxx_xx.php",
+          "className": "text"
+        },
+        {
+          "text": "IZIN ALPHA",
+          "href": "xxxxx_xxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "RIWAYAT ABSEN",
+          "href": "xxxxx_xxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "RIWAYAT KEGIATAN",
+          "href": "xxxxx_xxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "PANIC BUTTON",
+          "href": "xxxxx_xxxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "UPDATE PROFILE",
+          "href": "xxxxx_xxxxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "BANTUAN TEKNIS",
+          "href": "https://api.whatsapp.com/send?phone=6281215293593&text=Halo%21%20Admin%20Patroli%20Site.%20(patroli.site)%20",
+          "className": "text"
+        },
+        {
+          "text": "LOGOUT SISTEM",
+          "href": "../logout.php",
+          "className": "text"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Saya Mengerti",
+          "id": "",
+          "className": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "1465",
+    "username": "chief_hendra",
+    "newPass": "ChiefHendra123",
+    "role": "Security Chief",
+    "name": "Chief Hendra Wijaya",
+    "url": "https://patroli.site/validasi-patroli/",
+    "screenshot": "docs/data-preparation/screenshot-mobile-chief_hendra.png",
+    "dashboardData": {
+      "title": "PATROLI SITE",
+      "text": "👋 HELLO, CHIEF HENDRA WIJAYA SECURITY📍 AEON MALL SENTUL ABSEN MASUK IZIN ALPHA RIWAYAT ABSEN RIWAYAT KEGIATAN PANIC BUTTON UPDATE PROFILE BANTUAN TEKNIS LOGOUT SISTEM ** DISIPLIN ABSENSI MASUK DAN PULANG KERJA ADALAH BAGIAN PENTING DARI BUDAYA KERJA YANG BAIK ** PERHATIAN: SELURUH PERSONIL WAJIB MELAKUKAN PATROLI PRESISI DAN PELAPORAN TEPAT WAKTU. ** 📌 Informasi Sistem × ⚠️ Silakan absen masuk terlebih dahulu untuk dapat input kegiatan. Jangan lupa absen pulang saat selesai shift/jaga. Saya Mengerti",
+      "links": [
+        {
+          "text": "ABSEN MASUK",
+          "href": "xxxxx_xx.php",
+          "className": "text"
+        },
+        {
+          "text": "IZIN ALPHA",
+          "href": "xxxxx_xxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "RIWAYAT ABSEN",
+          "href": "xxxxx_xxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "RIWAYAT KEGIATAN",
+          "href": "xxxxx_xxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "PANIC BUTTON",
+          "href": "xxxxx_xxxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "UPDATE PROFILE",
+          "href": "xxxxx_xxxxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "BANTUAN TEKNIS",
+          "href": "https://api.whatsapp.com/send?phone=6281215293593&text=Halo%21%20Admin%20Patroli%20Site.%20(patroli.site)%20",
+          "className": "text"
+        },
+        {
+          "text": "LOGOUT SISTEM",
+          "href": "../logout.php",
+          "className": "text"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Saya Mengerti",
+          "id": "",
+          "className": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "1466",
+    "username": "clean_siti",
+    "newPass": "CleanSiti123",
+    "role": "Cleaning Service",
+    "name": "Siti Aminah",
+    "url": "https://patroli.site/validasi-patroli/",
+    "screenshot": "docs/data-preparation/screenshot-mobile-clean_siti.png",
+    "dashboardData": {
+      "title": "PATROLI SITE",
+      "text": "👋 HELLO, SITI AMINAH CLEANING SERVICE📍 AEON MALL SENTUL ABSEN MASUK IZIN ALPHA RIWAYAT ABSEN RIWAYAT KEGIATAN PANIC BUTTON UPDATE PROFILE BANTUAN TEKNIS LOGOUT SISTEM ** DISIPLIN ABSENSI MASUK DAN PULANG KERJA ADALAH BAGIAN PENTING DARI BUDAYA KERJA YANG BAIK ** PERHATIAN: SELURUH PERSONIL WAJIB MELAKUKAN PATROLI PRESISI DAN PELAPORAN TEPAT WAKTU. ** 📌 Informasi Sistem × ⚠️ Silakan absen masuk terlebih dahulu untuk dapat input kegiatan. Jangan lupa absen pulang saat selesai shift/jaga. Saya Mengerti",
+      "links": [
+        {
+          "text": "ABSEN MASUK",
+          "href": "xxxxx_xx.php",
+          "className": "text"
+        },
+        {
+          "text": "IZIN ALPHA",
+          "href": "xxxxx_xxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "RIWAYAT ABSEN",
+          "href": "xxxxx_xxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "RIWAYAT KEGIATAN",
+          "href": "xxxxx_xxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "PANIC BUTTON",
+          "href": "xxxxx_xxxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "UPDATE PROFILE",
+          "href": "xxxxx_xxxxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "BANTUAN TEKNIS",
+          "href": "https://api.whatsapp.com/send?phone=6281215293593&text=Halo%21%20Admin%20Patroli%20Site.%20(patroli.site)%20",
+          "className": "text"
+        },
+        {
+          "text": "LOGOUT SISTEM",
+          "href": "../logout.php",
+          "className": "text"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Saya Mengerti",
+          "id": "",
+          "className": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "1467",
+    "username": "driver_joko",
+    "newPass": "DriverJoko123",
+    "role": "Driver",
+    "name": "Joko Wahyudi",
+    "url": "https://patroli.site/validasi-patroli/",
+    "screenshot": "docs/data-preparation/screenshot-mobile-driver_joko.png",
+    "dashboardData": {
+      "title": "PATROLI SITE",
+      "text": "👋 HELLO, JOKO WAHYUDI DRIVER📍 AEON MALL SENTUL ABSEN MASUK IZIN ALPHA RIWAYAT ABSEN RIWAYAT KEGIATAN PANIC BUTTON UPDATE PROFILE BANTUAN TEKNIS LOGOUT SISTEM ** DISIPLIN ABSENSI MASUK DAN PULANG KERJA ADALAH BAGIAN PENTING DARI BUDAYA KERJA YANG BAIK ** PERHATIAN: SELURUH PERSONIL WAJIB MELAKUKAN PATROLI PRESISI DAN PELAPORAN TEPAT WAKTU. ** 📌 Informasi Sistem × ⚠️ Silakan absen masuk terlebih dahulu untuk dapat input kegiatan. Jangan lupa absen pulang saat selesai shift/jaga. Saya Mengerti",
+      "links": [
+        {
+          "text": "ABSEN MASUK",
+          "href": "xxxxx_xx.php",
+          "className": "text"
+        },
+        {
+          "text": "IZIN ALPHA",
+          "href": "xxxxx_xxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "RIWAYAT ABSEN",
+          "href": "xxxxx_xxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "RIWAYAT KEGIATAN",
+          "href": "xxxxx_xxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "PANIC BUTTON",
+          "href": "xxxxx_xxxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "UPDATE PROFILE",
+          "href": "xxxxx_xxxxxxxx.php",
+          "className": "text"
+        },
+        {
+          "text": "BANTUAN TEKNIS",
+          "href": "https://api.whatsapp.com/send?phone=6281215293593&text=Halo%21%20Admin%20Patroli%20Site.%20(patroli.site)%20",
+          "className": "text"
+        },
+        {
+          "text": "LOGOUT SISTEM",
+          "href": "../logout.php",
+          "className": "text"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Saya Mengerti",
+          "id": "",
+          "className": ""
+        }
+      ]
+    }
+  }
+]

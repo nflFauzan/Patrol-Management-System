@@ -1,0 +1,119 @@
+{
+  "updatedAt": "2026-11-22T12:51:47.981Z",
+  "dashboardStatsSummary": [
+    "AI",
+    "HOME",
+    "DATA INDUK",
+    "ABSENSI",
+    "LAPORAN",
+    "GAJI",
+    "PESAN SIARAN",
+    "EMERGENCY",
+    "EXPORT LAPORAN",
+    "UBAH PASSWORD",
+    "LOGOUT",
+    "TOTAL PERSONIL",
+    "5",
+    "HADIR HARI INI",
+    "5",
+    "KEGIATAN HARI INI",
+    "4",
+    "PERJALANAN SELESAI",
+    "0",
+    "TEMUAN AKTIF",
+    "1",
+    "TOTAL CHECKPOINT",
+    "7",
+    "SECURITY",
+    "MONITORING KEAMANAN & PATROLI",
+    "PERSONIL",
+    "3",
+    "HADIR",
+    "3",
+    "PATROLI",
+    "2",
+    "HARI INI",
+    "CHECKPOINT",
+    "4",
+    "SECURITY",
+    "TEMUAN",
+    "1",
+    "AKTIF",
+    "CLEANING SERVICE",
+    "MONITORING KEGIATAN KEBERSIHAN",
+    "PERSONIL",
+    "1",
+    "HADIR",
+    "1",
+    "KEGIATAN",
+    "1",
+    "HARI INI",
+    "CHECKPOINT",
+    "3",
+    "CLEANING"
+  ],
+  "securityReport": [
+    [
+      "AEON MALL SENTUL",
+      "AGUS PRATAMA",
+      "🔴 PERLU TINDAK LANJUT PEMERIKSAAN AKSES KENDARAAN BARAT &AMP; STERILISASI AR DI POS 2 PINTU BARAT PINTU GERBANG BARAT SENTU TEMUAN YANG DILAPORKAN: LAMPU SOROT POS PADAM DAN PINTU GERBANG BARAT MACE  TINDAK LANJUTI TEMUAN",
+      "MINGGU, 22 NOV 2026 | 19:51:00",
+      "DETAIL"
+    ],
+    [
+      "AEON MALL SENTUL",
+      "AGUS PRATAMA",
+      "🟢 SITUASI AMAN TERKENDALI PATROLI &AMP; PEMERIKSAAN PINTU MASUK UTAMA DI POS 1 GERBANG UTAMA GERBANG UTAMA SENTUL",
+      "MINGGU, 22 NOV 2026 | 19:47:00",
+      "DETAIL"
+    ],
+    [
+      "AEON MALL SENTUL",
+      "AGUS PRATAMA",
+      "🟢 SITUASI AMAN TERKENDALI PATROLI &AMP; PEMERIKSAAN PINTU MASUK UTAMA DI POS 1 GERBANG UTAMA GERBANG UTAMA SENTUL",
+      "SELASA, 17 NOV 2026 | 00:26:00",
+      "DETAIL"
+    ],
+    [
+      "AEON MALL SENTUL",
+      "DANRU BUDI SANTOSO",
+      "🟢 SITUASI AMAN TERKENDALI PATROLI &AMP; PEMERIKSAAN PINTU MASUK UTAMA DI POS 1 GERBANG UTAMA GERBANG UTAMA SENTUL",
+      "SENIN, 16 NOV 2026 | 23:33:00",
+      "DETAIL"
+    ]
+  ],
+  "rekapKegiatan": [
+    [
+      "DANRU BUDI SANTOSO",
+      "SECURITY",
+      "AEON MALL SENTUL",
+      "NOVEMBER",
+      "2026",
+      "1"
+    ],
+    [
+      "AGUS PRATAMA",
+      "SECURITY",
+      "AEON MALL SENTUL",
+      "NOVEMBER",
+      "2026",
+      "3"
+    ],
+    [
+      "SITI AMINAH",
+      "CLEANING SERVICE",
+      "AEON MALL SENTUL",
+      "NOVEMBER",
+      "2026",
+      "1"
+    ],
+    [
+      "JOKO WAHYUDI",
+      "DRIVER",
+      "AEON MALL SENTUL",
+      "0",
+      "0",
+      "1"
+    ]
+  ]
+}
