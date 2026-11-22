@@ -15,7 +15,7 @@ Sesuai instruksi dan blueprint arsitektur yang telah disetujui, tahapan audit ko
 | Komponen | Status Persiapan Kode | Target Hosting Provider | Status Live URL |
 |---|:---:|:---:|:---:|
 | **Monorepo & Git Remote** | ✅ 100% Synced (`main`) | GitHub (`nflFauzan/Patrol-Management-System`) | `https://github.com/nflFauzan/Patrol-Management-System` |
-| **Database Spasial** | ✅ Migration Script Ready | Supabase (PostgreSQL 16 + PostGIS) | *Menunggu Database URI Supabase* |
+| **Database Spasial** | ✅ Migrated & Seeded 100% | Supabase (PostgreSQL 17.12 + PostGIS 3.3.7) | `aws-1-ap-southeast-1.pooler.supabase.com:5432` (Active) |
 | **Backend API & WS** | ✅ Build & Tests Pass | Render.com (Web Service Node.js) | *Menunggu Pembuatan Service Render* |
 | **Web Admin Command Center**| ✅ Static & SSR Build Pass | Vercel (Next.js 14) | *Menunggu Koneksi Project Vercel* |
 | **PWA Mobile Field** | ✅ PWA Precaching Pass | Cloudflare Pages (Vite + React) | *Menunggu Koneksi Project Cloudflare* |
