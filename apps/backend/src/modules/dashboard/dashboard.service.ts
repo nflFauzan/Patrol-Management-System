@@ -22,7 +22,7 @@ export class DashboardService {
       active_users AS (
         SELECT u.id, u.division FROM users u
         WHERE u.is_active = true
-          AND ($1::uuid IS NULL OR u.site_id = $1::uuid OR EXISTS (
+          AND ($1::uuid IS NULL OR EXISTS (
             SELECT 1 FROM user_site_assignments usa WHERE usa.user_id = u.id AND usa.site_id = $1::uuid
           ))
       ),
@@ -55,10 +55,10 @@ export class DashboardService {
         (SELECT COUNT(*) FROM active_checkpoints) AS "totalCheckpoints",
         (SELECT COUNT(*) FROM today_attendance ta JOIN active_users au ON ta.user_id = au.id) AS "hadir",
         (SELECT COUNT(*) FROM active_patrol ap JOIN active_users au ON ap.user_id = au.id) AS "activePatrol",
-        (SELECT COUNT(*) FROM active_users WHERE UPPER(division::text) = 'SECURITY') AS "securityPersonnel",
-        (SELECT COUNT(*) FROM active_users WHERE UPPER(division::text) = 'CLEANING') AS "cleaningPersonnel",
-        (SELECT COUNT(*) FROM active_users WHERE UPPER(division::text) = 'DRIVER') AS "driverPersonnel",
-        (SELECT COUNT(*) FROM active_users WHERE UPPER(division::text) = 'STAFF') AS "staffPersonnel",
+        (SELECT COUNT(*) FROM active_users WHERE UPPER(division::text) LIKE '%SECURITY%') AS "securityPersonnel",
+        (SELECT COUNT(*) FROM active_users WHERE UPPER(division::text) LIKE '%CLEANING%') AS "cleaningPersonnel",
+        (SELECT COUNT(*) FROM active_users WHERE UPPER(division::text) LIKE '%DRIVER%') AS "driverPersonnel",
+        (SELECT COUNT(*) FROM active_users WHERE UPPER(division::text) IN ('STAFF', 'MANAGEMENT')) AS "staffPersonnel",
         (SELECT COUNT(*) FROM active_checkpoints WHERE category = 'Security') AS "securityCheckpoints",
         (SELECT COUNT(*) FROM active_checkpoints WHERE category = 'Cleaning Service') AS "cleaningCheckpoints",
         (SELECT COUNT(*) FROM active_trips) AS "activeDriverTrips"
@@ -349,13 +349,13 @@ export class DashboardService {
         UNION ALL
         (SELECT
           'bc-' || bm.id AS id, 'BROADCAST' AS type,
-          'Pesan Siaran' AS title,
-          SUBSTRING(bm.content FROM 1 FOR 40) AS subtitle,
-          to_char(bm.sent_at AT TIME ZONE 'Asia/Jakarta', 'HH24:MI') || ' WIB' AS time,
+          COALESCE(bm.title, 'Pesan Siaran') AS title,
+          SUBSTRING(bm.message FROM 1 FOR 40) AS subtitle,
+          to_char(bm.created_at AT TIME ZONE 'Asia/Jakarta', 'HH24:MI') || ' WIB' AS time,
           '/pesan-siaran' AS link,
-          bm.sent_at AS "createdAt"
+          bm.created_at AS "createdAt"
         FROM broadcast_messages bm
-        ORDER BY bm.sent_at DESC LIMIT 10)
+        ORDER BY bm.created_at DESC LIMIT 10)
       ) combined
       ORDER BY "createdAt" DESC
       LIMIT $1

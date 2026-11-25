@@ -1,10 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { Site } from '@patrol/types';
 
 @Injectable()
-export class SitesService {
+export class SitesService implements OnModuleInit {
   constructor(private db: DatabaseService) {}
+
+  async onModuleInit() {
+    try {
+      await this.db.query(`
+        ALTER TABLE sites ADD COLUMN IF NOT EXISTS code VARCHAR(20);
+        UPDATE sites
+        SET code = UPPER(SUBSTRING(REGEXP_REPLACE(name, '[^A-Za-z0-9]', '', 'g') FROM 1 FOR 7)) || '-' || SUBSTRING(id::text FROM 1 FOR 4)
+        WHERE code IS NULL;
+      `);
+    } catch {
+      // Ignore if DB lacks DDL permission or is offline during unit tests
+    }
+  }
 
   async findAll(): Promise<Site[]> {
     const rows = await this.db.query<any>(`

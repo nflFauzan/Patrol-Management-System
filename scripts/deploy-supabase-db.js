@@ -56,6 +56,8 @@ async function main() {
     // 4. Migrations
     await runSqlFile('apps/backend/src/database/migrations/010_rbac_and_approval.sql', 'RBAC & Approval Migration (010)');
     await runSqlFile('apps/backend/src/database/migrations/011_add_portal_permissions_and_requested_role.sql', 'Portal Permissions Migration (011)');
+    await runSqlFile('apps/backend/src/database/migrations/012_operational_enhancements.sql', 'Operational Enhancements Migration (012)');
+    await runSqlFile('apps/backend/src/database/migrations/013_add_site_code_column.sql', 'Add Site Code Column Migration (013)');
 
     // 5. Verification
     console.log('\n📊 Verifying Seeded Records:');
