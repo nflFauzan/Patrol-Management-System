@@ -68,4 +68,27 @@ describe('DashboardService', () => {
     expect(result[0].scanCount).toBe(0); // empty slot
     expect(result[0].checkpointName).toBeNull();
   });
+
+  it('MON-10: getShiftCompliance deduplicates double-scanned checkpoints within the same round', async () => {
+    dbMock.queryOne
+      .mockResolvedValueOnce({ name: 'Kantor Pusat', shift_pagi_in: '07:00', shift_pagi_out: '15:00' })
+      .mockResolvedValueOnce({ count: '2' }); // totalCheckpoints = 2
+
+    dbMock.query
+      .mockResolvedValueOnce([
+        { id: 'cp-1', name: 'Pos 1', location_detail: 'Gate' },
+        { id: 'cp-2', name: 'Pos 2', location_detail: 'Lobby' },
+      ])
+      .mockResolvedValueOnce([
+        // Same checkpoint cp-1 scanned twice in round 1 (07:30 and 07:45 WIB)
+        { checkpoint_id: 'cp-1', scanned_at_wib: '2026-11-27T07:30:00' },
+        { checkpoint_id: 'cp-1', scanned_at_wib: '2026-11-27T07:45:00' },
+      ])
+      .mockResolvedValueOnce([]); // recentScans
+
+    const result = await service.getShiftCompliance('site-1', 'PAGI');
+    expect(result.scannedCount).toBe(1);
+    expect(result.rounds[0].scannedCount).toBe(1);
+    expect(result.rounds[0].scannedCount).toBeLessThanOrEqual(result.totalCheckpoints);
+  });
 });

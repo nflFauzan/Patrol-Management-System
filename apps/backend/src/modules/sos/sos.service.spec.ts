@@ -210,5 +210,46 @@ describe('SosService (Panic Button SOS & WhatsApp Gateway Integration)', () => {
       (dbMock.queryOne as jest.Mock).mockResolvedValueOnce(null);
       await expect(service.getSosDetail('invalid-id')).rejects.toThrow(NotFoundException);
     });
+
+    it('MON-05: getEmergencyLogs and getSosDetail should format timeOnly in Asia/Jakarta (WIB) regardless of host TZ', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({ total: 1 });
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([
+        {
+          id: 'sos-wib',
+          siteId: 'site-1',
+          siteName: 'Bogor',
+          userId: 'usr-1',
+          officerName: 'Hendra Wijaya',
+          officerPhone: '0812',
+          division: 'SECURITY',
+          latitude: -6.56,
+          longitude: 106.85,
+          triggeredAt: '2026-11-22T09:45:25.168Z',
+          alertStatus: 'ACTIVE',
+          isWhatsappDispatched: true,
+        },
+      ]);
+
+      const logs = await service.getEmergencyLogs({ page: 1, limit: 10 });
+      expect(logs.data[0].timeOnly).toBe('16:45:25');
+
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({
+        id: 'sos-wib',
+        siteId: 'site-1',
+        siteName: 'Bogor',
+        userId: 'usr-1',
+        officerName: 'Hendra Wijaya',
+        officerPhone: '0812',
+        division: 'SECURITY',
+        latitude: -6.56,
+        longitude: 106.85,
+        triggeredAt: '2026-11-22T09:45:25.168Z',
+        alertStatus: 'ACTIVE',
+        isWhatsappDispatched: true,
+      });
+
+      const detail = await service.getSosDetail('sos-wib');
+      expect(detail.timeOnly).toBe('16:45:25');
+    });
   });
 });

@@ -12,9 +12,13 @@ export class PatrolController {
   @Get('logs')
   async getLogs(
     @Query('siteId') siteId?: string,
-    @Query('limit') limit?: number,
+    @Query('userId') userId?: string,
+    @Query('checkpointId') checkpointId?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.patrolService.getLogs(siteId, limit);
+    return this.patrolService.getLogs({ siteId, userId, checkpointId, dateFrom, dateTo, limit });
   }
 
   @Get('hourly-monitoring')

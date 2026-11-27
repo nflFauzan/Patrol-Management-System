@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useData } from '../lib/DataContext';
+import { API_BASE_URL } from '../lib/api';
+import { HourlyPatrolMatrixTab } from './HourlyPatrolMatrixTab';
+import { PatroliDetailModal } from './PatroliDetailModal';
 import 'leaflet/dist/leaflet.css';
 
 interface TimelineItem {
@@ -13,125 +16,148 @@ interface TimelineItem {
   taskDescription: string;
   locationDetail: string;
   status: 'Normal' | 'Perlu Tindak Lanjut';
+  ticketStatus?: string | null;
   notes: string;
   siteName: string;
   lat: number;
   lng: number;
 }
 
-export const LaporanTrackingPatroliView: React.FC = () => {
-  const { sites, checkpoints: allCheckpoints, users } = useData();
+const getWibToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
 
-  // Filters
-  const [selectedSite, setSelectedSite] = useState<string>('KANTOR PUSAT');
-  const [selectedPersonil, setSelectedPersonil] = useState<string>('');
-  const [selectedAset, setSelectedAset] = useState<string>('');
-  const [fromDate, setFromDate] = useState<string>('2026-10-26');
-  const [toDate, setToDate] = useState<string>('2026-10-26');
-  const [viewMode, setViewMode] = useState<'TIMELINE' | 'MAP'>('TIMELINE');
+const escapeHtml = (str: string) =>
+  String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const formatWibTimestamp = (iso: string) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso || '-');
+  const datePart = new Intl.DateTimeFormat('id-ID', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'Asia/Jakarta',
+  }).format(d);
+  const timePart = new Intl.DateTimeFormat('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Jakarta',
+  }).format(d);
+  return `${datePart} | ${timePart} WIB`;
+};
+
+export const LaporanTrackingPatroliView: React.FC = () => {
+  const { sites, checkpoints: allCheckpoints, users, dashboardSummary, patrolRefreshTick, joinSiteRoom } = useData();
+
+  // Filters (live UUID / WIB date)
+  const [selectedSiteId, setSelectedSiteId] = useState<string>('');
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [selectedCheckpointId, setSelectedCheckpointId] = useState<string>('');
+  const [fromDate, setFromDate] = useState<string>(getWibToday);
+  const [toDate, setToDate] = useState<string>(getWibToday);
+  const [viewMode, setViewMode] = useState<'TIMELINE' | 'MAP' | 'MATRIX'>('TIMELINE');
+
+  // Live API state
+  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [selectedDetailId, setSelectedDetailId] = useState<string | null>(null);
 
   // Map refs
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
 
-  // Initial timeline data matching patroli.site live capture 100%
-  const initialTimelineData: TimelineItem[] = [
-    {
-      id: 'pat-1',
-      timeFormatted: 'Senin, 26 Oct 2026 | 05:34:00',
-      officerName: 'SITI RAHAYU',
-      role: 'ANGGOTA CLEANING SERVICE',
-      checkpointName: 'TOILET LT 1',
-      taskDescription: 'SANITASI DAN PENGECEKAN SABUN TISSUE KERING LANTAI',
-      locationDetail: 'LANTAI 1 SAYAP TIMUR',
-      status: 'Normal',
-      notes: 'Sanitasi wastafel & kloset bersih, refill sabun dan tisu selesai.',
-      siteName: 'KANTOR PUSAT',
-      lat: -6.208763,
-      lng: 106.845599,
-    },
-    {
-      id: 'pat-2',
-      timeFormatted: 'Senin, 26 Oct 2026 | 05:34:00',
-      officerName: 'BUDI SANTOSO',
-      role: 'KOMANDAN SECURITY',
-      checkpointName: 'RUANG SERVER',
-      taskDescription: 'PENGECEKAN AKSES PINTU SMART LOCK DAN SUHU AC SERVER',
-      locationDetail: 'LANTAI 3 RUANG 305',
-      status: 'Normal',
-      notes: 'Smart lock aktif, suhu AC server 19C normal dan terkendali.',
-      siteName: 'KANTOR PUSAT',
-      lat: -6.2089,
-      lng: 106.8457,
-    },
-    {
-      id: 'pat-3',
-      timeFormatted: 'Senin, 26 Oct 2026 | 05:33:00',
-      officerName: 'ANDI RAHMAN',
-      role: 'ANGGOTA SECURITY',
-      checkpointName: 'PARKIR BASEMENT',
-      taskDescription: 'PEMERIKSAAN AREA PARKIR MOBIL B1 DAN LAMPU DARURAT',
-      locationDetail: 'BASEMENT LANTAI 1',
-      status: 'Perlu Tindak Lanjut',
-      notes: 'Lampu penerangan zona B1 padam, perlu penggantian bohlam oleh tim maintenance gedung.',
-      siteName: 'KANTOR PUSAT',
-      lat: -6.2086,
-      lng: 106.8454,
-    },
-    {
-      id: 'pat-4',
-      timeFormatted: 'Senin, 26 Oct 2026 | 05:33:00',
-      officerName: 'ANDI RAHMAN',
-      role: 'ANGGOTA SECURITY',
-      checkpointName: 'POS BELAKANG',
-      taskDescription: 'PEMERIKSAAN PINTU KELUAR BELAKANG DAN KENDARAAN',
-      locationDetail: 'PINTU BELAKANG GEDUNG',
-      status: 'Normal',
-      notes: 'Pintu belakang terkunci rapat, perimeter steril tanpa anomali.',
-      siteName: 'KANTOR PUSAT',
-      lat: -6.2091,
-      lng: 106.8459,
-    },
-    {
-      id: 'pat-5',
-      timeFormatted: 'Senin, 26 Oct 2026 | 05:32:00',
-      officerName: 'ANDI RAHMAN',
-      role: 'ANGGOTA SECURITY',
-      checkpointName: 'POS UTAMA LOBBY',
-      taskDescription: 'PATROLI DAN PEMERIKSAAN TAMU DI PINTU MASUK UTAMA',
-      locationDetail: 'LOBBY UTAMA LT. 1',
-      status: 'Normal',
-      notes: 'Pintu masuk utama terkunci aman, situasi kondusif.',
-      siteName: 'KANTOR PUSAT',
-      lat: -6.208763,
-      lng: 106.845599,
-    },
-  ];
+  const fetchPatrolLogs = useCallback(async () => {
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('patrol_auth_token') || localStorage.getItem('token')
+        : null;
+    if (!token) return;
 
-  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>(initialTimelineData);
+    setIsLoading(true);
+    setErrorMsg(null);
+    try {
+      const qs = new URLSearchParams({ limit: '100' });
+      if (selectedSiteId) qs.set('siteId', selectedSiteId);
+      if (selectedUserId) qs.set('userId', selectedUserId);
+      if (selectedCheckpointId) qs.set('checkpointId', selectedCheckpointId);
+      if (fromDate) qs.set('dateFrom', fromDate);
+      if (toDate) qs.set('dateTo', toDate);
 
-  // Filter items
-  const filteredItems = timelineItems.filter((item) => {
-    if (selectedSite && !item.siteName.toLowerCase().includes(selectedSite.toLowerCase())) return false;
-    if (selectedPersonil && !item.officerName.toLowerCase().includes(selectedPersonil.toLowerCase())) return false;
-    if (selectedAset && !item.checkpointName.toLowerCase().includes(selectedAset.toLowerCase())) return false;
-    return true;
-  });
+      const res = await fetch(`${API_BASE_URL}/patrol/logs?${qs.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        throw new Error(`Gagal memuat data patroli (HTTP ${res.status})`);
+      }
+      const rows: any[] = await res.json();
+      const mapped: TimelineItem[] = (Array.isArray(rows) ? rows : []).map((r) => {
+        const isAlert =
+          (r.statusResult || '').toLowerCase().includes('tindak') ||
+          (r.statusResult || '').toLowerCase().includes('perlu');
+        return {
+          id: String(r.id),
+          timeFormatted: formatWibTimestamp(r.scannedAt),
+          officerName: (r.officerName || 'Petugas').toUpperCase(),
+          role: [r.officerDivision, r.officerRole].filter(Boolean).join(' • ') || 'PERSONIL',
+          checkpointName: (r.checkpointName || '-').toUpperCase(),
+          taskDescription: r.taskDescription || 'Pemeriksaan area & checkpoint',
+          locationDetail: (r.locationDetail || r.siteName || '-').toUpperCase(),
+          status: isAlert ? 'Perlu Tindak Lanjut' : 'Normal',
+          ticketStatus: r.ticketStatus || null,
+          notes: r.notes || '-',
+          siteName: r.siteName || '-',
+          lat: Number(r.latitude) || 0,
+          lng: Number(r.longitude) || 0,
+        };
+      });
+      setTimelineItems(mapped);
+    } catch (err: any) {
+      setTimelineItems([]);
+      setErrorMsg(err?.message || 'Gagal memuat riwayat patroli dari server.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedSiteId, selectedUserId, selectedCheckpointId, fromDate, toDate]);
 
-  // Available personil and aset based on site
+  useEffect(() => {
+    fetchPatrolLogs();
+  }, [fetchPatrolLogs, patrolRefreshTick]);
+
+  useEffect(() => {
+    if (selectedSiteId) {
+      joinSiteRoom(selectedSiteId);
+    }
+  }, [selectedSiteId, joinSiteRoom]);
+
+  // Cascading options based on selectedSiteId
   const filteredPersonilOptions = users.filter((u) => {
-    if (!selectedSite) return true;
-    return true;
+    if (!selectedSiteId) return true;
+    return u.siteId === selectedSiteId || (u.multiSiteIds || []).includes(selectedSiteId);
   });
 
   const filteredAsetOptions = allCheckpoints.filter((cp) => {
-    if (!selectedSite) return true;
-    return true;
+    if (!selectedSiteId) return true;
+    return cp.siteId === selectedSiteId;
   });
 
   // Map initialization for MAP view mode
   useEffect(() => {
-    if (viewMode !== 'MAP' || filteredItems.length === 0) return;
+    const mappableItems = timelineItems.filter((item) => item.lat !== 0 && item.lng !== 0);
+    if (viewMode !== 'MAP' || mappableItems.length === 0) {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+      return;
+    }
 
     let isMounted = true;
 
@@ -143,6 +169,7 @@ export const LaporanTrackingPatroliView: React.FC = () => {
       }
 
       const L = await import('leaflet');
+      if (!isMounted || !mapContainerRef.current) return;
 
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
@@ -151,15 +178,15 @@ export const LaporanTrackingPatroliView: React.FC = () => {
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       });
 
-      const center = [filteredItems[0].lat, filteredItems[0].lng] as [number, number];
+      const center = [mappableItems[0].lat, mappableItems[0].lng] as [number, number];
       const map = L.map(mapContainerRef.current).setView(center, 17);
 
-      L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19,
       }).addTo(map);
 
-      const latlngs = filteredItems.map((item) => [item.lat, item.lng] as [number, number]);
+      const latlngs = mappableItems.map((item) => [item.lat, item.lng] as [number, number]);
       const polyline = L.polyline(latlngs, {
         color: '#2563eb',
         weight: 4,
@@ -167,20 +194,22 @@ export const LaporanTrackingPatroliView: React.FC = () => {
         opacity: 0.85,
       }).addTo(map);
 
-      filteredItems.forEach((item, idx) => {
+      mappableItems.forEach((item, idx) => {
         const marker = L.marker([item.lat, item.lng]).addTo(map);
         marker.bindPopup(`
           <div style="font-family: sans-serif; font-size: 12px; line-height: 1.5; padding: 4px;">
-            <strong style="color: #1e3a8a;">#${idx + 1} ${item.checkpointName}</strong><br/>
-            <span>Petugas: <b>${item.officerName}</b></span><br/>
-            <span>Waktu: <b>${item.timeFormatted}</b></span><br/>
-            <span>Status: <b style="color: ${item.status === 'Normal' ? '#16a34a' : '#dc2626'};">${item.status}</b></span><br/>
-            <span>Catatan: ${item.notes}</span>
+            <strong style="color: #1e3a8a;">#${idx + 1} ${escapeHtml(item.checkpointName)}</strong><br/>
+            <span>Petugas: <b>${escapeHtml(item.officerName)}</b></span><br/>
+            <span>Waktu: <b>${escapeHtml(item.timeFormatted)}</b></span><br/>
+            <span>Status: <b style="color: ${item.status === 'Normal' ? '#16a34a' : '#dc2626'};">${escapeHtml(item.status)}</b></span><br/>
+            <span>Catatan: ${escapeHtml(item.notes)}</span>
           </div>
         `);
       });
 
-      map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+      if (latlngs.length > 1) {
+        map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+      }
       mapInstanceRef.current = map;
     }
 
@@ -193,14 +222,15 @@ export const LaporanTrackingPatroliView: React.FC = () => {
         mapInstanceRef.current = null;
       }
     };
-  }, [viewMode, filteredItems]);
+  }, [viewMode, timelineItems]);
 
   const handleReset = () => {
-    setSelectedSite('');
-    setSelectedPersonil('');
-    setSelectedAset('');
-    setFromDate('');
-    setToDate('');
+    const today = getWibToday();
+    setSelectedSiteId('');
+    setSelectedUserId('');
+    setSelectedCheckpointId('');
+    setFromDate(today);
+    setToDate(today);
   };
 
   return (
@@ -437,27 +467,65 @@ export const LaporanTrackingPatroliView: React.FC = () => {
           >
             <i className="fa fa-map mr-1"></i> Peta Spasial
           </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('MATRIX')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              viewMode === 'MATRIX' ? 'bg-white text-blue-900 shadow-xs' : 'text-white hover:bg-white/10'
+            }`}
+          >
+            <i className="fa fa-th mr-1"></i> Matriks 24 Jam
+          </button>
         </div>
       </div>
 
-      {/* Filter Box (Form Identik Patroli Site) */}
+      {/* Live Summary Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+        <div className="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs">
+          <div>
+            <div className="text-[11px] font-bold uppercase text-slate-400">Total Pemindaian (Filter)</div>
+            <div className="text-xl font-extrabold text-slate-800">{timelineItems.length}</div>
+          </div>
+          <i className="fa fa-qrcode text-2xl text-blue-600/80"></i>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs">
+          <div>
+            <div className="text-[11px] font-bold uppercase text-slate-400">Perlu Tindak Lanjut</div>
+            <div className="text-xl font-extrabold text-red-600">
+              {timelineItems.filter((i) => i.status === 'Perlu Tindak Lanjut').length}
+            </div>
+          </div>
+          <i className="fa fa-exclamation-triangle text-2xl text-red-500/80"></i>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs">
+          <div>
+            <div className="text-[11px] font-bold uppercase text-slate-400">Personil Bertugas (Hari Ini)</div>
+            <div className="text-xl font-extrabold text-emerald-700">
+              {dashboardSummary?.activePatrol?.count ?? 0}
+            </div>
+          </div>
+          <i className="fa fa-shield text-2xl text-emerald-600/80"></i>
+        </div>
+      </div>
+
+      {/* Filter Box */}
       <div className="filter-box-card">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
           {/* Lokasi Area */}
           <div className="md:col-span-3">
             <label className="filter-label">Lokasi Area</label>
             <select
-              value={selectedSite}
-              onChange={(e) => setSelectedSite(e.target.value)}
+              value={selectedSiteId}
+              onChange={(e) => {
+                setSelectedSiteId(e.target.value);
+                setSelectedUserId('');
+                setSelectedCheckpointId('');
+              }}
               className="filter-input"
             >
-              <option value="">-- Pilih Lokasi --</option>
-              <option value="KANTOR PUSAT">Kantor Pusat</option>
-              <option value="PABRIK BEKASI">Pabrik Bekasi</option>
-              <option value="GUDANG CAKUNG">Gudang Cakung</option>
-              <option value="POOL KENDARAAN">Pool Kendaraan</option>
+              <option value="">-- Semua Lokasi --</option>
               {sites.map((s) => (
-                <option key={s.id} value={s.name.toUpperCase()}>
+                <option key={s.id} value={s.id}>
                   {s.name}
                 </option>
               ))}
@@ -468,19 +536,14 @@ export const LaporanTrackingPatroliView: React.FC = () => {
           <div className="md:col-span-3">
             <label className="filter-label">Nama Personil</label>
             <select
-              value={selectedPersonil}
-              onChange={(e) => setSelectedPersonil(e.target.value)}
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
               className="filter-input"
             >
               <option value="">-- Semua Personil --</option>
-              <option value="ANDI RAHMAN">Andi Rahman (Security)</option>
-              <option value="BUDI SANTOSO">Budi Santoso (Komandan)</option>
-              <option value="SITI RAHAYU">Siti Rahayu (Cleaning)</option>
-              <option value="RUDI HARTONO">Rudi Hartono (Driver)</option>
-              <option value="HENDRA GUNAWAN">Hendra Gunawan (Staff)</option>
               {filteredPersonilOptions.map((u) => (
-                <option key={u.id} value={u.fullName.toUpperCase()}>
-                  {u.fullName} ({u.role})
+                <option key={u.id} value={u.id}>
+                  {u.fullName} ({u.division || u.role})
                 </option>
               ))}
             </select>
@@ -490,19 +553,13 @@ export const LaporanTrackingPatroliView: React.FC = () => {
           <div className="md:col-span-2">
             <label className="filter-label">Check Point Aset</label>
             <select
-              value={selectedAset}
-              onChange={(e) => setSelectedAset(e.target.value)}
+              value={selectedCheckpointId}
+              onChange={(e) => setSelectedCheckpointId(e.target.value)}
               className="filter-input"
             >
               <option value="">-- Semua Aset --</option>
-              <option value="POS UTAMA LOBBY">Pos Utama Lobby</option>
-              <option value="POS BELAKANG">Pos Belakang</option>
-              <option value="PARKIR BASEMENT">Parkir Basement</option>
-              <option value="TOILET LT 1">Toilet Lt 1</option>
-              <option value="TOILET LT 2">Toilet Lt 2</option>
-              <option value="RUANG SERVER">Ruang Server</option>
               {filteredAsetOptions.map((cp) => (
-                <option key={cp.id} value={cp.name.toUpperCase()}>
+                <option key={cp.id} value={cp.id}>
                   {cp.name}
                 </option>
               ))}
@@ -536,11 +593,11 @@ export const LaporanTrackingPatroliView: React.FC = () => {
             <button
               type="button"
               className="btn-track btn-track-success"
-              onClick={() => {
-                // Filter is reactive via state
-              }}
+              onClick={fetchPatrolLogs}
+              disabled={isLoading}
             >
-              <i className="fa fa-filter"></i> Filter
+              <i className={`fa ${isLoading ? 'fa-spinner fa-spin' : 'fa-filter'}`}></i>{' '}
+              {isLoading ? 'Memuat...' : 'Filter / Refresh'}
             </button>
             <button
               type="button"
@@ -560,18 +617,38 @@ export const LaporanTrackingPatroliView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content: Timeline vs Map */}
-      {viewMode === 'TIMELINE' ? (
+      {errorMsg && viewMode !== 'MATRIX' && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-xs flex items-center justify-between">
+          <span>{errorMsg}</span>
+          <button
+            type="button"
+            onClick={fetchPatrolLogs}
+            className="font-bold underline hover:text-red-900"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      )}
+
+      {/* Main Content: Timeline vs Map vs Matrix */}
+      {viewMode === 'MATRIX' ? (
+        <HourlyPatrolMatrixTab selectedSiteId={selectedSiteId} />
+      ) : viewMode === 'TIMELINE' ? (
         <div className="timeline-patroli-wrap">
-          {filteredItems.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-xs">
+              <i className="fa fa-spinner fa-spin text-3xl text-blue-600 mb-2"></i>
+              <p className="text-slate-600 font-semibold text-sm">Memuat data pemindaian patroli...</p>
+            </div>
+          ) : timelineItems.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-xs">
               <i className="fa fa-map-marker text-4xl text-slate-300 mb-2"></i>
               <p className="text-slate-600 font-semibold text-sm">
-                Tidak ada data patroli untuk filter yang dipilih.
+                Belum ada data transaksi patroli untuk filter dan rentang tanggal yang dipilih.
               </p>
             </div>
           ) : (
-            filteredItems.map((item, idx) => {
+            timelineItems.map((item, idx) => {
               const isLeft = idx % 2 === 1;
               const isAlert = item.status === 'Perlu Tindak Lanjut';
 
@@ -582,7 +659,8 @@ export const LaporanTrackingPatroliView: React.FC = () => {
                 >
                   <div className="timeline-dot-pin"></div>
                   <div
-                    className="timeline-bubble-content"
+                    onClick={() => setSelectedDetailId(item.id)}
+                    className="timeline-bubble-content cursor-pointer hover:ring-2 hover:ring-blue-400 transition"
                     style={{
                       borderLeft: `5px solid ${isAlert ? '#dc3545' : '#6c757d'}`,
                     }}
@@ -593,10 +671,10 @@ export const LaporanTrackingPatroliView: React.FC = () => {
 
                     <div className="text-xs text-slate-700 leading-relaxed">
                       <div>👤 {item.officerName} - {item.role}</div>
-                      <div>🏢 {item.checkpointName}</div>
+                      <div>🏢 {item.checkpointName} ({item.siteName})</div>
                       <div>📄 {item.taskDescription}</div>
                       <div>📍 {item.locationDetail}</div>
-                      <div className="mt-1">
+                      <div className="mt-1 flex items-center gap-2">
                         <span
                           className="px-2 py-0.5 rounded text-white text-[11px] font-bold"
                           style={{
@@ -605,6 +683,11 @@ export const LaporanTrackingPatroliView: React.FC = () => {
                         >
                           {item.status}
                         </span>
+                        {item.ticketStatus && (
+                          <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[11px] font-bold">
+                            Tiket: {item.ticketStatus}
+                          </span>
+                        )}
                       </div>
                       <div className="mt-2 text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
                         📝 {item.notes}
@@ -625,15 +708,30 @@ export const LaporanTrackingPatroliView: React.FC = () => {
               <span>Rute Perjalanan & Titik Patroli Terpilih</span>
             </h6>
             <span className="text-xs font-semibold text-slate-500">
-              Total {filteredItems.length} Titik Pemindaian
+              Total {timelineItems.length} Titik Pemindaian
             </span>
           </div>
-          <div
-            ref={mapContainerRef}
-            style={{ width: '100%', height: '520px', borderRadius: '14px', overflow: 'hidden' }}
-          ></div>
+          {timelineItems.filter((i) => i.lat !== 0 && i.lng !== 0).length === 0 ? (
+            <div className="text-center py-20 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <i className="fa fa-map-o text-4xl text-slate-300 mb-2"></i>
+              <p className="text-slate-500 font-semibold text-sm">
+                Belum ada koordinat GPS patroli untuk ditampilkan pada peta.
+              </p>
+            </div>
+          ) : (
+            <div
+              ref={mapContainerRef}
+              style={{ width: '100%', height: '520px', borderRadius: '14px', overflow: 'hidden' }}
+            ></div>
+          )}
         </div>
       )}
+
+      <PatroliDetailModal
+        isOpen={Boolean(selectedDetailId)}
+        onClose={() => setSelectedDetailId(null)}
+        patrolId={selectedDetailId}
+      />
     </div>
   );
 };

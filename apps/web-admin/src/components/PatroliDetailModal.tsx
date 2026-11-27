@@ -54,29 +54,8 @@ export const PatroliDetailModal: React.FC<PatroliDetailModalProps> = ({
         if (isMounted) setData(resData);
       })
       .catch(() => {
-        // Fallback demo data identical to patroli.site live capture (ID 7545)
         if (isMounted) {
-          setData({
-            id: patrolId,
-            officerName: 'budi satpam test',
-            position: 'anggota',
-            siteName: 'site proyek demo',
-            avatarUrl: 'foto/6acbcdd59a172.jpg',
-            activityStatus: 'Selesai',
-            assetName: 'pos gerbang utama',
-            assetType: 'keamanan',
-            assetLocation: 'gerbang utama depan - site proyek demo',
-            dateFormatted: 'Senin, 12 Oct 2026',
-            timeFormatted: '18:01:00',
-            patrolCode: '#7545',
-            taskDescription: 'pemeriksaan akses masuk tamu',
-            patrolResult: 'Situasi Aman Terkendali',
-            latitude: -6.562732,
-            longitude: 106.856083,
-            googleMapsUrl: 'https://www.google.com/maps?q=-6.562732%2C106.856083',
-            photoUrl: 'foto-patroli/6accbe1ba279e',
-            tindakLanjutStatus: null,
-          });
+          setData(null);
         }
       })
       .finally(() => {

@@ -345,6 +345,53 @@ describe('AttendanceService (HRIS Attendance & Shift Engine)', () => {
       expect(detail.distanceInMeters).toBe(480);
     });
 
+    it('MON-04: getAttendanceRecords and getAttendanceDetail should query s.coordinates (not non-existent s.location_coordinates)', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({ total: '0' });
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([]);
+
+      await service.getAttendanceRecords({ page: 1, limit: 10 });
+      const [recordsSql] = (dbMock.query as jest.Mock).mock.calls[0];
+      expect(recordsSql).toContain('s.coordinates');
+      expect(recordsSql).not.toContain('s.location_coordinates');
+
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({
+        id: 'att-1',
+        userId: 'usr-1',
+        personilName: 'Test',
+        division: 'Security',
+        siteName: 'Site',
+        clockInTime: '2026-11-27T00:00:00Z',
+        clockInLatitude: -6.56,
+        clockInLongitude: 106.81,
+        geofenceRadiusMeters: 100,
+        siteLatitude: -6.56,
+        siteLongitude: 106.81,
+      });
+
+      await service.getAttendanceDetail('att-1');
+      const [detailSql] = (dbMock.queryOne as jest.Mock).mock.calls[1];
+      expect(detailSql).toContain('s.coordinates');
+      expect(detailSql).not.toContain('s.location_coordinates');
+    });
+
+    it('FINAL-FIX-03: getTodayStatus should find active cross-day night shift (clock_out_at IS NULL) and use Asia/Jakarta date', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({
+        id: 'att-night-1',
+        attendance_date: '2026-11-26',
+        clock_in_at: '2026-11-26T16:00:00.000Z', // 23:00 WIB
+        clock_out_at: null,
+        status_type: 1,
+        shift_name: 'Shift Malam (23:00 - 07:00)',
+      });
+
+      const active = await service.getTodayStatus('usr-1');
+      expect(active).not.toBeNull();
+      expect(active?.id).toBe('att-night-1');
+      const [sql] = (dbMock.queryOne as jest.Mock).mock.calls[0];
+      expect(sql).toContain("AT TIME ZONE 'Asia/Jakarta'");
+      expect(sql).toContain('a.clock_out_at IS NULL');
+    });
+
     it('TC-ATT-10: should return filtered personil options list', async () => {
       (dbMock.query as jest.Mock).mockResolvedValueOnce([
         { id: 'usr-1', name: 'budi satpam test', division: 'Security', siteName: 'site proyek demo' },

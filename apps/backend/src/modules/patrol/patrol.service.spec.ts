@@ -254,4 +254,116 @@ describe('PatrolService (QR Code Checkpoint Patrol & Incident Tracking)', () => 
       expect(detail.googleMapsUrl).toContain('https://www.google.com/maps?q=-6.562732%2C106.856083');
     });
   });
+
+  describe('MON-03, MON-05, MON-08: Monitoring Filters, WIB Timezone & Role/Notes Integrity', () => {
+    it('MON-03: getLogs should support siteId, userId, checkpointId, dateFrom, dateTo (WIB), and sanitize non-numeric/negative limit', async () => {
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([]);
+
+      await (service.getLogs as any)({
+        siteId: '11111111-1111-1111-1111-111111111111',
+        userId: 'a0000000-0000-0000-0000-000000000001',
+        checkpointId: 'c1111111-1111-1111-1111-111111111101',
+        dateFrom: '2026-11-27',
+        dateTo: '2026-11-27',
+        limit: 'abc',
+      });
+
+      const [sql, params] = (dbMock.query as jest.Mock).mock.calls[0];
+      expect(sql).toContain("AT TIME ZONE 'Asia/Jakarta'");
+      expect(sql).toContain('p.site_id = $1');
+      expect(sql).toContain('p.user_id = $2');
+      expect(sql).toContain('p.checkpoint_id = $3');
+      expect(sql).toContain('LIMIT 50');
+      expect(sql).not.toContain('LIMIT NaN');
+      expect(params).toEqual([
+        '11111111-1111-1111-1111-111111111111',
+        'a0000000-0000-0000-0000-000000000001',
+        'c1111111-1111-1111-1111-111111111101',
+        '2026-11-27',
+        '2026-11-27',
+      ]);
+    });
+
+    it('MON-05: getHourlyMonitoringMatrix should query and extract hours in Asia/Jakarta WIB timezone', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({ id: '11111111-1111-1111-1111-111111111111', name: 'Site Bogor' });
+      (dbMock.query as jest.Mock)
+        .mockResolvedValueOnce([{ id: 'c1111111-1111-1111-1111-111111111101', name: 'Pos 1', location_detail: 'Gate', category: 'Security' }])
+        .mockResolvedValueOnce([{ checkpointId: 'c1111111-1111-1111-1111-111111111101', hour: 23 }]);
+
+      const res = await service.getHourlyMonitoringMatrix('2026-11-27', '11111111-1111-1111-1111-111111111111');
+      const [logsSql] = (dbMock.query as jest.Mock).mock.calls[1];
+
+      expect(logsSql).toContain("AT TIME ZONE 'Asia/Jakarta'");
+      expect(res.rows[0].hours[23]).toBe(true);
+    });
+
+    it('MON-08: getPatrolRecords and getPatrolDetail should preserve actual position and notes instead of hardcoding anggota', async () => {
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({ total: '1' });
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([
+        {
+          id: 'log-1',
+          siteName: 'Site Bogor',
+          officerName: 'Ahmad Fauzi',
+          avatarUrl: null,
+          position: 'SECURITY_OFFICER',
+          assetName: 'Pos 1',
+          assetType: 'Security',
+          assetLocation: 'Gate',
+          taskDescription: 'Cek',
+          statusResult: 'Perlu Tindak Lanjut',
+          notes: 'Lampu mati',
+          scannedAt: '2026-11-27T01:00:00.000Z',
+          latitude: -6.56,
+          longitude: 106.81,
+          photoKey: null,
+          ticketStatus: 'OPEN',
+          resolutionNotes: null,
+        },
+      ]);
+
+      const records = await service.getPatrolRecords({ page: 1, limit: 5 });
+      expect(records.data[0].position).toBe('SECURITY_OFFICER');
+
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce({
+        id: 'log-1',
+        siteName: 'Site Bogor',
+        officerName: 'Ahmad Fauzi',
+        avatarUrl: null,
+        position: 'KOMANDAN',
+        assetName: 'Pos 1',
+        assetType: 'Security',
+        assetLocation: 'Gate',
+        taskDescription: 'Cek',
+        statusResult: 'Perlu Tindak Lanjut',
+        notes: 'Lampu mati',
+        scannedAt: '2026-11-27T01:00:00.000Z',
+        latitude: -6.56,
+        longitude: 106.81,
+        photoKey: null,
+        ticketStatus: 'OPEN',
+        resolutionNotes: null,
+      });
+
+      const detail = await service.getPatrolDetail('log-1');
+      expect(detail.position).toBe('KOMANDAN');
+      expect((detail as any).notes).toBe('Lampu mati');
+    });
+
+    it('FINAL-FIX-02: getLogs should reject invalid UUID or date format with BadRequestException, and updateTindakLanjut should not crash on non-UUID', async () => {
+      await expect(
+        service.getLogs({ siteId: 'not-a-uuid' }),
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        service.getLogs({ dateFrom: '2026-99-99-invalid' }),
+      ).rejects.toThrow(BadRequestException);
+
+      (dbMock.queryOne as jest.Mock).mockResolvedValueOnce(null);
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([]);
+      const res = await service.updateTindakLanjut('non-uuid-id', 'Sudah dicek');
+      expect(res.success).toBe(true);
+      const [tlSql] = (dbMock.queryOne as jest.Mock).mock.calls[0];
+      expect(tlSql).not.toContain('$1::uuid');
+    });
+  });
 });

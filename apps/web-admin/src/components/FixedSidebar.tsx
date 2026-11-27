@@ -58,11 +58,11 @@ export const FixedSidebar: React.FC = () => {
         },
         {
           title: 'Monitoring Patroli',
-          href: '/validasi-patroli',
+          href: '/monitoring-patroli',
           icon: QrCode,
           visible: true,
           badge: null,
-          isActive: pathname.startsWith('/validasi-patroli'),
+          isActive: pathname.startsWith('/monitoring-patroli') || pathname.startsWith('/validasi-patroli'),
         },
         {
           title: 'Pemantauan Absensi',

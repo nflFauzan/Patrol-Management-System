@@ -38,16 +38,20 @@ export const PatrolScanPage: React.FC = () => {
   const [scanSuccessModal, setScanSuccessModal] = useState<{ token: string; time: string; status: string } | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
-  // Capture GPS coordinates on load
+  // Capture GPS coordinates on load (no silent fake fallback)
   useEffect(() => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setCoords({ lat: -6.2088, lng: 106.8456 }),
-        { enableHighAccuracy: true, timeout: 5000 }
+        () => {
+          setCoords(null);
+          setErrorMessage('Lokasi GPS tidak tersedia. Aktifkan izin lokasi/GPS perangkat sebelum mengirim patroli.');
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
       );
     } else {
-      setCoords({ lat: -6.2088, lng: 106.8456 });
+      setCoords(null);
+      setErrorMessage('Perangkat tidak mendukung Geolocation GPS.');
     }
   }, []);
 
@@ -72,7 +76,7 @@ export const PatrolScanPage: React.FC = () => {
           // Scanning progress
         },
       );
-      setErrorMessage(null);
+      setErrorMessage((prev) => (prev && prev.includes('Kamera') ? null : prev));
     } catch (err: any) {
       setErrorMessage('Kamera tidak dapat digunakan. Pastikan izin kamera telah diberikan.');
       setIsScanning(false);
@@ -121,13 +125,18 @@ export const PatrolScanPage: React.FC = () => {
 
   const handleSubmitPatrol = async () => {
     if (!scanResult) return;
+    if (!coords) {
+      setErrorMessage('Koordinat GPS belum diperoleh. Pastikan GPS aktif lalu muat ulang halaman.');
+      return;
+    }
+    setErrorMessage(null);
     setIsSubmitting(true);
 
     const now = new Date();
     const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
-    const siteId = user?.siteId || '11111111-1111-1111-1111-111111111111';
-    const lat = coords?.lat || -6.2088;
-    const lng = coords?.lng || 106.8456;
+    const siteId = user?.siteId || '';
+    const lat = coords.lat;
+    const lng = coords.lng;
 
     const payload = {
       siteId,
@@ -154,7 +163,8 @@ export const PatrolScanPage: React.FC = () => {
         await enqueueOfflineTransaction('PATROL_SCAN', payload);
         setScanSuccessModal({ token: scanResult, time: `${timeStr} (Offline)`, status: statusCondition });
       } else {
-        setScanSuccessModal({ token: scanResult, time: timeStr, status: statusCondition });
+        const msg = err?.response?.data?.message || 'Gagal mencatat patroli. Periksa QR Code atau hak akses Anda.';
+        setErrorMessage(Array.isArray(msg) ? msg.join(', ') : msg);
       }
     } finally {
       setIsSubmitting(false);
@@ -234,11 +244,10 @@ export const PatrolScanPage: React.FC = () => {
               <button
                 type="button"
                 onClick={toggleTorch}
-                className={`p-3.5 rounded-2xl border transition active:scale-95 ${
-                  torchOn
+                className={`p-3.5 rounded-2xl border transition active:scale-95 ${torchOn
                     ? 'bg-amber-400 text-slate-900 border-amber-500 shadow-md'
                     : 'bg-white border-slate-300 shadow-skeuo-button-secondary text-slate-700'
-                }`}
+                  }`}
                 title="Senter Flash"
               >
                 <Flashlight className="w-6 h-6" />
@@ -280,11 +289,10 @@ export const PatrolScanPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setStatusCondition('Situasi Aman Terkendali')}
-                  className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
-                    statusCondition === 'Situasi Aman Terkendali'
+                  className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${statusCondition === 'Situasi Aman Terkendali'
                       ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm'
                       : 'bg-white border-slate-300 text-slate-600'
-                  }`}
+                    }`}
                 >
                   <CheckCircle2 className={`w-5 h-5 mb-1 ${statusCondition === 'Situasi Aman Terkendali' ? 'text-emerald-600' : 'text-slate-400'}`} />
                   <span className="text-xs font-bold leading-tight">Aman Terkendali</span>
@@ -294,11 +302,10 @@ export const PatrolScanPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setStatusCondition('Perlu Tindak Lanjut')}
-                  className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
-                    statusCondition === 'Perlu Tindak Lanjut'
+                  className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${statusCondition === 'Perlu Tindak Lanjut'
                       ? 'bg-amber-50 border-amber-500 text-amber-900 shadow-sm'
                       : 'bg-white border-slate-300 text-slate-600'
-                  }`}
+                    }`}
                 >
                   <AlertTriangle className={`w-5 h-5 mb-1 ${statusCondition === 'Perlu Tindak Lanjut' ? 'text-amber-600' : 'text-slate-400'}`} />
                   <span className="text-xs font-bold leading-tight">Perlu Tindak Lanjut</span>
@@ -323,7 +330,14 @@ export const PatrolScanPage: React.FC = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5 pt-3">
+              {errorMessage && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-2 text-xs text-red-700">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2.5 pt-3">
               <SkeuomorphicButton
                 type="button"
                 variant="secondary"
@@ -351,9 +365,8 @@ export const PatrolScanPage: React.FC = () => {
       {scanSuccessModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div className="bg-white rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-soft-xl border border-slate-200">
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-md ${
-              scanSuccessModal.status === 'Perlu Tindak Lanjut' ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'
-            }`}>
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-md ${scanSuccessModal.status === 'Perlu Tindak Lanjut' ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'
+              }`}>
               {scanSuccessModal.status === 'Perlu Tindak Lanjut' ? (
                 <AlertTriangle className="w-9 h-9" />
               ) : (

@@ -786,8 +786,8 @@ export class ReportsService {
       SELECT 
         pl.id,
         pl.scanned_at,
-        to_char(pl.scanned_at, 'YYYY-MM-DD') as date_str,
-        to_char(pl.scanned_at, 'HH24:MI:SS') as time_str,
+        to_char(pl.scanned_at AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD') as date_str,
+        to_char(pl.scanned_at AT TIME ZONE 'Asia/Jakarta', 'HH24:MI:SS') as time_str,
         pl.status_result,
         pl.notes,
         pl.photo_key,
@@ -798,7 +798,8 @@ export class ReportsService {
       FROM patrol_logs pl
       JOIN checkpoints c ON pl.checkpoint_id = c.id
       JOIN sites s ON pl.site_id = s.id
-      WHERE pl.scanned_at >= $1::timestamp AND pl.scanned_at <= ($2::date + interval '1 day')
+      WHERE (pl.scanned_at AT TIME ZONE 'Asia/Jakarta')::date >= $1::date
+        AND (pl.scanned_at AT TIME ZONE 'Asia/Jakarta')::date <= $2::date
     `;
     const params: any[] = [fromDate, toDate];
 
@@ -810,13 +811,8 @@ export class ReportsService {
     sql += ` ORDER BY pl.scanned_at DESC`;
     const rows = await this.db.query<any>(sql, params);
 
-    const daysId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const monthsId = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
     const records = rows.map((r, index) => {
-      const scanDate = new Date(r.scanned_at);
-      const dayName = daysId[scanDate.getDay()] || 'Senin';
-      const formattedDate = `${scanDate.getDate().toString().padStart(2, '0')} ${monthsId[scanDate.getMonth()]} ${scanDate.getFullYear()}`;
+      const { dayName, formattedDate } = this.formatWibExportDate(r.scanned_at);
 
       const deskripsi = r.notes || r.task_description || `${r.checkpoint_name} - ${r.location_detail}`;
 
@@ -856,19 +852,23 @@ export class ReportsService {
         u.full_name as "officerName",
         u.division,
         pl.scanned_at,
-        to_char(pl.scanned_at, 'HH24:MI:SS') as time_str,
+        to_char(pl.scanned_at AT TIME ZONE 'Asia/Jakarta', 'HH24:MI:SS') as time_str,
         pl.status_result,
         pl.notes,
         pl.photo_key,
         c.name as checkpoint_name,
         c.location_detail,
         c.task_description,
-        s.name as site_name
+        s.name as site_name,
+        it.ticket_status,
+        it.resolution_notes
       FROM patrol_logs pl
       JOIN users u ON pl.user_id = u.id
       JOIN checkpoints c ON pl.checkpoint_id = c.id
       JOIN sites s ON pl.site_id = s.id
-      WHERE pl.scanned_at >= $1::timestamp AND pl.scanned_at <= ($2::date + interval '1 day')
+      LEFT JOIN incident_tickets it ON it.patrol_log_id = pl.id
+      WHERE (pl.scanned_at AT TIME ZONE 'Asia/Jakarta')::date >= $1::date
+        AND (pl.scanned_at AT TIME ZONE 'Asia/Jakarta')::date <= $2::date
     `;
     const params: any[] = [fromDate, toDate];
     let idx = 3;
@@ -894,18 +894,26 @@ export class ReportsService {
     sql += ` ORDER BY pl.scanned_at DESC`;
     const rows = await this.db.query<any>(sql, params);
 
-    const daysId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const monthsId = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
     const records = rows.map((r, index) => {
-      const scanDate = new Date(r.scanned_at);
-      const dayName = daysId[scanDate.getDay()] || 'Senin';
-      const formattedDate = `${scanDate.getDate().toString().padStart(2, '0')} ${monthsId[scanDate.getMonth()]} ${scanDate.getFullYear()}`;
+      const { dayName, formattedDate } = this.formatWibExportDate(r.scanned_at);
 
-      const isAbnormal = r.status_result === 'ABNORMAL' || r.status_result === 'TEMUAN' || (r.notes && r.notes.toLowerCase().includes('temuan'));
-      const statusTemuan = isAbnormal ? 'BELUM DITINDAKLANJUTI' : 'AMAN';
+      const statusLower = (r.status_result || '').toLowerCase();
+      const isAbnormal =
+        statusLower.includes('tindak') ||
+        statusLower.includes('perlu') ||
+        statusLower.includes('abnormal') ||
+        statusLower.includes('temuan') ||
+        (r.notes && r.notes.toLowerCase().includes('temuan'));
+      const isResolved = r.ticket_status === 'RESOLVED';
+      const statusTemuan = isAbnormal
+        ? isResolved
+          ? 'SUDAH DITINDAKLANJUTI'
+          : 'BELUM DITINDAKLANJUTI'
+        : 'AMAN';
       const temuanDilaporkan = isAbnormal ? (r.notes || 'Temuan abnormalitas saat patroli') : '-';
-      const catatanTindakLanjut = isAbnormal ? 'Menunggu verifikasi supervisor area' : '-';
+      const catatanTindakLanjut = isAbnormal
+        ? r.resolution_notes || 'Menunggu verifikasi supervisor area'
+        : '-';
 
       return {
         no: index + 1,
@@ -925,6 +933,31 @@ export class ReportsService {
       siteName: (siteParam || 'SEMUA LOKASI').toUpperCase(),
       kategori: (query.category || 'SEMUA KATEGORI').toUpperCase(),
       records,
+    };
+  }
+
+  private formatWibExportDate(dateInput: string | Date) {
+    const d = new Date(dateInput);
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Jakarta',
+      weekday: 'short',
+      year: 'numeric',
+      month: 'numeric',
+      day: '2-digit',
+    }).formatToParts(d);
+    const p: Record<string, string> = {};
+    for (const part of parts) p[part.type] = part.value;
+
+    const weekdayMap: Record<string, string> = {
+      Sun: 'Minggu', Mon: 'Senin', Tue: 'Selasa', Wed: 'Rabu',
+      Thu: 'Kamis', Fri: 'Jumat', Sat: 'Sabtu',
+    };
+    const monthsId = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dayName = weekdayMap[p.weekday] || 'Senin';
+    const monthName = monthsId[Math.max(0, Number(p.month) - 1)] || 'Jan';
+    return {
+      dayName,
+      formattedDate: `${p.day} ${monthName} ${p.year}`,
     };
   }
 }

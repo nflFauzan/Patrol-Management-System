@@ -371,6 +371,67 @@ describe('ReportsService (Laporan Security Chief & Parity)', () => {
       expect(res.records[0].statusTemuan).toBe('BELUM DITINDAKLANJUTI');
       expect(res.records[0].temuanDilaporkan).toBe('Lampu penerangan zona B1 padam, perlu diganti bohlam');
     });
+
+    it('MON-05 & MON-08: getExportActivityArea should use Asia/Jakarta WIB filter and detect Perlu Tindak Lanjut + incident_tickets status', async () => {
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([
+        {
+          id: 'pl-2',
+          officerName: 'Budi Santoso',
+          division: 'Security',
+          scanned_at: '2026-11-22T09:45:25.000Z', // 16:45:25 WIB
+          time_str: '16:45:25',
+          status_result: 'Perlu Tindak Lanjut',
+          notes: 'Pagar belakang rusak',
+          photo_key: null,
+          checkpoint_name: 'Pos Belakang',
+          location_detail: 'Gerbang B',
+          task_description: 'Cek pagar',
+          ticket_status: 'RESOLVED',
+          resolution_notes: 'Sudah diperbaiki teknisi',
+        },
+      ]);
+
+      const res = await service.getExportActivityArea({
+        areaName: 'Kantor Pusat',
+        fromDate: '2026-11-22',
+        toDate: '2026-11-22',
+      });
+
+      const [sql] = (dbMock.query as jest.Mock).mock.calls[0];
+      expect(sql).toContain("AT TIME ZONE 'Asia/Jakarta'");
+      expect(res.records[0].statusTemuan).toBe('SUDAH DITINDAKLANJUTI');
+      expect(res.records[0].catatanTindakLanjut).toBe('Sudah diperbaiki teknisi');
+    });
+
+    it('FINAL-FIX-01: getExportActivityArea & getExportActivityPersonnel should format hari and tanggal in Asia/Jakarta WIB for cross-midnight UTC timestamps', async () => {
+      // 2026-11-22T17:30:00.000Z = Senin, 23 Nov 2026 00:30:00 WIB
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([
+        {
+          id: 'pl-midnight',
+          officerName: 'Budi Santoso',
+          division: 'Security',
+          scanned_at: '2026-11-22T17:30:00.000Z',
+          time_str: '00:30:00',
+          status_result: 'Situasi Aman Terkendali',
+          notes: 'Aman',
+          photo_key: null,
+          checkpoint_name: 'Pos 1',
+          location_detail: 'Gate',
+          task_description: 'Cek',
+          ticket_status: null,
+          resolution_notes: null,
+        },
+      ]);
+
+      const res = await service.getExportActivityArea({
+        areaName: 'Kantor Pusat',
+        fromDate: '2026-11-23',
+        toDate: '2026-11-23',
+      });
+
+      expect(res.records[0].hari).toBe('Senin');
+      expect(res.records[0].tanggal).toBe('23 Nov 2026');
+    });
   });
 });
 

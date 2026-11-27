@@ -29,6 +29,7 @@ export class UsersService {
       division: row.division as Division,
       securityRank: (row.security_rank || row.securityRank || null) as SecurityRank | null,
       siteId: row.site_id || row.siteId || null,
+      siteName: row.site_name || row.siteName || undefined,
       multiSiteIds: row.multi_site_ids || (row.site_id ? [row.site_id] : []),
       workingHoursPerDay: Number(row.working_hours_per_day || 8),
       gajiPokok: Number(row.gaji_pokok || 0),
@@ -56,18 +57,19 @@ export class UsersService {
         u.security_rank, u.working_hours_per_day, u.gaji_pokok, u.tunjangan,
         u.lembur_per_jam, u.potongan_bpjs, u.potongan_alpa, u.potongan_lupa_absen,
         u.photo_key, u.is_active, u.created_at, u.updated_at,
-        usa.site_id,
-        ARRAY_AGG(usa_all.site_id) FILTER (WHERE usa_all.site_id IS NOT NULL) AS multi_site_ids
+        (ARRAY_AGG(usa.site_id ORDER BY usa.site_id) FILTER (WHERE usa.site_id IS NOT NULL))[1] AS site_id,
+        (ARRAY_AGG(s.name ORDER BY usa.site_id) FILTER (WHERE s.name IS NOT NULL))[1] AS site_name,
+        ARRAY_AGG(DISTINCT usa.site_id) FILTER (WHERE usa.site_id IS NOT NULL) AS multi_site_ids
       FROM users u
       LEFT JOIN user_site_assignments usa ON u.id = usa.user_id
-      LEFT JOIN user_site_assignments usa_all ON u.id = usa_all.user_id
+      LEFT JOIN sites s ON s.id = usa.site_id
       WHERE 1=1
     `;
     const params: any[] = [];
     let paramIndex = 1;
 
     if (query?.siteId && query.siteId !== '__SEMUA__') {
-      sql += ` AND usa.site_id = $${paramIndex++}`;
+      sql += ` AND EXISTS (SELECT 1 FROM user_site_assignments usa_f WHERE usa_f.user_id = u.id AND usa_f.site_id = $${paramIndex++})`;
       params.push(query.siteId);
     }
 
@@ -83,7 +85,7 @@ export class UsersService {
     }
 
     sql += `
-      GROUP BY u.id, usa.site_id
+      GROUP BY u.id
       ORDER BY u.created_at DESC
     `;
 
@@ -99,13 +101,14 @@ export class UsersService {
         u.security_rank, u.working_hours_per_day, u.gaji_pokok, u.tunjangan,
         u.lembur_per_jam, u.potongan_bpjs, u.potongan_alpa, u.potongan_lupa_absen,
         u.photo_key, u.is_active, u.created_at, u.updated_at,
-        usa.site_id,
-        ARRAY_AGG(usa_all.site_id) FILTER (WHERE usa_all.site_id IS NOT NULL) AS multi_site_ids
+        (ARRAY_AGG(usa.site_id ORDER BY usa.site_id) FILTER (WHERE usa.site_id IS NOT NULL))[1] AS site_id,
+        (ARRAY_AGG(s.name ORDER BY usa.site_id) FILTER (WHERE s.name IS NOT NULL))[1] AS site_name,
+        ARRAY_AGG(DISTINCT usa.site_id) FILTER (WHERE usa.site_id IS NOT NULL) AS multi_site_ids
       FROM users u
       LEFT JOIN user_site_assignments usa ON u.id = usa.user_id
-      LEFT JOIN user_site_assignments usa_all ON u.id = usa_all.user_id
+      LEFT JOIN sites s ON s.id = usa.site_id
       WHERE u.id = $1
-      GROUP BY u.id, usa.site_id
+      GROUP BY u.id
     `,
       [id],
     );

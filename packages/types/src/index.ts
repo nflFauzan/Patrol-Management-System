@@ -318,6 +318,7 @@ export interface PatrolDetailResponse {
   patrolCode: string;
   taskDescription: string;
   patrolResult: string;
+  notes?: string | null;
   latitude: number;
   longitude: number;
   googleMapsUrl: string;

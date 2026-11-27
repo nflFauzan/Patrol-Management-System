@@ -9,10 +9,13 @@ interface HourlyPatrolMatrixTabProps {
   selectedSiteId: string;
 }
 
+const getWibToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+
 export const HourlyPatrolMatrixTab: React.FC<HourlyPatrolMatrixTabProps> = ({ selectedSiteId }) => {
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState<string>(getWibToday);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [matrixData, setMatrixData] = useState<HourlyPatrolMatrixResponse | null>(null);
 
   useEffect(() => {
@@ -21,111 +24,37 @@ export const HourlyPatrolMatrixTab: React.FC<HourlyPatrolMatrixTabProps> = ({ se
 
   const fetchHourlyMatrix = async () => {
     setIsLoading(true);
+    setErrorMsg(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/patrol/hourly-monitoring?date=${selectedDate}&siteId=${selectedSiteId}`, {
+      const siteParam = selectedSiteId ? `&siteId=${encodeURIComponent(selectedSiteId)}` : '';
+      const res = await fetch(`${API_BASE_URL}/patrol/hourly-monitoring?date=${encodeURIComponent(selectedDate)}${siteParam}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('patrol_auth_token') || ''}`,
         },
       });
-      if (res.ok) {
-        const data = await res.json();
-        setMatrixData(data);
-      } else {
-        throw new Error('API offline');
+      if (!res.ok) {
+        throw new Error(`Gagal memuat matriks patroli (HTTP ${res.status})`);
       }
-    } catch (e) {
-      // Mock data for demo preview matching patroli.site
-      const mockHours1 = Array(24).fill(false);
-      mockHours1[7] = true; mockHours1[9] = true; mockHours1[11] = true; mockHours1[13] = true; mockHours1[15] = true;
-      const mockHours2 = Array(24).fill(false);
-      mockHours2[8] = true; mockHours2[10] = true; mockHours2[12] = true; mockHours2[14] = true;
-      const mockHours3 = Array(24).fill(false);
-      mockHours3[7] = true; mockHours3[11] = true; mockHours3[15] = true;
-
-      const toHoursMap = (arr: boolean[]) => {
-        const m: Record<number, boolean> = {};
-        arr.forEach((v, idx) => { m[idx] = v; });
-        return m;
-      };
-
-      setMatrixData({
-        date: selectedDate,
-        siteId: selectedSiteId,
-        siteName: 'Head Office Sudirman',
-        hours: Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`),
-        rows: [
-          {
-            checkpointId: 'c1',
-            assetName: 'Pos Utama Gerbang Masuk',
-            checkpointName: 'Pos Utama Gerbang Masuk',
-            locationDescription: 'Gate A Pintu Barat',
-            locationDetail: 'Gate A Pintu Barat',
-            category: 'Security',
-            hours: toHoursMap(mockHours1),
-            hourlyStatus: mockHours1,
-            totalScanned: 5,
-            totalScans: 5,
-          },
-          {
-            checkpointId: 'c2',
-            assetName: 'Lobby & Resepsionis Lt 1',
-            checkpointName: 'Lobby & Resepsionis Lt 1',
-            locationDescription: 'Main Hall',
-            locationDetail: 'Main Hall',
-            category: 'Security',
-            hours: toHoursMap(mockHours2),
-            hourlyStatus: mockHours2,
-            totalScanned: 4,
-            totalScans: 4,
-          },
-          {
-            checkpointId: 'c3',
-            assetName: 'Ruang Server IT Lt 3',
-            checkpointName: 'Ruang Server IT Lt 3',
-            locationDescription: 'Lt 3 Ruang 304',
-            locationDetail: 'Lt 3 Ruang 304',
-            category: 'Security',
-            hours: toHoursMap(mockHours3),
-            hourlyStatus: mockHours3,
-            totalScanned: 3,
-            totalScans: 3,
-          },
-          {
-            checkpointId: 'c4',
-            assetName: 'Restroom Eksekutif Lt 2',
-            checkpointName: 'Restroom Eksekutif Lt 2',
-            locationDescription: 'Lt 2 Sayap Timur',
-            locationDetail: 'Lt 2 Sayap Timur',
-            category: 'Cleaning',
-            hours: toHoursMap(mockHours1),
-            hourlyStatus: mockHours1,
-            totalScanned: 5,
-            totalScans: 5,
-          },
-          {
-            checkpointId: 'c5',
-            assetName: 'Area Parkir Basement B2',
-            checkpointName: 'Area Parkir Basement B2',
-            locationDescription: 'Zona B2 Selatan',
-            locationDetail: 'Zona B2 Selatan',
-            category: 'Security',
-            hours: toHoursMap(mockHours2),
-            hourlyStatus: mockHours2,
-            totalScanned: 4,
-            totalScans: 4,
-          },
-        ],
-      });
+      const data = await res.json();
+      setMatrixData(data);
+    } catch (e: any) {
+      setMatrixData(null);
+      setErrorMsg(e?.message || 'Gagal terhubung ke server monitoring patroli.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const filteredRows = matrixData?.rows.filter((r) => {
+    if (selectedCategory === 'ALL') return true;
+    return (r.category || '').toLowerCase().includes(selectedCategory.toLowerCase());
+  }) || [];
+
   const handleExportCsv = () => {
-    if (!matrixData) return;
+    if (!matrixData || filteredRows.length === 0) return;
     const hoursHeader = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`).join(',');
     const header = `Nama Checkpoint,Kategori,Lokasi,${hoursHeader},Total Scan\n`;
-    const rows = matrixData.rows.map((r) => {
+    const rows = filteredRows.map((r) => {
       const hoursStr = Array.from({ length: 24 }, (_, i) => ((r.hourlyStatus && r.hourlyStatus[i]) || (r.hours && r.hours[i])) ? '1' : '0').join(',');
       return `"${r.checkpointName || r.assetName}","${r.category}","${r.locationDetail || r.locationDescription}",${hoursStr},${r.totalScans ?? r.totalScanned}`;
     }).join('\n');
@@ -138,14 +67,10 @@ export const HourlyPatrolMatrixTab: React.FC<HourlyPatrolMatrixTabProps> = ({ se
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const hoursList = Array.from({ length: 24 }, (_, i) => i);
-
-  const filteredRows = matrixData?.rows.filter((r) => {
-    if (selectedCategory === 'ALL') return true;
-    return r.category.toLowerCase() === selectedCategory.toLowerCase();
-  }) || [];
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
@@ -155,6 +80,11 @@ export const HourlyPatrolMatrixTab: React.FC<HourlyPatrolMatrixTabProps> = ({ se
           <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
             <Clock className="w-5 h-5 text-indigo-600" />
             <span>Monitoring Patroli Matriks 24 Jam (Per Jam 00:00 s/d 23:00)</span>
+            {matrixData?.siteName && (
+              <span className="ml-2 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold">
+                {matrixData.siteName}
+              </span>
+            )}
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
             Verifikasi scanning per pos checkpoint setiap jam untuk memastikan kepatuhan rute patroli berkala
@@ -196,6 +126,18 @@ export const HourlyPatrolMatrixTab: React.FC<HourlyPatrolMatrixTabProps> = ({ se
           </button>
         </div>
       </div>
+
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-xs flex items-center justify-between">
+          <span>{errorMsg}</span>
+          <button
+            onClick={fetchHourlyMatrix}
+            className="font-bold underline hover:text-red-900"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto border border-slate-200 rounded-xl">

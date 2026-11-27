@@ -109,7 +109,11 @@ export class AttendanceService {
       FROM attendances a
       JOIN users u ON a.user_id = u.id
       JOIN sites s ON a.site_id = s.id
-      WHERE a.user_id = $1 AND a.attendance_date = CURRENT_DATE
+      WHERE a.user_id = $1
+        AND (
+          a.attendance_date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Jakarta')::date
+          OR (a.clock_out_at IS NULL AND a.clock_in_at >= NOW() - INTERVAL '24 hours')
+        )
       ORDER BY a.created_at DESC
       LIMIT 1
     `;
@@ -201,13 +205,29 @@ export class AttendanceService {
     }
 
     const site = await this.db.queryOne<any>(
-      `SELECT name, shift_pagi_in, geofence_radius_meters FROM sites WHERE id = $1`,
+      `SELECT name, shift_pagi_in, shift_siang_in, shift_malam_in, shift_staff_in, shift_chief_in, geofence_radius_meters FROM sites WHERE id = $1`,
       [dto.siteId],
     );
 
-    const shiftStartTime = site?.shift_pagi_in || '07:00:00';
     const clockInDate = dto.deviceTimestamp ? new Date(dto.deviceTimestamp) : new Date();
-    const attendanceDateStr = clockInDate.toISOString().split('T')[0];
+    const attendanceDateStr = clockInDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+    const wibHour = Number(
+      new Intl.DateTimeFormat('en-US', { hour: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' }).format(clockInDate),
+    ) % 24;
+
+    let shiftName = 'Shift Pagi (07:00 - 15:00)';
+    let shiftStartTime = site?.shift_pagi_in || '07:00:00';
+    if (String(user.division).toUpperCase() === 'STAFF') {
+      shiftName = 'Shift Staff (08:00 - 17:00)';
+      shiftStartTime = site?.shift_staff_in || '08:00:00';
+    } else if (wibHour >= 13 && wibHour < 20) {
+      shiftName = 'Shift Siang (15:00 - 23:00)';
+      shiftStartTime = site?.shift_siang_in || '15:00:00';
+    } else if (wibHour >= 20 || wibHour < 4) {
+      shiftName = 'Shift Malam (23:00 - 07:00)';
+      shiftStartTime = site?.shift_malam_in || '23:00:00';
+    }
+
     const lateMinutes = this.calculateLateMinutes(clockInDate, shiftStartTime, 15);
     const isLate = lateMinutes > 0;
 
@@ -223,7 +243,7 @@ export class AttendanceService {
           clock_in_distance_meters, is_late, late_minutes, notes
         )
         VALUES (
-          $1, $2, $3, $4, 1, 'Shift Pagi (07:00 - 15:00)',
+          $1, $2, $3, $4, 1, $13,
           $5, ST_SetSRID(ST_MakePoint($7, $6), 4326),
           $8, $9, $10, $11, $12
         )
@@ -249,7 +269,7 @@ export class AttendanceService {
           clock_in_distance_meters, is_late, late_minutes, notes
         )
         VALUES (
-          $1, $2, $3, 1, 'Shift Pagi (07:00 - 15:00)',
+          $1, $2, $3, 1, $12,
           $4, ST_SetSRID(ST_MakePoint($6, $5), 4326),
           $7, $8, $9, $10, $11
         )
@@ -283,6 +303,7 @@ export class AttendanceService {
         isLate,
         lateMinutes,
         dto.notes || null,
+        shiftName,
       ]
       : [
         userId,
@@ -296,6 +317,7 @@ export class AttendanceService {
         isLate,
         lateMinutes,
         dto.notes || null,
+        shiftName,
       ];
 
     const row = await this.db.queryOne<any>(insertSql, insertParams);
@@ -732,8 +754,8 @@ export class AttendanceService {
         a.clock_out_photo_key AS "clockOutPhotoUrl",
         a.clock_out_distance_meters AS "clockOutDistanceMeters",
         s.geofence_radius_meters AS "geofenceRadiusMeters",
-        ST_Y(s.location_coordinates::geometry) AS "siteLatitude",
-        ST_X(s.location_coordinates::geometry) AS "siteLongitude"
+        ST_Y(s.coordinates::geometry) AS "siteLatitude",
+        ST_X(s.coordinates::geometry) AS "siteLongitude"
       FROM attendances a
       JOIN users u ON a.user_id = u.id
       JOIN sites s ON a.site_id = s.id
@@ -822,8 +844,8 @@ export class AttendanceService {
         a.clock_out_photo_key AS "clockOutPhotoUrl",
         a.clock_out_distance_meters AS "clockOutDistanceMeters",
         s.geofence_radius_meters AS "geofenceRadiusMeters",
-        ST_Y(s.location_coordinates::geometry) AS "siteLatitude",
-        ST_X(s.location_coordinates::geometry) AS "siteLongitude"
+        ST_Y(s.coordinates::geometry) AS "siteLatitude",
+        ST_X(s.coordinates::geometry) AS "siteLongitude"
       FROM attendances a
       JOIN users u ON a.user_id = u.id
       JOIN sites s ON a.site_id = s.id

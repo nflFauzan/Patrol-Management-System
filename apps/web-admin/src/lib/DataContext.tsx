@@ -95,6 +95,8 @@ interface DataContextType {
   dashboardSummary: DashboardSummary | null;
   recentNotifications: DashboardNotificationItem[];
   patrolActivity: PatrolHourlyActivity[];
+  patrolRefreshTick: number;
+  joinSiteRoom: (siteId: string) => void;
   refreshDashboard: () => Promise<void>;
 }
 
@@ -235,8 +237,27 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
   const [recentNotifications, setRecentNotifications] = useState<DashboardNotificationItem[]>([]);
   const [patrolActivity, setPatrolActivity] = useState<PatrolHourlyActivity[]>([]);
+  const [patrolRefreshTick, setPatrolRefreshTick] = useState<number>(0);
+  const socketRef = React.useRef<Socket | null>(null);
+  const activeSiteRoomRef = React.useRef<string | null>(null);
+
+  const joinSiteRoom = useCallback((siteId: string) => {
+    if (activeSiteRoomRef.current && activeSiteRoomRef.current !== siteId && socketRef.current?.connected) {
+      socketRef.current.emit('leave:site_room', activeSiteRoomRef.current);
+    }
+    activeSiteRoomRef.current = siteId || null;
+    if (socketRef.current?.connected && siteId) {
+      socketRef.current.emit('join:site_room', siteId);
+    }
+  }, []);
 
   const refreshDashboard = useCallback(async () => {
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('patrol_auth_token') || localStorage.getItem('token')
+        : null;
+    if (!token) return;
+
     try {
       const [summary, notifications, activity] = await Promise.all([
         dashboardApi.getSummary(),
@@ -337,6 +358,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Connect Socket.io for Real-time SOS alerts and live activity
   useEffect(() => {
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('patrol_auth_token') || localStorage.getItem('token')
+        : null;
+    if (!token) return;
+
     const socketUrl =
       process.env.NEXT_PUBLIC_WS_URL ||
       (typeof window !== 'undefined' && window.location.port === '8080'
@@ -346,6 +373,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const socket: Socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 3,
+      auth: { token },
+    });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      if (activeSiteRoomRef.current) {
+        socket.emit('join:site_room', activeSiteRoomRef.current);
+      }
     });
 
     socket.on('sos:new', (alertData: any) => {
@@ -385,24 +420,35 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: `Patroli: ${data.checkpointName || 'Pos Checkpoint'}`,
         subtitle: data.userName || data.officerName || 'Petugas',
         time: new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false }).format(new Date()) + ' WIB',
-        link: '/validasi-patroli',
+        link: '/monitoring-patroli',
+        createdAt: new Date().toISOString(),
+      };
+      setRecentNotifications((prev) => [notifItem, ...prev].slice(0, 20));
+      setPatrolRefreshTick((t) => t + 1);
+      refreshDashboard();
+    });
+
+    socket.on('sos:status_changed', () => {
+      refreshDashboard();
+    });
+
+    socket.on('attendance:clock_in', (data: any) => {
+      const officerName = data?.user?.full_name || data?.userName || data?.fullName || 'Personel';
+      const siteName = data?.site?.name || data?.siteName || 'Site';
+      const notifItem: DashboardNotificationItem = {
+        id: `att-${Date.now()}`,
+        type: 'ATTENDANCE',
+        title: `Absensi Masuk: ${officerName}`,
+        subtitle: siteName,
+        time: new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false }).format(new Date()) + ' WIB',
+        link: '/absensi',
         createdAt: new Date().toISOString(),
       };
       setRecentNotifications((prev) => [notifItem, ...prev].slice(0, 20));
       refreshDashboard();
     });
 
-    socket.on('attendance:clock_in', (data: any) => {
-      const notifItem: DashboardNotificationItem = {
-        id: `att-${Date.now()}`,
-        type: 'ATTENDANCE',
-        title: `Absensi Masuk: ${data.userName || data.fullName || 'Personel'}`,
-        subtitle: data.siteName || 'Site',
-        time: new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false }).format(new Date()) + ' WIB',
-        link: '/absensi',
-        createdAt: new Date().toISOString(),
-      };
-      setRecentNotifications((prev) => [notifItem, ...prev].slice(0, 20));
+    socket.on('attendance:clock_out', () => {
       refreshDashboard();
     });
 
@@ -605,6 +651,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dashboardSummary,
         recentNotifications,
         patrolActivity,
+        patrolRefreshTick,
+        joinSiteRoom,
         refreshDashboard,
       }}
     >

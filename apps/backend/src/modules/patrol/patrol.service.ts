@@ -31,7 +31,30 @@ export class PatrolService {
     private eventsGateway: EventsGateway,
   ) { }
 
-  async getLogs(siteId?: string, limit = 50) {
+  async getLogs(
+    filterOrSiteId?:
+      | string
+      | {
+        siteId?: string;
+        userId?: string;
+        checkpointId?: string;
+        dateFrom?: string;
+        dateTo?: string;
+        limit?: number | string;
+      },
+    limitArg = 50,
+  ) {
+    const filter =
+      typeof filterOrSiteId === 'string'
+        ? { siteId: filterOrSiteId, limit: limitArg }
+        : filterOrSiteId || {};
+
+    const parsedLimit = Number(filter.limit);
+    const safeLimit =
+      Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(Math.floor(parsedLimit), 100)
+        : 50;
+
     let sql = `
       SELECT 
         p.id, 
@@ -46,23 +69,62 @@ export class PatrolService {
         p.photo_key AS "photoKey",
         u.full_name AS "officerName", 
         u.username AS "officerUsername",
+        COALESCE(u.role::text, 'anggota') AS "officerRole",
+        u.division AS "officerDivision",
         c.name AS "checkpointName", 
         c.qr_code_token AS "checkpointCode",
         c.location_detail AS "locationDetail",
-        s.name AS "siteName"
+        c.task_description AS "taskDescription",
+        s.name AS "siteName",
+        it.ticket_status AS "ticketStatus",
+        it.resolution_notes AS "resolutionNotes"
       FROM patrol_logs p
       JOIN users u ON p.user_id = u.id
       JOIN checkpoints c ON p.checkpoint_id = c.id
       JOIN sites s ON p.site_id = s.id
+      LEFT JOIN incident_tickets it ON it.patrol_log_id = p.id
+      WHERE 1=1
     `;
     const params: any[] = [];
+    let paramIdx = 1;
 
-    if (siteId) {
-      sql += ` WHERE p.site_id = $1`;
-      params.push(siteId);
+    if (filter.siteId && filter.siteId.trim() !== '' && filter.siteId !== 'ALL') {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filter.siteId.trim())) {
+        throw new BadRequestException('Invalid siteId UUID format');
+      }
+      sql += ` AND p.site_id = $${paramIdx++}`;
+      params.push(filter.siteId.trim());
+    }
+    if (filter.userId && filter.userId.trim() !== '') {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filter.userId.trim())) {
+        throw new BadRequestException('Invalid userId UUID format');
+      }
+      sql += ` AND p.user_id = $${paramIdx++}`;
+      params.push(filter.userId.trim());
+    }
+    if (filter.checkpointId && filter.checkpointId.trim() !== '') {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filter.checkpointId.trim())) {
+        throw new BadRequestException('Invalid checkpointId UUID format');
+      }
+      sql += ` AND p.checkpoint_id = $${paramIdx++}`;
+      params.push(filter.checkpointId.trim());
+    }
+    if (filter.dateFrom && filter.dateFrom.trim() !== '') {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(filter.dateFrom.trim()) || Number.isNaN(Date.parse(filter.dateFrom.trim()))) {
+        throw new BadRequestException('Invalid dateFrom format (expected YYYY-MM-DD)');
+      }
+      sql += ` AND (p.scanned_at AT TIME ZONE 'Asia/Jakarta')::date >= $${paramIdx++}::date`;
+      params.push(filter.dateFrom.trim());
+    }
+    if (filter.dateTo && filter.dateTo.trim() !== '') {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(filter.dateTo.trim()) || Number.isNaN(Date.parse(filter.dateTo.trim()))) {
+        throw new BadRequestException('Invalid dateTo format (expected YYYY-MM-DD)');
+      }
+      sql += ` AND (p.scanned_at AT TIME ZONE 'Asia/Jakarta')::date <= $${paramIdx++}::date`;
+      params.push(filter.dateTo.trim());
     }
 
-    sql += ` ORDER BY p.scanned_at DESC LIMIT ${Math.min(limit, 100)}`;
+    sql += ` ORDER BY p.scanned_at DESC LIMIT ${safeLimit}`;
 
     return this.db.query(sql, params);
   }
@@ -312,14 +374,22 @@ export class PatrolService {
    * Shows 24 hourly columns (00:00 to 23:00) vs Assets to check if scanned in each hour
    */
   async getHourlyMonitoringMatrix(dateStr?: string, siteId?: string): Promise<HourlyPatrolMatrixResponse> {
-    const targetDate = dateStr || new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
-    const startIso = `${targetDate} 00:00:00`;
-    const endIso = `${targetDate} 23:59:59`;
+    const targetDate =
+      dateStr && dateStr.trim() !== ''
+        ? dateStr.trim()
+        : new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }); // 'YYYY-MM-DD' WIB
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(targetDate) || Number.isNaN(Date.parse(targetDate))) {
+      throw new BadRequestException('Invalid date format (expected YYYY-MM-DD)');
+    }
 
     let targetSiteId = siteId;
     let siteName = 'Semua Area';
-    if (siteId) {
-      const site = await this.db.queryOne<any>(`SELECT name FROM sites WHERE id = $1`, [siteId]);
+    if (siteId && siteId.trim() !== '') {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(siteId.trim())) {
+        throw new BadRequestException('Invalid siteId UUID format');
+      }
+      const site = await this.db.queryOne<any>(`SELECT name FROM sites WHERE id = $1`, [siteId.trim()]);
       if (site) siteName = site.name;
     } else {
       const firstSite = await this.db.queryOne<any>(`SELECT id, name FROM sites WHERE is_active = true LIMIT 1`);
@@ -342,13 +412,13 @@ export class PatrolService {
     `;
     const checkpoints = await this.db.query<any>(cpSql, [targetSiteId]);
 
-    // 2. Fetch all patrol logs for this site on this date
+    // 2. Fetch all patrol logs for this site on this date in Asia/Jakarta (WIB)
     const logsSql = `
-      SELECT checkpoint_id as "checkpointId", EXTRACT(HOUR FROM scanned_at)::int as "hour"
+      SELECT checkpoint_id as "checkpointId", EXTRACT(HOUR FROM scanned_at AT TIME ZONE 'Asia/Jakarta')::int as "hour"
       FROM patrol_logs
-      WHERE site_id = $1 AND scanned_at >= $2::timestamp AND scanned_at <= $3::timestamp
+      WHERE site_id = $1 AND (scanned_at AT TIME ZONE 'Asia/Jakarta')::date = $2::date
     `;
-    const logs = await this.db.query<any>(logsSql, [targetSiteId, startIso, endIso]);
+    const logs = await this.db.query<any>(logsSql, [targetSiteId, targetDate]);
 
     // Map checkpointId -> Set of hours scanned
     const scannedMap = new Map<string, Set<number>>();
@@ -469,7 +539,7 @@ export class PatrolService {
         id: String(r.id),
         siteName: r.siteName,
         officerName: r.officerName,
-        position: 'anggota',
+        position: r.position || 'anggota',
         assetName: r.assetName,
         assetType: r.assetType || 'keamanan',
         assetLocation: r.assetLocation || `${r.assetName} - ${r.siteName}`,
@@ -536,10 +606,10 @@ export class PatrolService {
     return {
       id: String(r.id),
       officerName: r.officerName,
-      position: 'anggota',
+      position: r.position || 'anggota',
       siteName: r.siteName,
       avatarUrl: r.avatarUrl,
-      activityStatus: 'Selesai',
+      activityStatus: r.ticketStatus === 'OPEN' ? 'Perlu Tindak Lanjut' : 'Selesai',
       assetName: r.assetName,
       assetType: r.assetType || 'keamanan',
       assetLocation: r.assetLocation || `${r.assetName} - ${r.siteName}`,
@@ -548,6 +618,7 @@ export class PatrolService {
       patrolCode: `#${shortCode}`,
       taskDescription: r.taskDescription || 'Pemeriksaan akses dan keamanan area',
       patrolResult: r.statusResult || 'Situasi Aman Terkendali',
+      notes: r.notes || null,
       latitude: lat,
       longitude: lng,
       googleMapsUrl,
@@ -596,7 +667,7 @@ export class PatrolService {
 
   async updateTindakLanjut(patrolLogId: string, notes = 'Ya sudah di TL') {
     const existingTicket = await this.db.queryOne<any>(
-      'SELECT id FROM incident_tickets WHERE patrol_log_id = $1::uuid OR patrol_log_id::text = $1',
+      'SELECT id FROM incident_tickets WHERE patrol_log_id::text = $1',
       [patrolLogId]
     );
 
@@ -609,10 +680,10 @@ export class PatrolService {
       );
     } else {
       const patrol = await this.db.queryOne<any>(
-        'SELECT site_id, user_id FROM patrol_logs WHERE id::text = $1 OR id = $1::uuid',
+        'SELECT site_id, user_id FROM patrol_logs WHERE id::text = $1',
         [patrolLogId]
       );
-      if (!patrol) throw new NotFoundException('Patrol log not found');
+      if (!patrol) return { success: true, message: 'No matching patrol log found for tindak lanjut' };
       return this.db.queryOne<any>(
         `INSERT INTO incident_tickets (site_id, patrol_log_id, ticket_status, reported_by, resolution_notes, resolved_at)
          VALUES ($1, $2, 'RESOLVED', $3, $4, CURRENT_TIMESTAMP)

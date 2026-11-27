@@ -236,24 +236,12 @@ export class SosService {
     const rows = await this.db.query<any>(sql, params);
 
     const data = rows.map((row) => {
-      const d = new Date(row.triggeredAt);
-      const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-      const dayName = dayNames[d.getDay()] || '';
-      const dateNum = String(d.getDate()).padStart(2, '0');
-      const monthName = monthNames[d.getMonth()] || '';
-      const year = d.getFullYear();
-      const hours = String(d.getHours()).padStart(2, '0');
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      const seconds = String(d.getSeconds()).padStart(2, '0');
-      const timeOnly = `${hours}:${minutes}:${seconds}`;
-      const formattedDate = `${dayName}, ${dateNum} ${monthName} ${year}`;
-      const formattedTime = `${formattedDate} | ${timeOnly}`;
+      const { dayName, timeOnly, formattedTime } = this.formatSosWibTime(row.triggeredAt);
 
       return {
         ...row,
         mapsUrl: `https://www.google.com/maps?q=${row.latitude},${row.longitude}`,
-        dayName: formattedDate,
+        dayName,
         timeOnly,
         formattedTime,
       };
@@ -306,26 +294,47 @@ export class SosService {
       throw new NotFoundException(`Emergency Alert ${alertId} not found`);
     }
 
-    const d = new Date(row.triggeredAt);
-    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    const dayName = dayNames[d.getDay()] || '';
-    const dateNum = String(d.getDate()).padStart(2, '0');
-    const monthName = monthNames[d.getMonth()] || '';
-    const year = d.getFullYear();
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const seconds = String(d.getSeconds()).padStart(2, '0');
-    const timeOnly = `${hours}:${minutes}:${seconds}`;
-    const formattedDate = `${dayName}, ${dateNum} ${monthName} ${year}`;
-    const formattedTime = `${formattedDate} | ${timeOnly}`;
+    const { dayName, timeOnly, formattedTime } = this.formatSosWibTime(row.triggeredAt);
 
     return {
       ...row,
       mapsUrl: `https://www.google.com/maps?q=${row.latitude},${row.longitude}`,
-      dayName: formattedDate,
+      dayName,
       timeOnly,
       formattedTime,
+    };
+  }
+
+  private formatSosWibTime(dateInput: string | Date) {
+    const d = new Date(dateInput);
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Jakarta',
+      weekday: 'short',
+      year: 'numeric',
+      month: 'numeric',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).formatToParts(d);
+    const p: Record<string, string> = {};
+    for (const part of parts) p[part.type] = part.value;
+
+    const weekdayMap: Record<string, string> = {
+      Sun: 'Minggu', Mon: 'Senin', Tue: 'Selasa', Wed: 'Rabu',
+      Thu: 'Kamis', Fri: 'Jumat', Sat: 'Sabtu',
+    };
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const dayLabel = weekdayMap[p.weekday] || '';
+    const monthLabel = monthNames[Math.max(0, Number(p.month) - 1)] || '';
+    const hour = p.hour === '24' ? '00' : p.hour;
+    const timeOnly = `${hour}:${p.minute}:${p.second}`;
+    const formattedDate = `${dayLabel}, ${p.day} ${monthLabel} ${p.year}`;
+    return {
+      dayName: formattedDate,
+      timeOnly,
+      formattedTime: `${formattedDate} | ${timeOnly}`,
     };
   }
 

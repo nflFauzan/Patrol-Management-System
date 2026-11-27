@@ -157,4 +157,33 @@ describe('UsersService (Data Induk Personil & Security Parity)', () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('MON-02: findAll & findById Deduplication for Multi-Site Users', () => {
+    it('should group by u.id only (not usa.site_id) and return siteName without duplicate user rows', async () => {
+      (dbMock.query as jest.Mock).mockResolvedValueOnce([
+        {
+          id: 'usr-multi-001',
+          username: 'satpamtest',
+          full_name: 'Ahmad Fauzi',
+          role: UserRole.SECURITY_OFFICER,
+          division: Division.SECURITY,
+          site_id: 'site-1',
+          site_name: 'Kantor Pusat & Operasional Bogor',
+          multi_site_ids: ['site-1', 'site-2'],
+          is_active: true,
+        },
+      ]);
+
+      const result = await service.findAll({ siteId: 'site-1' });
+      const [sql, params] = (dbMock.query as jest.Mock).mock.calls[0];
+
+      expect(sql).toMatch(/GROUP BY\s+u\.id\b/i);
+      expect(sql).not.toMatch(/GROUP BY\s+u\.id\s*,\s*usa\.site_id/i);
+      expect(sql).toContain('EXISTS');
+      expect(params).toEqual(['site-1']);
+      expect(result).toHaveLength(1);
+      expect((result[0] as any).siteName).toBe('Kantor Pusat & Operasional Bogor');
+      expect(result[0].multiSiteIds).toEqual(['site-1', 'site-2']);
+    });
+  });
 });

@@ -11,7 +11,7 @@ import {
 
 @Injectable()
 export class DashboardService {
-  constructor(private db: DatabaseService) {}
+  constructor(private db: DatabaseService) { }
 
   async getDashboardSummary(siteId?: string): Promise<DashboardSummary> {
     const cleanSiteId = siteId && siteId.trim() !== '' && siteId !== 'ALL' ? siteId : null;
@@ -232,8 +232,9 @@ export class DashboardService {
       [cleanSiteId, shiftType, shiftStart + ':00', shiftEnd + ':00'],
     );
 
-    // Calculate scanned checkpoints per round
+    // Calculate scanned checkpoints per round (deduplicated per round)
     const distinctShiftScanned = new Set<string>();
+    const roundCheckpointSets: Set<string>[] = [new Set(), new Set(), new Set(), new Set()];
     scannedLogs.forEach((log) => {
       distinctShiftScanned.add(log.checkpoint_id);
 
@@ -249,7 +250,8 @@ export class DashboardService {
         const slotStartMin = startMinutes + i * roundDuration;
         const slotEndMin = startMinutes + (i + 1) * roundDuration;
         if (logTotalMinutes >= slotStartMin && logTotalMinutes < slotEndMin) {
-          rounds[i].scannedCount++;
+          roundCheckpointSets[i].add(log.checkpoint_id);
+          rounds[i].scannedCount = roundCheckpointSets[i].size;
           break;
         }
       }
